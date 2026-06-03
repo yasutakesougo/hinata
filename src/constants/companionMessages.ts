@@ -27,7 +27,7 @@ export const ANIMAL_SPECIFIC_MESSAGES: Record<string, string[]> = {
   '🐤': [
     'ぱたぱた！ そらは きもちいいよ！',
     'いっしょに あそぼう！',
-    'きょうも いい天気になるかな ☀'
+    'きょうも いい てんきに なるかな ☀'
   ],
   '🐒': [
     'うきうき！ おもしろいこと さがそう！',
@@ -42,7 +42,7 @@ export const ANIMAL_SPECIFIC_MESSAGES: Record<string, string[]> = {
   '👑': [
     'わしが くだものキング じゃ！',
     'よくぞ まいりおった！',
-    'くだものは 体に いいぞ 🍎'
+    'くだものは からだに いいぞ 🍎'
   ]
 };
 

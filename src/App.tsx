@@ -755,7 +755,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* 設定・テーマ選択エリア */}
         <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-end">
-          {/* うごきを少なくする（刺激少なめ）設定 */}
+          {/* うごきをとめる（刺激少なめ）設定 */}
           <label className="flex items-center gap-1.5 bg-emerald-50/50 hover:bg-emerald-100 p-2 rounded-2xl border border-emerald-100 cursor-pointer select-none text-[10px] font-black text-emerald-700 transition-colors shadow-xs">
             <input
               type="checkbox"
@@ -766,7 +766,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               }}
               className="accent-emerald-500 w-3.5 h-3.5 rounded cursor-pointer"
             />
-            <span>うごきを少なくする</span>
+            <span>うごきを とめる</span>
           </label>
 
           {/* テーマカラー切り替え */}

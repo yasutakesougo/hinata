@@ -29,23 +29,23 @@
 
 /* なかま動物のゆっくり散歩アニメーション */
 @keyframes walk-a {
-  0%, 100% { left: 15%; transform: scaleX(-1); }
+  0%, 100% { left: 22%; transform: scaleX(-1); }
   49.9% { transform: scaleX(-1); }
-  50% { left: 45%; transform: scaleX(1); }
+  50% { left: 42%; transform: scaleX(1); }
   99.9% { transform: scaleX(1); }
 }
 
 @keyframes walk-b {
-  0%, 100% { left: 50%; transform: scaleX(1); }
+  0%, 100% { left: 48%; transform: scaleX(1); }
   49.9% { transform: scaleX(1); }
-  50% { left: 20%; transform: scaleX(-1); }
+  50% { left: 28%; transform: scaleX(-1); }
   99.9% { transform: scaleX(-1); }
 }
 
 @keyframes walk-c {
-  0%, 100% { left: 80%; transform: scaleX(1); }
+  0%, 100% { left: 78%; transform: scaleX(1); }
   49.9% { transform: scaleX(1); }
-  50% { left: 55%; transform: scaleX(-1); }
+  50% { left: 58%; transform: scaleX(-1); }
   99.9% { transform: scaleX(-1); }
 }
 
