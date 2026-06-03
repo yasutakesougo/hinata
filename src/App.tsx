@@ -4,6 +4,7 @@ import { auth, db } from './firebase';
 import { signInAnonymously, onAuthStateChanged, linkWithCredential, EmailAuthProvider, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { CompanionWalker } from './components/CompanionWalker';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -679,6 +680,8 @@ interface HomeScreenProps {
   onChangeTheme: (themeId: string) => void;
   onGoPlayMap: () => void;
   onSelectStageById: (id: number) => void;
+  reducedMotion: boolean;
+  onChangeReducedMotion: (val: boolean) => void;
 }
 
 const THEMES = [
@@ -689,7 +692,16 @@ const THEMES = [
   { id: 'sky', name: 'そらいろ', bg: 'bg-[#F0F9FF]', cardBg: 'bg-sky-50', border: 'border-sky-300', text: 'text-sky-700', activeBg: 'bg-sky-100', dot: 'bg-sky-400' }
 ];
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ unlockedStageId, unlockedRewards, themeId, onChangeTheme, onGoPlayMap, onSelectStageById }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({
+  unlockedStageId,
+  unlockedRewards,
+  themeId,
+  onChangeTheme,
+  onGoPlayMap,
+  onSelectStageById,
+  reducedMotion,
+  onChangeReducedMotion
+}) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
   const [showKokugoHint, setShowKokugoHint] = React.useState(false);
 
@@ -704,20 +716,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ unlockedStageId, unlockedReward
     }
     setTimeout(() => setShowKokugoHint(false), 3000);
   };
-
-  // 解放済みの動物を最大3匹取得
-  const REWARD_EMOJIS: Record<string, string> = {
-    'ぴょんうさぎ': '🐰',
-    'のっそりくま': '🐻',
-    'ぱたぱたとり': '🐤',
-    'うきうきさる': '🐒',
-    'もぐもぐねずみ': '🐹',
-    'くだものキング': '👑',
-  };
-
-  const unlockedAnimals = unlockedRewards
-    .map(name => REWARD_EMOJIS[name])
-    .filter(Boolean);
 
   const recommendedStageId = unlockedStageId <= 6 ? unlockedStageId : 1;
   const recommendedStageName = STAGES.find(s => s.id === recommendedStageId)?.jpName || 'もりの ひろば';
@@ -755,24 +753,41 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ unlockedStageId, unlockedReward
           </p>
         </div>
 
-        {/* テーマカラー切り替え */}
-        <div className="flex items-center gap-2 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100">
-          <span className="text-[10px] font-black text-emerald-700 sm:block hidden">テーマ色：</span>
-          <div className="flex gap-1.5">
-            {THEMES.map(t => (
-              <button
-                key={t.id}
-                onClick={() => onChangeTheme(t.id)}
-                className={`w-6 h-6 rounded-full border-2 transition-all active:scale-90 flex items-center justify-center cursor-pointer ${t.dot} ${
-                  themeId === t.id ? 'border-emerald-500 scale-110 shadow-sm' : 'border-transparent opacity-75 hover:opacity-100'
-                }`}
-                title={t.name}
-              >
-                {themeId === t.id && (
-                  <span className="text-[10px] text-white font-bold">✓</span>
-                )}
-              </button>
-            ))}
+        {/* 設定・テーマ選択エリア */}
+        <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-end">
+          {/* うごきを少なくする（刺激少なめ）設定 */}
+          <label className="flex items-center gap-1.5 bg-emerald-50/50 hover:bg-emerald-100 p-2 rounded-2xl border border-emerald-100 cursor-pointer select-none text-[10px] font-black text-emerald-700 transition-colors shadow-xs">
+            <input
+              type="checkbox"
+              checked={reducedMotion}
+              onChange={(e) => {
+                playSoundEffect('tap');
+                onChangeReducedMotion(e.target.checked);
+              }}
+              className="accent-emerald-500 w-3.5 h-3.5 rounded cursor-pointer"
+            />
+            <span>うごきを少なくする</span>
+          </label>
+
+          {/* テーマカラー切り替え */}
+          <div className="flex items-center gap-2 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100">
+            <span className="text-[10px] font-black text-emerald-700 sm:block hidden">テーマ色：</span>
+            <div className="flex gap-1.5">
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => onChangeTheme(t.id)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all active:scale-90 flex items-center justify-center cursor-pointer ${t.dot} ${
+                    themeId === t.id ? 'border-emerald-500 scale-110 shadow-sm' : 'border-transparent opacity-75 hover:opacity-100'
+                  }`}
+                  title={t.name}
+                >
+                  {themeId === t.id && (
+                    <span className="text-[10px] text-white font-bold">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -785,32 +800,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ unlockedStageId, unlockedReward
         <div className="absolute top-1 left-1/3 text-xl opacity-20 select-none">🌸</div>
         <div className="absolute top-3 right-1/3 text-2xl opacity-20 select-none">🌼</div>
 
-        {/* なかま動物表示 */}
-        <div className="absolute inset-x-0 bottom-6 flex justify-around items-end px-6 z-10">
-          {unlockedAnimals.length > 0 ? (
-            unlockedAnimals.slice(0, 3).map((emoji, idx) => {
-              const animations = ['animate-bounce', 'animate-pulse', 'animate-bounce'];
-              const delay = idx * 200;
-              return (
-                <div key={idx} className="flex flex-col items-center gap-1 group">
-                  <span
-                    className={`text-5xl select-none cursor-pointer filter drop-shadow-md hover:scale-125 transition-transform ${animations[idx]}`}
-                    style={{ animationDelay: `${delay}ms` }}
-                  >
-                    {emoji}
-                  </span>
-                </div>
-              );
-            })
-          ) : (
-            <div className="flex items-center gap-3 bg-white/80 border border-emerald-100 rounded-2xl px-4 py-2.5 shadow-sm text-center mb-2 mx-auto animate-pulse">
-              <span className="text-3xl">🐿️</span>
-              <p className="text-xs font-black text-emerald-800">
-                ぼうけんに でかけて なかまを ふやそう！
-              </p>
-            </div>
-          )}
-        </div>
+        {/* なかま動物歩行表示 */}
+        <CompanionWalker
+          unlockedRewards={unlockedRewards}
+          reducedMotion={reducedMotion}
+          onPlaySound={playSoundEffect}
+        />
 
         {/* 地面 */}
         <div className="w-full h-8 bg-emerald-300/40 rounded-b-xl border-t border-emerald-300/20 absolute bottom-0 left-0" />
@@ -1103,6 +1098,18 @@ export default function App() {
     }
   });
 
+  const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('hinata_reduced_motion');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  });
+
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
     try {
       const saved = localStorage.getItem('sansu_quest_activity_logs');
@@ -1345,6 +1352,15 @@ export default function App() {
 
     return () => clearTimeout(timer);
   }, [unlockedStageId, unlockedRewards, history, themeId, activityLogs, user]);
+
+  // うごきを少なくする設定保存
+  useEffect(() => {
+    try {
+      localStorage.setItem('hinata_reduced_motion', reducedMotion.toString());
+    } catch (e) {
+      console.error('Failed to save reducedMotion:', e);
+    }
+  }, [reducedMotion]);
 
   // 効果音の有効状態をグローバル同期する
   useEffect(() => {
@@ -2057,6 +2073,8 @@ export default function App() {
             onChangeTheme={setThemeId}
             onGoPlayMap={handleGoPlayMap}
             onSelectStageById={handleSelectStageById}
+            reducedMotion={reducedMotion}
+            onChangeReducedMotion={setReducedMotion}
           />
         )}
 

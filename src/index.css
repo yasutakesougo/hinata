@@ -26,3 +26,48 @@
   from { width: 0%; }
   to { width: 100%; }
 }
+
+/* なかま動物のゆっくり散歩アニメーション */
+@keyframes walk-a {
+  0%, 100% { left: 15%; transform: scaleX(-1); }
+  49.9% { transform: scaleX(-1); }
+  50% { left: 45%; transform: scaleX(1); }
+  99.9% { transform: scaleX(1); }
+}
+
+@keyframes walk-b {
+  0%, 100% { left: 50%; transform: scaleX(1); }
+  49.9% { transform: scaleX(1); }
+  50% { left: 20%; transform: scaleX(-1); }
+  99.9% { transform: scaleX(-1); }
+}
+
+@keyframes walk-c {
+  0%, 100% { left: 80%; transform: scaleX(1); }
+  49.9% { transform: scaleX(1); }
+  50% { left: 55%; transform: scaleX(-1); }
+  99.9% { transform: scaleX(-1); }
+}
+
+@utility animate-walk-a {
+  animation: walk-a 25s linear infinite;
+}
+
+@utility animate-walk-b {
+  animation: walk-b 30s linear infinite;
+}
+
+@utility animate-walk-c {
+  animation: walk-c 35s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-walk-a,
+  .animate-walk-b,
+  .animate-walk-c {
+    animation: none !important;
+    left: var(--static-left, 50%) !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
