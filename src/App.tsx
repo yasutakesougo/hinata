@@ -5,6 +5,7 @@ import { signInAnonymously, onAuthStateChanged, linkWithCredential, EmailAuthPro
 import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { CompanionWalker } from './components/CompanionWalker';
+import { CatRoomSplitScreen } from './components/CatRoomSplitScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -24,7 +25,7 @@ interface Stage {
   name: string;
   jpName: string;
   desc: string;
-  type: 'synthesis' | 'make10' | 'subtraction' | 'boss';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split';
   maxVal: number; 
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
@@ -55,7 +56,7 @@ interface Make10Question {
 }
 
 interface AnswerRecord {
-  type: 'synthesis' | 'make10' | 'subtraction';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split';
   questionText: string;
   userChoice: number;
   correctAnswer: number;
@@ -93,16 +94,26 @@ const STAGES: Stage[] = [
   },
   {
     id: 3,
+    name: 'cat_split',
+    jpName: 'ネコちゃんの おへやわけ',
+    desc: '10までの かずを ２つに わけてみよう！',
+    type: 'cat_split',
+    maxVal: 10,
+    reward: { name: 'まねきねこ', emoji: '🐱', desc: 'お部屋を分けるのが得意な招き猫。' },
+    difficulty: '★★★☆☆'
+  },
+  {
+    id: 4,
     name: 'farm',
     jpName: 'おひさま のうえん',
     desc: '10までの かずの ごうせい！すこしふえるよ。',
     type: 'synthesis',
     maxVal: 10,
-    reward: { name: 'まねきねこ', emoji: '🐱', desc: 'あしあとで算数のノートを汚すのが得意。' },
+    reward: { name: 'うきうきさる', emoji: '🐒', desc: 'いたずら好きだけど算数だけは真面目なさる。' },
     difficulty: '★★★☆☆'
   },
   {
-    id: 4,
+    id: 5,
     name: 'hamster',
     jpName: 'もぐもぐ ハムスター',
     desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
@@ -112,7 +123,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 5,
+    id: 6,
     name: 'pack',
     jpName: 'たまごの パック',
     desc: '10をつくる パズルゲーム！あといくつ必要かな？',
@@ -122,7 +133,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 6,
+    id: 7,
     name: 'boss',
     jpName: 'さんすうキングの しろ',
     desc: 'ラスボス登場！たしざんと ひきざんの スピードMIXバトル！',
@@ -594,14 +605,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
 };
 
 // 星型進捗バー
-interface StarProgressProps {
+export interface StarProgressProps {
   currentStep: number;
   totalSteps: number;
   title: string;
   starResults?: boolean[];
 }
 
-const StarProgress: React.FC<StarProgressProps> = ({ currentStep, totalSteps, title, starResults }) => {
+export const StarProgress: React.FC<StarProgressProps> = ({ currentStep, totalSteps, title, starResults }) => {
   return (
     <div className="w-full max-w-md bg-white border-4 border-amber-100 rounded-2xl px-4 py-2 shadow-sm flex justify-between items-center">
       <span className="font-extrabold text-amber-700 text-xs md:text-sm">
@@ -717,7 +728,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     setTimeout(() => setShowKokugoHint(false), 3000);
   };
 
-  const recommendedStageId = unlockedStageId <= 6 ? unlockedStageId : 1;
+  const recommendedStageId = unlockedStageId <= STAGES.length ? unlockedStageId : 1;
   const recommendedStageName = STAGES.find(s => s.id === recommendedStageId)?.jpName || 'もりの ひろば';
 
   return (
@@ -848,7 +859,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
           <div className="flex justify-between items-center border-t border-emerald-200/50 pt-2 mt-2">
             <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">
-              {unlockedStageId > 6 ? 'ぜんぶクリア！' : `ステージ ${unlockedStageId} まで解放中`}
+              {unlockedStageId > STAGES.length ? 'ぜんぶクリア！' : `ステージ ${unlockedStageId} まで解放中`}
             </span>
             <span className="text-emerald-600 font-black text-sm group-hover:translate-x-1 transition-transform">
               すすむ ➔
@@ -1085,7 +1096,7 @@ const StageClearScreen: React.FC<StageClearScreenProps> = ({ stage, onContinue }
 // ============================================================================
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -1136,7 +1147,7 @@ export default function App() {
       const saved = localStorage.getItem('sansu_quest_unlocked_stage_id');
       if (saved) {
         const num = parseInt(saved, 10);
-        if (!isNaN(num) && num >= 1 && num <= 6) return num;
+        if (!isNaN(num) && num >= 1 && num <= STAGES.length) return num;
       }
     } catch (e) {
       console.error('Failed to parse saved unlockedStageId:', e);
@@ -1577,6 +1588,10 @@ export default function App() {
       setTotalSteps(5);
       setupNextSubtraction(1, stage.maxVal);
       setScreen('play_subtraction');
+    } else if (stage.type === 'cat_split') {
+      setTotalSteps(5);
+      setupNextCatSplit(1);
+      setScreen('play_cat_split');
     } else if (stage.type === 'boss') {
       setTotalSteps(10);
       setBossHp(100);
@@ -1590,6 +1605,11 @@ export default function App() {
     if (stage) {
       handleSelectStage(stage);
     }
+  };
+
+  // 0.5. ネコちゃんお部屋分け問題セット
+  const setupNextCatSplit = (step: number) => {
+    setCurrentStep(step);
   };
 
   // 1. 合成問題セット
@@ -1708,6 +1728,35 @@ export default function App() {
         speakText(`あわせて、${total}！`, soundEnabled);
       }
     }, 550);
+  };
+
+  // --- ネコちゃんお部屋分けの回答記録 ---
+  const handleCatSplitStepComplete = (
+    isCorrect: boolean,
+    _leftVal: number,
+    rightVal: number,
+    targetLeft: number,
+    targetRight: number,
+    total: number,
+    attempts: number
+  ) => {
+    const record: AnswerRecord = {
+      type: 'cat_split',
+      questionText: `${total} は ${targetLeft} と [ ? ]`,
+      userChoice: rightVal,
+      correctAnswer: targetRight,
+      isCorrect,
+      timestamp: getNow(),
+    };
+    setHistory(prev => [record, ...prev].slice(0, 100));
+
+    if (isCorrect) {
+      if (attempts === 0) {
+        setStarResults(prev => [...prev, true]);
+      } else {
+        setStarResults(prev => [...prev, false]);
+      }
+    }
   };
 
   // --- 答えを選択したとき (モード1) ---
@@ -1965,6 +2014,8 @@ export default function App() {
         setupNextMake10(nextStep);
       } else if (selectedStage?.type === 'subtraction') {
         setupNextSubtraction(nextStep, selectedStage.maxVal);
+      } else if (selectedStage?.type === 'cat_split') {
+        setupNextCatSplit(nextStep);
       }
     }
   };
@@ -2543,6 +2594,22 @@ export default function App() {
           </div>
         )}
 
+        {/* 6.5. ネコちゃんお部屋分けプレイ画面 */}
+        {screen === 'play_cat_split' && selectedStage && (
+          <CatRoomSplitScreen
+            key={currentStep}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            starResults={starResults}
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={handleGoMap}
+            onStepComplete={handleCatSplitStepComplete}
+            onNextStep={handleNextStep}
+          />
+        )}
+
         {/* 7. ボス戦プレイ画面 */}
         {screen === 'play_boss' && selectedStage && (
           <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
@@ -2863,7 +2930,7 @@ export default function App() {
                 <span className="text-md md:text-lg font-black text-sky-950 mt-1 block">
                   {unlockedRewards.includes('くだものドラゴン')
                     ? '🏆 ドラゴンげっと！' 
-                    : unlockedStageId === 6 
+                    : unlockedStageId === STAGES.length 
                       ? '👑 ラストステージ' 
                       : `🐾 ステージ ${unlockedStageId} まで`}
                 </span>
