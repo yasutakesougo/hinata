@@ -1,0 +1,22 @@
+{
+  "name": "さんすうクエスト 〜くだものキングダム〜",
+  "short_name": "さんすうクエスト",
+  "description": "くだものと一緒に楽しく算数を学ぶ知育ゲームアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFEEB",
+  "theme_color": "#FFFEEB",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
