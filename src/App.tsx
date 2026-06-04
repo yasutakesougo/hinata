@@ -1531,13 +1531,13 @@ export default function App() {
             if (data.history) {
               setHistory(data.history);
             }
-            if (data.activityLogs) {
+            if (data.activityLogs && Array.isArray(data.activityLogs)) {
               setActivityLogs(data.activityLogs);
             }
             if (data.placedFurniture) {
               setPlacedFurniture(data.placedFurniture);
             }
-            if (data.completedHiragana) {
+            if (data.completedHiragana && Array.isArray(data.completedHiragana)) {
               setCompletedHiragana(data.completedHiragana);
             }
           } else {
