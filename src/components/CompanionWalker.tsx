@@ -22,6 +22,7 @@ const REWARD_EMOJIS: Record<string, string> = {
   'さんすうパンダ': '🐼',
   'くだものドラゴン': '🐲',
   'くだものキング': '👑',
+  'さくらんぼリス': '🐿️',
 };
 
 // Purity rule workarounds
