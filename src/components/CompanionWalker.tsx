@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CompanionBubble } from './CompanionBubble';
-import { COMPANION_MESSAGES, ANIMAL_SPECIFIC_MESSAGES } from '../constants/companionMessages';
+import { COMPANION_MESSAGES, ANIMAL_SPECIFIC_MESSAGES, SEASON_MESSAGES } from '../constants/companionMessages';
 
 interface CompanionWalkerProps {
   unlockedRewards: string[];
   reducedMotion: boolean;
   onPlaySound: (type: 'tap') => void;
   isDecorating?: boolean;
+  season: 'spring' | 'summer' | 'autumn' | 'winter';
 }
 
 const REWARD_EMOJIS: Record<string, string> = {
@@ -33,15 +34,22 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
   reducedMotion,
   onPlaySound,
   isDecorating = false,
+  season,
 }) => {
   const [activeBubbles, setActiveBubbles] = useState<Record<number, string | null>>({});
+  const [jumpingIndex, setJumpingIndex] = useState<number | null>(null);
   const bubbleTimers = useRef<Record<number, ReturnType<typeof setTimeout> | null>>({});
+  const jumpTimers = useRef<Record<number, ReturnType<typeof setTimeout> | null>>({});
 
   useEffect(() => {
     const currentTimers = bubbleTimers.current;
+    const currentJumpTimers = jumpTimers.current;
     return () => {
       // Clean up timers on unmount
       Object.values(currentTimers).forEach(timer => {
+        if (timer) clearTimeout(timer);
+      });
+      Object.values(currentJumpTimers).forEach(timer => {
         if (timer) clearTimeout(timer);
       });
     };
@@ -52,7 +60,7 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
     .filter(item => Boolean(item.emoji));
 
   if (unlockedAnimals.length === 0) {
-    // 初期状態で解放済み動物がいない場合は、既存の案内役リス表示を維持する
+    // 初期状態で解放済み動物がいない場合は、既存 of 案内役リス表示を維持する
     return (
       <div className="flex items-center gap-3 bg-white/80 border border-emerald-100 rounded-2xl px-4 py-2.5 shadow-sm text-center mb-2 mx-auto animate-pulse">
         <span className="text-3xl">🐿️</span>
@@ -70,9 +78,22 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
     if (isDecorating) return; // かざりつけ中はタップ無効
     onPlaySound('tap');
 
-    // メッセージの決定
-    const specific = ANIMAL_SPECIFIC_MESSAGES[emoji];
-    const messages = specific && specific.length > 0 ? specific : COMPANION_MESSAGES;
+    // タップされた動物をぴょんっとジャンプさせる (うごきをとめる設定がオフのときのみ)
+    if (!reducedMotion) {
+      setJumpingIndex(idx);
+      if (jumpTimers.current[idx]) {
+        clearTimeout(jumpTimers.current[idx]!);
+      }
+      jumpTimers.current[idx] = setTimeout(() => {
+        setJumpingIndex(prev => prev === idx ? null : prev);
+        jumpTimers.current[idx] = null;
+      }, 600); // 600ms は bounce-once アニメーションの長さに合わせる
+    }
+
+    // メッセージの決定（通常メッセージ＋動物専用メッセージ＋季節限定メッセージ）
+    const specific = ANIMAL_SPECIFIC_MESSAGES[emoji] || [];
+    const seasonal = SEASON_MESSAGES[season] || [];
+    const messages = [...COMPANION_MESSAGES, ...specific, ...seasonal];
     const randomIndex = Math.floor(getRandom() * messages.length);
     const msg = messages[randomIndex];
 
@@ -104,6 +125,8 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
 
         // アニメーションOFF設定の時は静止クラス、ONの時は往復アニメーション
         const walkClass = reducedMotion ? staticPositions[idx] : walkClasses[idx];
+        const isJumping = jumpingIndex === idx;
+        const jumpClass = isJumping ? 'animate-bounce-once' : '';
 
         return (
           <div
@@ -119,7 +142,7 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
             {hasBubble && !isDecorating && <CompanionBubble message={bubbleMsg} />}
             <span
               onClick={() => handleTap(idx, animal.emoji)}
-              className={`text-5xl select-none filter drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-150 block ${
+              className={`text-5xl select-none filter drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-150 block ${jumpClass} ${
                 isDecorating ? 'cursor-default opacity-80' : 'cursor-pointer'
               }`}
               role="img"
