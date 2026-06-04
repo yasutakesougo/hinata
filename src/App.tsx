@@ -1845,7 +1845,18 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
 
 export default function App() {
   const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_cherry_combine' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    try {
+      const todayStr = getTodayDateString();
+      const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
+      if (savedCondition === 'quiet') {
+        return false;
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  });
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
@@ -1886,6 +1897,12 @@ export default function App() {
 
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
     try {
+      const todayStr = getTodayDateString();
+      const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
+      if (savedCondition === 'relaxed' || savedCondition === 'quiet') {
+        return true;
+      }
+
       const saved = localStorage.getItem('hinata_reduced_motion');
       if (saved !== null) {
         return saved === 'true';
@@ -1896,8 +1913,8 @@ export default function App() {
     }
   });
 
-  const effectiveSoundEnabled = soundEnabled && todayCondition !== 'quiet';
-  const effectiveReducedMotion = reducedMotion || todayCondition === 'relaxed' || todayCondition === 'quiet';
+  const effectiveSoundEnabled = soundEnabled;
+  const effectiveReducedMotion = reducedMotion;
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
     try {
@@ -2621,7 +2638,14 @@ export default function App() {
   };
 
   const handleChooseCondition = (condition: 'energetic' | 'relaxed' | 'quiet') => {
-    const tempEffectiveSoundEnabled = soundEnabled && condition !== 'quiet';
+    if (condition === 'relaxed' || condition === 'quiet') {
+      setReducedMotion(true);
+    }
+    if (condition === 'quiet') {
+      setSoundEnabled(false);
+    }
+
+    const tempEffectiveSoundEnabled = condition === 'quiet' ? false : soundEnabled;
     if (tempEffectiveSoundEnabled) {
       playSoundEffect('tap');
     }
