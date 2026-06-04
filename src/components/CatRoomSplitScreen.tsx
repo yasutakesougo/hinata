@@ -33,6 +33,7 @@ interface CatRoomSplitScreenProps {
   ) => void;
   onNextStep: () => void;
   maxVal?: number;
+  onWrongAnswer?: () => void;
 }
 
 // Purity rule workarounds
@@ -51,6 +52,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   onStepComplete,
   onNextStep,
   maxVal,
+  onWrongAnswer,
 }) => {
   // マウント時に一度だけ実行される初期ゲームステート
   const [gameState] = useState<{ question: CatSplitQuestion; cats: CatState[] }>(() => {
@@ -183,6 +185,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
     } else {
       onPlaySound('wrong');
       setResult('wrong');
+      if (onWrongAnswer) onWrongAnswer();
       const nextAttempt = attempt + 1;
       setAttempt(nextAttempt);
       if (nextAttempt === 1) {

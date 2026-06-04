@@ -1573,7 +1573,7 @@ export default function App() {
   const [todayChoiceMade, setTodayChoiceMade] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('sansu_quest_today_choice_made_' + getTodayDateString());
-      return saved === 'true';
+      return saved !== null;
     } catch {
       return false;
     }
@@ -2005,6 +2005,28 @@ export default function App() {
     };
   }, []);
 
+  const incrementTodayHintsCount = () => {
+    const todayStr = getTodayDateString();
+    const key = 'sansu_quest_today_hints_' + todayStr;
+    try {
+      const current = parseInt(localStorage.getItem(key) || '0', 10);
+      localStorage.setItem(key, String(current + 1));
+    } catch (e) {
+      console.error('Failed to increment today hints count:', e);
+    }
+  };
+
+  const incrementTodayClearsCount = () => {
+    const todayStr = getTodayDateString();
+    const key = 'sansu_quest_today_clears_' + todayStr;
+    try {
+      const current = parseInt(localStorage.getItem(key) || '0', 10);
+      localStorage.setItem(key, String(current + 1));
+    } catch (e) {
+      console.error('Failed to increment today clears count:', e);
+    }
+  };
+
   const handleResetProgress = () => {
     const confirmReset = window.confirm("さいしょから やりなおす？（あつめた どうぶつも きえちゃうよ）");
     if (confirmReset) {
@@ -2027,6 +2049,8 @@ export default function App() {
 
       // ３択選択状態の初期化
       localStorage.removeItem('sansu_quest_today_choice_made_' + getTodayDateString());
+      localStorage.removeItem('sansu_quest_today_hints_' + getTodayDateString());
+      localStorage.removeItem('sansu_quest_today_clears_' + getTodayDateString());
       setTodayChoiceMade(false);
 
       const initialLog: ActivityLog = {
@@ -2076,6 +2100,74 @@ export default function App() {
     });
 
     return { retryCount, maxAttempts };
+  };
+
+  const generateTodayPraiseMessage = () => {
+    const todayStr = getTodayDateString();
+    
+    // 1. 自律性 (今日のアクティビティを自分で選んだ)
+    let chosenActivity: string | null = null;
+    try {
+      chosenActivity = localStorage.getItem('sansu_quest_today_choice_made_' + todayStr);
+    } catch (e) {
+      console.error(e);
+    }
+    
+    // 2. ヘルプシーキング (ヒントを使用)
+    let hintsCount = 0;
+    try {
+      hintsCount = parseInt(localStorage.getItem('sansu_quest_today_hints_' + todayStr) || '0', 10);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // 3. 達成感 (クエストクリア)
+    let clearsCount = 0;
+    try {
+      clearsCount = parseInt(localStorage.getItem('sansu_quest_today_clears_' + todayStr) || '0', 10);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // 4. レジリエンス (再挑戦)
+    const { retryCount } = getProcessMetrics();
+
+    const messages: string[] = [];
+
+    // ① 自律性
+    if (chosenActivity && chosenActivity !== 'later') {
+      let actName = "ぼうけん";
+      if (chosenActivity === 'walk') actName = "「もりであそぶ」";
+      if (chosenActivity === 'math') actName = "「さんすうをする」";
+      if (chosenActivity === 'tracing') actName = "「もじをなぞる」";
+      messages.push(`今日は${actName}を自分で選んで、主体的に学習（または散策）を始めることができました。`);
+    }
+
+    // ② ヘルプシーキング
+    if (hintsCount >= 1) {
+      messages.push(`難しい問題ではヒントを参考にしながら、じっくり考えることができました。分からない時にサポートをうまく受け入れる力（ヘルプシーキング）が育っています。`);
+    }
+
+    // ③ レジリエンス
+    if (retryCount >= 1) {
+      messages.push(`間違えても諦めずに、もう一度挑戦して解き直すことができました。失敗を乗り越えて前進するしなやかな強さ（レジリエンス）が見られます。`);
+    }
+
+    // ④ 達成感
+    if (clearsCount >= 1) {
+      messages.push(`クエストを最後までやり遂げ、ステージをクリアすることができました。やり切ったという達成感が大きな自信に繋がっています。`);
+    }
+
+    // ⑤ 習慣化
+    if (activeTimeToday >= 60 || history.length > 0 || completedHiragana.length > 0) {
+      messages.push(`短い時間でもアプリを開き、自分のペースで学びを継続できました。コツコツと小さく続ける習慣自体が素晴らしいがんばりです。`);
+    }
+
+    if (messages.length === 0) {
+      return ["今日はアプリをひらいて、新しい一歩をふみだせました！焦らず、お子様の「やりたい」という気持ちをゆっくり見守っていきましょう。"];
+    }
+
+    return messages;
   };
 
   const handleGoReport = () => {
@@ -2202,7 +2294,7 @@ export default function App() {
     // 選択状態を永続化
     const todayStr = getTodayDateString();
     try {
-      localStorage.setItem('sansu_quest_today_choice_made_' + todayStr, 'true');
+      localStorage.setItem('sansu_quest_today_choice_made_' + todayStr, activity);
     } catch (e) {
       console.error('Failed to save today choice:', e);
     }
@@ -2504,6 +2596,7 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setSynResult('wrong');
+      incrementTodayHintsCount();
       const nextAttempt = synAttempt + 1;
       setSynAttempt(nextAttempt);
       if (nextAttempt === 1) {
@@ -2552,6 +2645,7 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setM10Result('wrong');
+      incrementTodayHintsCount();
       const nextAttempt = m10Attempt + 1;
       setM10Attempt(nextAttempt);
       if (nextAttempt === 1) {
@@ -2630,6 +2724,7 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setSubResult('wrong');
+      incrementTodayHintsCount();
       const nextAttempt = subAttempt + 1;
       setSubAttempt(nextAttempt);
       if (nextAttempt === 1) {
@@ -2678,6 +2773,7 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setSynResult('wrong');
+        incrementTodayHintsCount();
         const nextAttempt = synAttempt + 1;
         setSynAttempt(nextAttempt);
         if (nextAttempt === 1) {
@@ -2715,6 +2811,7 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setM10Result('wrong');
+        incrementTodayHintsCount();
         const nextAttempt = m10Attempt + 1;
         setM10Attempt(nextAttempt);
         if (nextAttempt === 1) {
@@ -2752,6 +2849,7 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setSubResult('wrong');
+        incrementTodayHintsCount();
         const nextAttempt = subAttempt + 1;
         setSubAttempt(nextAttempt);
         if (nextAttempt === 1) {
@@ -2796,6 +2894,7 @@ export default function App() {
     setScreen('stage_clear');
     setIsTransitioning(false);
 
+    incrementTodayClearsCount();
     logActivity(`「${selectedStage.jpName}」をクリア！`);
 
     setUnlockedRewards(prev => {
@@ -3471,6 +3570,7 @@ export default function App() {
             onStepComplete={handleCatSplitStepComplete}
             onNextStep={handleNextStep}
             maxVal={selectedStage.maxVal}
+            onWrongAnswer={incrementTodayHintsCount}
           />
         )}
 
@@ -3876,6 +3976,25 @@ export default function App() {
                       : `🐾 ステージ ${unlockedStageId} まで`}
                 </span>
               </div>
+            </div>
+
+            {/* 🌟 今日のがんばりとサポートのヒント (Phase 6C) */}
+            <div className="w-full bg-amber-50/60 border-4 border-amber-200 rounded-2xl p-5 flex flex-col gap-3 text-left animate-fadeIn">
+              <div className="flex items-center gap-2 text-amber-800 border-b border-amber-200 pb-2">
+                <span className="text-xl">🌟</span>
+                <h3 className="text-sm font-black">今日のがんばりとサポートのヒント</h3>
+              </div>
+              <div className="space-y-2.5 mt-1">
+                {generateTodayPraiseMessage().map((msg, idx) => (
+                  <p key={idx} className="text-xs text-slate-700 font-bold leading-relaxed flex items-start gap-1.5">
+                    <span className="text-amber-500 shrink-0 select-none">✦</span>
+                    <span>{msg}</span>
+                  </p>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 font-bold mt-1 border-t border-slate-100 pt-2 leading-normal">
+                💡 お子様へ声かけする際は、「ヒントをよく見て考えられたね」「じぶんでえらべたね」など、具体的な行動（プロセス）を言葉にしてあげると、次の意欲に繋がります。
+              </p>
             </div>
 
             {/* 🌱 がんばったプロセスの承認 (P2) */}
