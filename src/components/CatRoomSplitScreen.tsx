@@ -32,6 +32,7 @@ interface CatRoomSplitScreenProps {
     attempts: number
   ) => void;
   onNextStep: () => void;
+  maxVal?: number;
 }
 
 // Purity rule workarounds
@@ -49,11 +50,14 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   onGoBack,
   onStepComplete,
   onNextStep,
+  maxVal,
 }) => {
   // マウント時に一度だけ実行される初期ゲームステート
   const [gameState] = useState<{ question: CatSplitQuestion; cats: CatState[] }>(() => {
-    // 5〜10のランダムな合計数
-    const total = Math.floor(getRandom() * 6) + 5; 
+    // maxVal が 5 なら 3〜5、それ以外なら 5〜10 のランダムな合計数
+    const total = maxVal === 5
+      ? Math.floor(getRandom() * 3) + 3
+      : Math.floor(getRandom() * 6) + 5;
     // 左側の目標数 (1 〜 total-1)
     const leftTarget = Math.floor(getRandom() * (total - 1)) + 1;
     const rightTarget = total - leftTarget;
@@ -179,8 +183,13 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
     } else {
       onPlaySound('wrong');
       setResult('wrong');
-      setAttempt(prev => prev + 1);
-      speakText('ちがうよ、おへやのネコちゃんのかずを よくかぞえてみよう！', soundEnabled);
+      const nextAttempt = attempt + 1;
+      setAttempt(nextAttempt);
+      if (nextAttempt === 1) {
+        speakText('ちがうよ、おへやのネコちゃんのかずを よくかぞえてみよう！', soundEnabled);
+      } else {
+        speakText(`ひだりの おへやに ${question.leftTarget}ひき いれると、みぎは ${question.rightTarget}ひき だよ。`, soundEnabled);
+      }
       // 間違えた場合は1秒後に再度回答可能にする
       setTimeout(() => {
         setIsProcessing(false);
@@ -439,8 +448,10 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
           )}
 
           {result === 'wrong' && (
-            <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse">
-              🐱 もういちど、よくかぞえて みよう！
+            <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+              {attempt === 1 
+                ? "🐱 もういちど、よくかぞえて みよう！" 
+                : `💡 ヒント：ひだりに ${question.leftTarget}ひき いれると、みぎは ${question.rightTarget}ひき になるよ！`}
             </div>
           )}
         </div>
