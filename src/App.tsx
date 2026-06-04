@@ -1238,18 +1238,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* 設定・テーマ選択エリア */}
         <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-end">
           {/* うごきをとめる（刺激少なめ）設定 */}
-          <label className="flex items-center gap-1.5 bg-emerald-50/50 hover:bg-emerald-100 p-2 rounded-2xl border border-emerald-100 cursor-pointer select-none text-[10px] font-black text-emerald-700 transition-colors shadow-xs">
-            <input
-              type="checkbox"
-              checked={reducedMotion}
-              onChange={(e) => {
-                playSoundEffect('tap');
-                onChangeReducedMotion(e.target.checked);
-              }}
-              className="accent-emerald-500 w-3.5 h-3.5 rounded cursor-pointer"
-            />
-            <span>うごきを とめる</span>
-          </label>
+          <button
+            type="button"
+            onClick={() => {
+              playSoundEffect('tap');
+              onChangeReducedMotion(!reducedMotion);
+            }}
+            className={`flex items-center gap-1.5 p-2 rounded-2xl border transition-colors shadow-xs select-none text-[10px] font-black cursor-pointer ${
+              reducedMotion
+                ? 'bg-emerald-100 border-emerald-300 text-emerald-950 shadow-inner'
+                : 'bg-emerald-50/50 hover:bg-emerald-100 border-emerald-100 text-emerald-700'
+            }`}
+            style={{ minHeight: 44, touchAction: 'manipulation' }}
+            aria-pressed={reducedMotion}
+            aria-label="うごきを とめる"
+          >
+            <span className="pointer-events-none text-xs">{reducedMotion ? '✅' : '⬜️'}</span>
+            <span className="pointer-events-none">うごきを とめる</span>
+          </button>
 
           {/* きせつ切り替え */}
           <div className="flex items-center gap-1.5 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100 shadow-xs">
