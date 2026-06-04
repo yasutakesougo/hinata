@@ -95,22 +95,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   const hpInfo = getHpMessage(hp);
 
   // --- HP color helpers ---
-  const getHpBtnClasses = (value: number, currentHp: number): string => {
-    const isSelected = value === currentHp;
-    if (value <= 3) {
-      return isSelected
-        ? 'bg-violet-500 text-white border-violet-600 shadow-md scale-110'
-        : 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100';
-    }
-    if (value <= 6) {
-      return isSelected
-        ? 'bg-amber-400 text-amber-950 border-amber-500 shadow-md scale-110'
-        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
-    }
-    return isSelected
-      ? 'bg-emerald-500 text-white border-emerald-600 shadow-md scale-110'
-      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
-  };
+
 
   const getHpBarColor = (hp: number): string => {
     if (hp <= 3) return 'bg-violet-400';
@@ -119,9 +104,9 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   };
 
   const getHpMsgBg = (hp: number): string => {
-    if (hp <= 3) return 'bg-violet-50 border-violet-200 text-violet-800';
-    if (hp <= 6) return 'bg-amber-50 border-amber-200 text-amber-800';
-    return 'bg-emerald-50 border-emerald-200 text-emerald-800';
+    if (hp <= 3) return 'bg-violet-50/90 border-violet-300 text-violet-800';
+    if (hp <= 6) return 'bg-amber-50/90 border-amber-300 text-amber-950';
+    return 'bg-emerald-50/90 border-emerald-300 text-emerald-950';
   };
 
   // --- Active signs for log display ---
@@ -143,7 +128,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   // ============================================================================
 
   return (
-    <div className="w-full max-w-2xl bg-white border-8 border-violet-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 animate-scaleUp">
+    <div className="w-full max-w-2xl bg-white bg-[linear-gradient(to_right,rgba(226,232,240,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.15)_1px,transparent_1px)] [background-size:24px_24px] border-8 border-violet-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 animate-scaleUp">
 
       {/* ヘッダー */}
       <div className="text-center space-y-1">
@@ -169,44 +154,41 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
           <span>🔋</span> こころの バッテリー
         </h3>
 
-        {/* HP数値ボタン 1〜10 */}
-        <div
-          className="grid grid-cols-5 sm:grid-cols-10 gap-2"
+        {/* HPバー型 10セグメントボタン */}
+        <div 
+          className="flex gap-1.5 w-full p-1.5 bg-slate-100 border-2 border-slate-200 rounded-2xl"
           role="radiogroup"
-          aria-label="こころのバッテリー 1から10"
+          aria-label="こころバッテリーのじゅうでんりょう"
         >
-          {Array.from({ length: 10 }, (_, i) => i + 1).map(value => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={hp === value}
-              aria-label={`バッテリー ${value}`}
-              onClick={() => handleHpChange(value)}
-              className={`w-full aspect-square rounded-2xl border-3 font-black text-lg md:text-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center ${getHpBtnClasses(value, hp)}`}
-            >
-              {value}
-            </button>
-          ))}
+          {Array.from({ length: 10 }, (_, i) => i + 1).map(value => {
+            const isActive = value <= hp;
+            const activeColor = getHpBarColor(hp);
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={hp === value}
+                aria-label={`こころバッテリー ${value}`}
+                aria-pressed={hp === value}
+                onClick={() => handleHpChange(value)}
+                className={`flex-1 h-12 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center font-black text-sm relative border-b-2 ${
+                  isActive 
+                    ? `${activeColor} text-white shadow-sm border-black/10`
+                    : 'bg-slate-200/40 text-slate-400 hover:bg-slate-200 border-slate-300/50'
+                }`}
+              >
+                {value}
+              </button>
+            );
+          })}
         </div>
 
-        {/* HPバー */}
-        <div className="w-full bg-slate-100 rounded-full h-4 border border-slate-200 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${getHpBarColor(hp)}`}
-            style={{ width: `${hp * 10}%` }}
-            role="progressbar"
-            aria-valuenow={hp}
-            aria-valuemin={1}
-            aria-valuemax={10}
-            aria-label={`バッテリー ${hp} / 10`}
-          />
-        </div>
-
-        {/* HPメッセージ */}
-        <div className={`border-2 rounded-2xl p-3 text-center ${getHpMsgBg(hp)}`}>
-          <p className="text-sm font-black leading-relaxed">
-            {hpInfo.emoji} {hpInfo.message}
+        {/* HPメッセージ（カードモニター） */}
+        <div className={`border-3 rounded-2xl p-4 text-center shadow-inner transition-colors duration-300 ${getHpMsgBg(hp)}`}>
+          <p className="text-sm md:text-base font-black leading-relaxed">
+            <span className="text-xl mr-1.5 inline-block">{hpInfo.emoji}</span>
+            {hpInfo.message}
           </p>
         </div>
       </div>
@@ -214,10 +196,10 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
       {/* ─── SOSサイン ─── */}
       <div className="space-y-3">
         <h3 className="text-lg font-black text-violet-700 flex items-center gap-1.5">
-          <span>📋</span> からだの サイン
+          <span>📋</span> こころとからだのセンサー
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SIGN_KEYS.map(key => {
             const info = SIGN_LABELS[key];
             const isChecked = signs[key];
@@ -229,16 +211,24 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
                 aria-checked={isChecked}
                 aria-label={info.label}
                 onClick={() => handleToggleSign(key)}
-                className={`flex items-center gap-3 p-3 rounded-2xl border-3 font-bold text-sm text-left transition-all active:scale-[0.98] cursor-pointer ${
+                className={`flex flex-col items-center justify-between p-4 rounded-2xl border-3 font-black text-xs text-center transition-all active:scale-95 cursor-pointer min-h-[120px] ${
                   isChecked
-                    ? 'bg-violet-100 border-violet-400 text-violet-800'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-violet-100/90 border-violet-400 text-violet-900 shadow-md'
+                    : 'bg-white/80 border-slate-200 text-slate-600 hover:bg-slate-50/50 hover:border-slate-300'
                 }`}
               >
-                <span className="text-xl flex-shrink-0">{info.emoji}</span>
-                <span className="flex-1 leading-snug">{info.label}</span>
-                <span className="text-lg flex-shrink-0">
-                  {isChecked ? '✅' : '⬜'}
+                <span className={`text-3xl my-1 block transition-transform ${isChecked ? 'scale-110' : ''}`}>
+                  {info.emoji}
+                </span>
+                <span className="flex-1 flex items-center justify-center leading-tight px-1 mb-1">
+                  {info.label}
+                </span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 ${
+                  isChecked 
+                    ? 'bg-violet-200 text-violet-800' 
+                    : 'bg-slate-100 text-slate-400'
+                }`}>
+                  {isChecked ? 'きょうのサイン' : 'しらべる'}
                 </span>
               </button>
             );
@@ -251,16 +241,16 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
         <button
           type="button"
           onClick={handleSave}
-          className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-black text-base md:text-lg py-4 px-8 rounded-2xl border-b-6 border-violet-800 shadow-lg transition-all active:translate-y-[3px] active:border-b-2 cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-black text-base md:text-lg py-4 px-8 rounded-2xl border-b-4 border-violet-800 shadow-md transition-all active:translate-y-[1px] active:border-b-3 cursor-pointer flex items-center justify-center gap-2"
         >
           <span>📝</span>
-          けんきゅうデータを ほぞんする
+          けんきゅうカードを ほぞんする
         </button>
 
         {/* 保存成功メッセージ */}
         {saved && (
           <div className="bg-emerald-50 border-2 border-emerald-300 text-emerald-700 font-black text-sm py-2 px-4 rounded-xl animate-scaleUp">
-            💮 きょうの けんきゅうを ほぞんしました
+            💮 きょうの けんきゅうを のこしました
           </div>
         )}
       </div>
@@ -407,7 +397,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
         <button
           type="button"
           onClick={onGoBack}
-          className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-6 py-2.5 rounded-2xl border-b-4 border-slate-300 transition-all active:translate-y-[2px] active:border-b-2 text-sm cursor-pointer"
+          className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-6 py-2.5 rounded-2xl border-b-3 border-slate-300 transition-all active:translate-y-[1px] active:border-b-2 text-sm cursor-pointer"
         >
           <span>🏡</span>
           ひろばに もどる
