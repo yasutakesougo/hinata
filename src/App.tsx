@@ -2593,6 +2593,7 @@ export default function App() {
       }
       setSynPraiseText(praise);
       speakText(praise, soundEnabled);
+      setIsTransitioning(false);
     } else {
       playSoundEffect('wrong');
       setSynResult('wrong');
@@ -2642,6 +2643,7 @@ export default function App() {
         setStarResults(prev => [...prev, false]);
       }
       speakText("せいかい！これでぴったり10こ！", soundEnabled);
+      setIsTransitioning(false);
     } else {
       playSoundEffect('wrong');
       setM10Result('wrong');
@@ -2721,6 +2723,7 @@ export default function App() {
       }
       setSubPraiseText(praise);
       speakText(praise, soundEnabled);
+      setIsTransitioning(false);
     } else {
       playSoundEffect('wrong');
       setSubResult('wrong');
