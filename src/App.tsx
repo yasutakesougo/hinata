@@ -885,6 +885,57 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [decorTrigger, setDecorTrigger] = React.useState<Record<number, boolean>>({});
   const decorTimers = React.useRef<Record<number, ReturnType<typeof setTimeout> | null>>({});
 
+  // 今日の3択・気分選択インタラクション強化用ステート
+  const [selectedCondition, setSelectedCondition] = React.useState<'energetic' | 'relaxed' | 'quiet' | null>(null);
+  const [selectedActivity, setSelectedActivity] = React.useState<'walk' | 'math' | 'hiragana_board' | 'later' | null>(null);
+  const [isConditionExiting, setIsConditionExiting] = React.useState(false);
+  const [isActivityExiting, setIsActivityExiting] = React.useState(false);
+
+  const handleChooseCondition = (cond: 'energetic' | 'relaxed' | 'quiet') => {
+    if (selectedCondition) return; // 連続タップ防止
+    playSoundEffect('pop');
+    setSelectedCondition(cond);
+
+    // 動きをとめる設定がONの場合は即時切り替え
+    if (reducedMotion) {
+      onChooseCondition(cond);
+      setSelectedCondition(null);
+      return;
+    }
+
+    // 550ms はなまるスタンプを見せる
+    setTimeout(() => {
+      setIsConditionExiting(true);
+      // 250ms フェードアウトアニメーション待ち
+      setTimeout(() => {
+        onChooseCondition(cond);
+        setSelectedCondition(null);
+        setIsConditionExiting(false);
+      }, 250);
+    }, 550);
+  };
+
+  const handleChooseActivity = (act: 'walk' | 'math' | 'hiragana_board' | 'later') => {
+    if (selectedActivity) return; // 連続タップ防止
+    playSoundEffect('pop');
+    setSelectedActivity(act);
+
+    if (reducedMotion) {
+      onChooseActivity(act);
+      setSelectedActivity(null);
+      return;
+    }
+
+    setTimeout(() => {
+      setIsActivityExiting(true);
+      setTimeout(() => {
+        onChooseActivity(act);
+        setSelectedActivity(null);
+        setIsActivityExiting(false);
+      }, 250);
+    }, 550);
+  };
+
   React.useEffect(() => {
     const currentTimers = decorTimers.current;
     return () => {
@@ -927,8 +978,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* きょうのきぶん選択モーダル (自己決定・自律性の支援) */}
       {!todayCondition && !isDecorating && (
-        <div className="absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
-          <div className="hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative animate-scaleUp">
+        <div className={`absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 backdrop-blur-xs px-4 ${
+          isConditionExiting ? 'animate-fadeOutBackdrop' : 'animate-fadeIn'
+        }`}>
+          <div className={`hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative ${
+            isConditionExiting ? 'animate-fadeOutZoom' : 'animate-scaleUp'
+          }`}>
             <div className="space-y-1">
               <h3 className="text-2xl md:text-3xl font-black text-[#5E431E] flex items-center justify-center gap-1.5 select-none">
                 <span>🦁</span> きょうの きぶんは？ <span>🐨</span>
@@ -941,46 +996,88 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* 3つの選択カード */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* 選択 1: げんきいっぱい */}
-              <button
-                type="button"
-                onClick={() => onChooseCondition('energetic')}
-                aria-label="げんきいっぱい"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0s' }}
-              >
-                <span className="text-4xl">🦁</span>
-                <span className="text-xs font-black text-hinata-text">げんきいっぱい</span>
-              </button>
+              {(() => {
+                const isSelected = selectedCondition === 'energetic';
+                const isAnySelected = selectedCondition !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseCondition('energetic')}
+                    disabled={isAnySelected}
+                    aria-label="げんきいっぱい"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0s' }}
+                  >
+                    <span className="text-4xl">🦁</span>
+                    <span className="text-xs font-black text-hinata-text">げんきいっぱい</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
 
               {/* 選択 2: のんびり */}
-              <button
-                type="button"
-                onClick={() => onChooseCondition('relaxed')}
-                aria-label="のんびり"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0.4s' }}
-              >
-                <span className="text-4xl">🐨</span>
-                <span className="text-xs font-black text-hinata-text">のんびり</span>
-              </button>
+              {(() => {
+                const isSelected = selectedCondition === 'relaxed';
+                const isAnySelected = selectedCondition !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseCondition('relaxed')}
+                    disabled={isAnySelected}
+                    aria-label="のんびり"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0.4s' }}
+                  >
+                    <span className="text-4xl">🐨</span>
+                    <span className="text-xs font-black text-hinata-text">のんびり</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
 
               {/* 選択 3: しずかにやりたい */}
-              <button
-                type="button"
-                onClick={() => onChooseCondition('quiet')}
-                aria-label="しずかにやりたい"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0.8s' }}
-              >
-                <span className="text-4xl">🦉</span>
-                <span className="text-xs font-black text-hinata-text">しずかにやりたい</span>
-              </button>
+              {(() => {
+                const isSelected = selectedCondition === 'quiet';
+                const isAnySelected = selectedCondition !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseCondition('quiet')}
+                    disabled={isAnySelected}
+                    aria-label="しずかにやりたい"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0.8s' }}
+                  >
+                    <span className="text-4xl">🦉</span>
+                    <span className="text-xs font-black text-hinata-text">しずかにやりたい</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -988,8 +1085,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* 今日の3択パネル (自己決定・自律性の支援) */}
       {todayCondition && !todayChoiceMade && !isDecorating && (
-        <div className="absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
-          <div className="hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative animate-scaleUp">
+        <div className={`absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 backdrop-blur-xs px-4 ${
+          isActivityExiting ? 'animate-fadeOutBackdrop' : 'animate-fadeIn'
+        }`}>
+          <div className={`hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative ${
+            isActivityExiting ? 'animate-fadeOutZoom' : 'animate-scaleUp'
+          }`}>
             <div className="space-y-1">
               <h3 className="text-2xl md:text-3xl font-black text-[#5E431E] flex items-center justify-center gap-1.5 select-none">
                 <span>🌟</span> きょうの もりを えらぼう <span>🌟</span>
@@ -1002,55 +1103,100 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* 3つの選択カード */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* 選択 1: もりの さんぽ */}
-              <button
-                type="button"
-                onClick={() => onChooseActivity('walk')}
-                aria-label="もりの さんぽ"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0s' }}
-              >
-                <span className="text-4xl">🌲</span>
-                <span className="text-xs font-black text-hinata-text">もりの さんぽ</span>
-              </button>
+              {(() => {
+                const isSelected = selectedActivity === 'walk';
+                const isAnySelected = selectedActivity !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseActivity('walk')}
+                    disabled={isAnySelected}
+                    aria-label="もりの さんぽ"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0s' }}
+                  >
+                    <span className="text-4xl">🌲</span>
+                    <span className="text-xs font-black text-hinata-text">もりの さんぽ</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
 
               {/* 選択 2: さんすうの ぼうけん */}
-              <button
-                type="button"
-                onClick={() => onChooseActivity('math')}
-                aria-label="さんすうの ぼうけん"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0.4s' }}
-              >
-                <span className="text-4xl">🍪</span>
-                <span className="text-xs font-black text-hinata-text">さんすうの ぼうけん<br/>(1もんだけ)</span>
-              </button>
+              {(() => {
+                const isSelected = selectedActivity === 'math';
+                const isAnySelected = selectedActivity !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseActivity('math')}
+                    disabled={isAnySelected}
+                    aria-label="さんすうの ぼうけん"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0.4s' }}
+                  >
+                    <span className="text-4xl">🍪</span>
+                    <span className="text-xs font-black text-hinata-text">さんすうの ぼうけん<br/>(1もんだけ)</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
 
               {/* 選択 3: あいう おんどくの もり */}
-              <button
-                type="button"
-                onClick={() => onChooseActivity('hiragana_board')}
-                aria-label="あいう おんどくの もり"
-                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
-                  reducedMotion ? '' : 'animate-float'
-                }`}
-                style={reducedMotion ? {} : { animationDelay: '0.8s' }}
-              >
-                <span className="text-4xl">🗣️</span>
-                <span className="text-xs font-black text-hinata-text">あいう おんどくの もり</span>
-              </button>
+              {(() => {
+                const isSelected = selectedActivity === 'hiragana_board';
+                const isAnySelected = selectedActivity !== null;
+                const fadeClass = isAnySelected && !isSelected ? 'opacity-60 scale-98 duration-300' : '';
+                const activeClass = isSelected
+                  ? `border-yellow-400 bg-yellow-50 shadow-md ring-4 ring-yellow-200 z-30 ${reducedMotion ? 'scale-100' : 'animate-stampPop'}`
+                  : `hover:border-emerald-400 active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] ${reducedMotion ? '' : 'hover:scale-[1.02]'}`;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => handleChooseActivity('hiragana_board')}
+                    disabled={isAnySelected}
+                    aria-label="あいう おんどくの もり"
+                    className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all min-h-[110px] relative ${fadeClass} ${activeClass} ${
+                      reducedMotion ? '' : isSelected ? '' : 'animate-float'
+                    }`}
+                    style={reducedMotion ? {} : { animationDelay: '0.8s' }}
+                  >
+                    <span className="text-4xl">🗣️</span>
+                    <span className="text-xs font-black text-hinata-text">あいう おんどくの もり</span>
+                    {isSelected && (
+                      <span className={`absolute -top-3 -right-3 text-4xl drop-shadow-sm select-none z-40 ${reducedMotion ? '' : 'animate-bounce-once'}`}>💮</span>
+                    )}
+                  </button>
+                );
+              })()}
             </div>
 
             {/* 退避オプション */}
             <div className="pt-2 flex justify-center">
               <button
                 type="button"
-                onClick={() => onChooseActivity('later')}
+                onClick={() => handleChooseActivity('later')}
+                disabled={selectedActivity !== null}
                 aria-label="あとで えらぶ"
-                className="text-sm font-bold text-[#8C6A3C] hover:text-[#5E431E] underline cursor-pointer transition-colors active:scale-95 py-2 px-4 rounded-xl focus:outline-none"
+                className={`text-sm font-bold text-[#8C6A3C] hover:text-[#5E431E] underline cursor-pointer transition-colors active:scale-95 py-2 px-4 rounded-xl focus:outline-none ${
+                  selectedActivity !== null ? 'opacity-30 cursor-not-allowed' : ''
+                }`}
               >
                 あとで えらぶ (もりにはいる)
               </button>
@@ -1380,21 +1526,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       ) : (
         /* 今日のおすすめ (CTA) */
         <div
-          onClick={() => onSelectStageById(recommendedStageId)}
-          className="w-full bg-amber-50 hover:bg-amber-100 border-4 border-amber-300 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all active:scale-[0.99] shadow-sm animate-pulse"
+          onClick={() => {
+            playSoundEffect('tap');
+            onSelectStageById(recommendedStageId);
+          }}
+          className="w-full bg-[#FAF0DD] border-4 border-[#8C6A3C] rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-[0_8px_0_#5E431E] active:translate-y-[2px] active:shadow-[0_2px_0_#5E431E] shadow-[0_6px_0_#5E431E] select-none group text-left"
         >
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🍎</span>
+            <span className="text-4xl filter drop-shadow-sm group-hover:animate-wiggle">🗺️</span>
             <div>
-              <span className="bg-amber-400 text-amber-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase">
-                きょうのおすすめ
-              </span>
-              <p className="text-sm font-black text-amber-800 mt-1">
+              <div className="flex items-center gap-1">
+                <span className="bg-amber-400 border border-amber-600 text-amber-950 font-black text-[10px] px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  <span>⭐️</span> きょうのおすすめ
+                </span>
+              </div>
+              <p className="text-sm font-black text-[#5E431E] mt-1.5 leading-snug">
                 ステージ {recommendedStageId} : 「{recommendedStageName}」であそぼう！
               </p>
             </div>
           </div>
-          <span className="text-amber-500 font-extrabold text-xl">➔</span>
+          <span className="w-10 h-10 rounded-full bg-amber-400 border-2 border-[#8C6A3C] border-b-4 border-b-[#5E431E] flex items-center justify-center text-[#3D2409] font-extrabold text-xl shadow-sm group-hover:scale-110 group-hover:bg-amber-300 transition-all select-none">
+            ➔
+          </span>
         </div>
       )}
 
@@ -4912,6 +5065,96 @@ export default function App() {
                   <li><strong>暗号化による保護</strong>: クラウド保存時の認証用メールアドレスは、Firebase Authを通じて高度に暗号化され、安全に保管されます。</li>
                   <li><strong>ローカル保存対応</strong>: アカウントを作成しない場合でも、ブラウザのローカルストレージを用いて端末内に進行状況が安全に保持されます。</li>
                 </ul>
+              </div>
+            </div>
+
+            {/* 🛠️ アプリのカスタマイズ設定 (保護者向け) */}
+            <div className="w-full bg-violet-50/50 border-4 border-violet-200 rounded-2xl p-5 flex flex-col gap-4 text-left shadow-sm">
+              <div className="flex items-center gap-2 text-violet-800 border-b border-violet-200 pb-2">
+                <span className="text-xl">🛠️</span>
+                <h3 className="text-sm font-black">アプリのカスタマイズ設定（保護者向け）</h3>
+              </div>
+              <div className="text-xs text-slate-600 font-bold space-y-4">
+                
+                {/* 1. うごきをすくなくする設定 */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs">
+                  <div className="space-y-0.5 max-w-md">
+                    <h4 className="font-black text-slate-700 text-[11px]">✨ うごきをすくなくする（アクセシビリティ）</h4>
+                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                      画面のゆれ・はねる動きを少なくします。
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 cursor-pointer select-none text-[11px] font-black text-slate-700 transition-colors self-start sm:self-center">
+                    <input
+                      type="checkbox"
+                      checked={reducedMotion}
+                      onChange={(e) => {
+                        playSoundEffect('tap');
+                        setReducedMotion(e.target.checked);
+                      }}
+                      className="accent-violet-600 w-4 h-4 rounded cursor-pointer"
+                    />
+                    <span>うごきをすくなくする</span>
+                  </label>
+                </div>
+
+                {/* 2. 季節設定 */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs">
+                  <div className="space-y-0.5 max-w-md">
+                    <h4 className="font-black text-slate-700 text-[11px]">📅 季節のひょうじ</h4>
+                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                      もりのひろばに表示される背景やパーティクル（桜、落ち葉、雪など）の季節を設定します。
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 self-start sm:self-center">
+                    <select
+                      value={seasonMode}
+                      onChange={(e) => {
+                        playSoundEffect('tap');
+                        setSeasonMode(e.target.value as 'auto' | Season);
+                      }}
+                      className="bg-slate-50 border border-slate-300 text-[11px] font-black text-slate-700 rounded-xl px-3 py-1.5 cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400"
+                    >
+                      <option value="auto">📅 日付に合わせる（じどう）</option>
+                      <option value="spring">🌸 はる（春）</option>
+                      <option value="summer">🌻 なつ（夏）</option>
+                      <option value="autumn">🍁 あき（秋）</option>
+                      <option value="winter">❄️ ふゆ（冬）</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 3. テーマカラー設定 */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs">
+                  <div className="space-y-0.5 max-w-md">
+                    <h4 className="font-black text-slate-700 text-[11px]">🎨 アプリのテーマ色</h4>
+                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                      お子様の好みや見やすさに合わせて、アプリ全体のメインの配色を変更します。
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 self-start sm:self-center">
+                    <div className="flex gap-2">
+                      {THEMES.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            playSoundEffect('tap');
+                            setThemeId(t.id);
+                          }}
+                          className={`w-7 h-7 rounded-full border-2 transition-all active:scale-95 flex items-center justify-center cursor-pointer ${t.dot} ${
+                            themeId === t.id ? 'border-violet-600 scale-110 shadow-md ring-2 ring-violet-200' : 'border-transparent opacity-75 hover:opacity-100'
+                          }`}
+                          title={t.name}
+                        >
+                          {themeId === t.id && (
+                            <span className="text-[11px] text-white font-black">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
