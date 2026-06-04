@@ -86,50 +86,50 @@ const STAGES: Stage[] = [
   },
   {
     id: 2,
-    name: 'eat_forest',
-    jpName: 'くいしんぼうの森',
-    desc: '5までの ひきざん！くいしんぼうなオウムが たべちゃうよ。',
-    type: 'subtraction',
+    name: 'cat_split_5',
+    jpName: 'こねこの おへやわけ',
+    desc: '5までの かずを ２つに わけてみよう！',
+    type: 'cat_split',
     maxVal: 5,
     reward: { name: 'おしゃべりオウム', emoji: '🦜', desc: 'くだものが大好きで、おいしそうに食べるオウム。' },
     difficulty: '★★☆☆☆'
   },
   {
     id: 3,
-    name: 'cat_split',
-    jpName: 'ネコちゃんの おへやわけ',
-    desc: '10までの かずを ２つに わけてみよう！',
-    type: 'cat_split',
+    name: 'farm',
+    jpName: 'おひさま のうえん',
+    desc: '10までの かずの ごうせい！すこしふえるよ。',
+    type: 'synthesis',
     maxVal: 10,
     reward: { name: 'まねきねこ', emoji: '🐱', desc: 'お部屋を分けるのが得意な招き猫。' },
     difficulty: '★★★☆☆'
   },
   {
     id: 4,
-    name: 'farm',
-    jpName: 'おひさま のうえん',
-    desc: '10までの かずの ごうせい！すこしふえるよ。',
-    type: 'synthesis',
+    name: 'cat_split_10',
+    jpName: 'ネコちゃんの おへやわけ',
+    desc: '10までの かずを ２つに わけてみよう！',
+    type: 'cat_split',
     maxVal: 10,
     reward: { name: 'うきうきさる', emoji: '🐒', desc: 'いたずら好きだけど算数だけは真面目なさる。' },
     difficulty: '★★★☆☆'
   },
   {
     id: 5,
-    name: 'hamster',
-    jpName: 'もぐもぐ ハムスター',
-    desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
-    type: 'subtraction',
+    name: 'pack',
+    jpName: 'たまごの パック',
+    desc: '10をつくる パズルゲーム！あといくつ必要かな？',
+    type: 'make10',
     maxVal: 10,
     reward: { name: 'もぐもぐハムスター', emoji: '🐹', desc: 'ほっぺたにくだものをたくさんつめこむハムスター。' },
     difficulty: '★★★★☆'
   },
   {
     id: 6,
-    name: 'pack',
-    jpName: 'たまごの パック',
-    desc: '10をつくる パズルゲーム！あといくつ必要かな？',
-    type: 'make10',
+    name: 'hamster',
+    jpName: 'もぐもぐ ハムスター',
+    desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
+    type: 'subtraction',
     maxVal: 10,
     reward: { name: 'さんすうパンダ', emoji: '🐼', desc: '竹で作ったそろばんを持つ天才パンダ。' },
     difficulty: '★★★★☆'
@@ -1343,7 +1343,7 @@ export default function App() {
       const saved = localStorage.getItem('sansu_quest_unlocked_stage_id');
       if (saved) {
         const num = parseInt(saved, 10);
-        if (!isNaN(num) && num >= 1 && num <= STAGES.length) return num;
+        if (!isNaN(num) && num >= 1 && num <= STAGES.length + 1) return num;
       }
     } catch (e) {
       console.error('Failed to parse saved unlockedStageId:', e);
@@ -2068,8 +2068,13 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setSynResult('wrong');
-      setSynAttempt(prev => prev + 1);
-      speakText("ちがうよ、ボウルの中をかぞえてみてね", soundEnabled);
+      const nextAttempt = synAttempt + 1;
+      setSynAttempt(nextAttempt);
+      if (nextAttempt === 1) {
+        speakText("ちがうよ、ボウルの中をかぞえてみてね", soundEnabled);
+      } else {
+        speakText(`ひだりに ${synQuestion.left}こ、みぎに ${synQuestion.right}こ あるよ。あわせて いくつになるかな？`, soundEnabled);
+      }
       setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
@@ -2111,12 +2116,17 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setM10Result('wrong');
-      if (m10Added < m10Question.needed) {
-        speakText("まだたりないよ、もっとのせてね", soundEnabled);
+      const nextAttempt = m10Attempt + 1;
+      setM10Attempt(nextAttempt);
+      if (nextAttempt === 1) {
+        if (m10Added < m10Question.needed) {
+          speakText("まだたりないよ、もっとのせてね", soundEnabled);
+        } else {
+          speakText("のせすぎだよ、すこしへらそう", soundEnabled);
+        }
       } else {
-        speakText("のせすぎだよ、すこしへらそう", soundEnabled);
+        speakText(`いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`, soundEnabled);
       }
-      setM10Attempt(prev => prev + 1);
       setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
@@ -2176,8 +2186,13 @@ export default function App() {
     } else {
       playSoundEffect('wrong');
       setSubResult('wrong');
-      setSubAttempt(prev => prev + 1);
-      speakText("ちがうよ、のこったくだものをかぞえてみてね", soundEnabled);
+      const nextAttempt = subAttempt + 1;
+      setSubAttempt(nextAttempt);
+      if (nextAttempt === 1) {
+        speakText("ちがうよ、のこったくだものをかぞえてみてね", soundEnabled);
+      } else {
+        speakText(`${subQuestion.left}こ から ${subQuestion.minus}こ たべちゃったから、のこりは いくつかな？`, soundEnabled);
+      }
       setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
@@ -2219,7 +2234,13 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setSynResult('wrong');
-        speakText("ちがうよ、もう一回かぞえて！", soundEnabled);
+        const nextAttempt = synAttempt + 1;
+        setSynAttempt(nextAttempt);
+        if (nextAttempt === 1) {
+          speakText("ちがうよ、もう一回かぞえて！", soundEnabled);
+        } else {
+          speakText(`ひだりに ${synQuestion.left}こ、みぎに ${synQuestion.right}こ あるよ。あわせて いくつになるかな？`, soundEnabled);
+        }
         setTimeout(() => setIsTransitioning(false), 1000);
       }
     } else if (bossQuestType === 'make10' && m10Question) {
@@ -2250,7 +2271,13 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setM10Result('wrong');
-        speakText("あわないよ、もういちど考えてね", soundEnabled);
+        const nextAttempt = m10Attempt + 1;
+        setM10Attempt(nextAttempt);
+        if (nextAttempt === 1) {
+          speakText("あわないよ、もういちど考えてね", soundEnabled);
+        } else {
+          speakText(`いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`, soundEnabled);
+        }
         setTimeout(() => setIsTransitioning(false), 1000);
       }
     } else if (bossQuestType === 'subtraction' && subQuestion) {
@@ -2281,7 +2308,13 @@ export default function App() {
       } else {
         playSoundEffect('wrong');
         setSubResult('wrong');
-        speakText("ちがうよ、のこった数をよく考えてね", soundEnabled);
+        const nextAttempt = subAttempt + 1;
+        setSubAttempt(nextAttempt);
+        if (nextAttempt === 1) {
+          speakText("ちがうよ、のこった数をよく考えてね", soundEnabled);
+        } else {
+          speakText(`${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`, soundEnabled);
+        }
         setTimeout(() => setIsTransitioning(false), 1000);
       }
     }
@@ -2605,8 +2638,10 @@ export default function App() {
                 </div>
               )}
               {synResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  もういちど、よくかぞえてみよう！
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {synAttempt === 1 
+                    ? "もういちど、よくかぞえてみよう！" 
+                    : `💡 ヒント：ひだり（${synQuestion.left}）と みぎ（${synQuestion.right}）を あわせると いくつになるかな？`}
                 </div>
               )}
             </div>
@@ -2776,8 +2811,10 @@ export default function App() {
                 </div>
               )}
               {subResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  もういちど、のこったくだものを よくかぞえてみよう！
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {subAttempt === 1 
+                    ? "もういちど、のこったくだものを よくかぞえてみよう！" 
+                    : `💡 ヒント：${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`}
                 </div>
               )}
             </div>
@@ -2892,8 +2929,10 @@ export default function App() {
                 </div>
               )}
               {m10Result === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  {m10Added < m10Question.needed ? "まだたりないよ、もっとのせてね！" : "のせすぎだよ、すこしへらそう！"}
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {m10Attempt === 1
+                    ? (m10Added < m10Question.needed ? "まだたりないよ、もっとのせてね！" : "のせすぎだよ、すこしへらそう！")
+                    : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
                 </div>
               )}
             </div>
@@ -2913,6 +2952,7 @@ export default function App() {
             onGoBack={handleGoMap}
             onStepComplete={handleCatSplitStepComplete}
             onNextStep={handleNextStep}
+            maxVal={selectedStage.maxVal}
           />
         )}
 
@@ -3150,19 +3190,25 @@ export default function App() {
 
             {/* フィードバックメッセージ */}
             <div className="min-h-[60px] flex items-center justify-center">
-              {synResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  もういちど、よくかぞえてみよう！
+              {synResult === 'wrong' && synQuestion && (
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {synAttempt === 1 
+                    ? "もういちど、よくかぞえてみよう！" 
+                    : `💡 ヒント：ひだり（${synQuestion.left}）と みぎ（${synQuestion.right}）を あわせると いくつかな？`}
                 </div>
               )}
-              {m10Result === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  10になるか、もう一度たし算してみてね！
+              {m10Result === 'wrong' && m10Question && (
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {m10Attempt === 1 
+                    ? "10になるか、もう一度たし算してみてね！" 
+                    : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
                 </div>
               )}
-              {subResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-sm px-6 py-2 rounded-full animate-pulse">
-                  のこったくだものを、よくかぞえてみよう！
+              {subResult === 'wrong' && subQuestion && (
+                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                  {subAttempt === 1 
+                    ? "のこったくだものを、よくかぞえてみよう！" 
+                    : `💡 ヒント：${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`}
                 </div>
               )}
             </div>
