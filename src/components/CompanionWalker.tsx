@@ -112,7 +112,8 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
   };
 
   // アニメーションパターン
-  const walkClasses = ['animate-walk-a', 'animate-walk-b', 'animate-walk-c'];
+  const walkPosClasses = ['animate-walk-a-pos', 'animate-walk-b-pos', 'animate-walk-c-pos'];
+  const walkFlipClasses = ['animate-walk-a-flip', 'animate-walk-b-flip', 'animate-walk-c-flip'];
   // 静止位置
   const staticPositions = ['left-[25%]', 'left-[50%]', 'left-[75%]'];
   const staticLeftValues = ['25%', '50%', '75%'];
@@ -124,14 +125,15 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
         const bubbleMsg = activeBubbles[idx] || '';
 
         // アニメーションOFF設定の時は静止クラス、ONの時は往復アニメーション
-        const walkClass = reducedMotion ? staticPositions[idx] : walkClasses[idx];
+        const walkPosClass = reducedMotion ? staticPositions[idx] : walkPosClasses[idx];
+        const walkFlipClass = reducedMotion ? '' : walkFlipClasses[idx];
         const isJumping = jumpingIndex === idx;
         const jumpClass = isJumping ? 'animate-bounce-once' : '';
 
         return (
           <div
             key={idx}
-            className={`absolute bottom-0 -translate-x-1/2 flex flex-col items-center transition-all duration-300 ${walkClass} ${
+            className={`absolute bottom-0 -translate-x-1/2 flex flex-col items-center transition-all duration-300 ${walkPosClass} ${
               isDecorating ? 'pointer-events-none' : 'pointer-events-auto'
             }`}
             style={{
@@ -148,7 +150,9 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
               role="img"
               aria-label={animal.name}
             >
-              {animal.emoji}
+              <span className={`block ${walkFlipClass}`}>
+                {animal.emoji}
+              </span>
             </span>
           </div>
         );

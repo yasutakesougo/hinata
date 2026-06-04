@@ -27,44 +27,69 @@
   to { width: 100%; }
 }
 
-/* なかま動物のゆっくり散歩アニメーション */
-@keyframes walk-a {
-  0%, 100% { left: 22%; transform: scaleX(-1); }
-  49.9% { transform: scaleX(-1); }
-  50% { left: 42%; transform: scaleX(1); }
-  99.9% { transform: scaleX(1); }
+/* なかま動物のゆっくり散歩アニメーション（位置のみ） */
+@keyframes walk-a-pos {
+  0%, 100% { left: 22%; }
+  50% { left: 42%; }
 }
 
-@keyframes walk-b {
-  0%, 100% { left: 48%; transform: scaleX(1); }
-  49.9% { transform: scaleX(1); }
-  50% { left: 28%; transform: scaleX(-1); }
-  99.9% { transform: scaleX(-1); }
+@keyframes walk-b-pos {
+  0%, 100% { left: 48%; }
+  50% { left: 28%; }
 }
 
-@keyframes walk-c {
-  0%, 100% { left: 78%; transform: scaleX(1); }
-  49.9% { transform: scaleX(1); }
-  50% { left: 58%; transform: scaleX(-1); }
-  99.9% { transform: scaleX(-1); }
+@keyframes walk-c-pos {
+  0%, 100% { left: 78%; }
+  50% { left: 58%; }
 }
 
-@utility animate-walk-a {
-  animation: walk-a 25s linear infinite;
+/* 向き反転のみ */
+@keyframes walk-a-flip {
+  0%, 49.9% { transform: scaleX(-1); }
+  50%, 99.9% { transform: scaleX(1); }
 }
 
-@utility animate-walk-b {
-  animation: walk-b 30s linear infinite;
+@keyframes walk-b-flip {
+  0%, 49.9% { transform: scaleX(1); }
+  50%, 99.9% { transform: scaleX(-1); }
 }
 
-@utility animate-walk-c {
-  animation: walk-c 35s linear infinite;
+@keyframes walk-c-flip {
+  0%, 49.9% { transform: scaleX(1); }
+  50%, 99.9% { transform: scaleX(-1); }
+}
+
+@utility animate-walk-a-pos {
+  animation: walk-a-pos 25s linear infinite;
+}
+
+@utility animate-walk-b-pos {
+  animation: walk-b-pos 30s linear infinite;
+}
+
+@utility animate-walk-c-pos {
+  animation: walk-c-pos 35s linear infinite;
+}
+
+@utility animate-walk-a-flip {
+  animation: walk-a-flip 25s linear infinite;
+}
+
+@utility animate-walk-b-flip {
+  animation: walk-b-flip 30s linear infinite;
+}
+
+@utility animate-walk-c-flip {
+  animation: walk-c-flip 35s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-walk-a,
-  .animate-walk-b,
-  .animate-walk-c,
+  .animate-walk-a-pos,
+  .animate-walk-b-pos,
+  .animate-walk-c-pos,
+  .animate-walk-a-flip,
+  .animate-walk-b-flip,
+  .animate-walk-c-flip,
   .animate-fall,
   .animate-bounce-once,
   .animate-wiggle,
