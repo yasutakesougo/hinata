@@ -327,46 +327,55 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
 
             {/* 管理操作 */}
             {logs.length > 0 && (
-              <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 pt-3">
+              <div className="space-y-2 border-t border-slate-100 pt-3">
                 {/* JSONエクスポート */}
-                <button
-                  type="button"
-                  onClick={handleExportJson}
-                  className="text-xs font-black text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
-                >
-                  📋 JSONをコピー
-                </button>
-
-                {/* 全ログ削除 */}
-                {!showClearConfirm ? (
+                <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={() => setShowClearConfirm(true)}
-                    className="text-xs font-black text-rose-400 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                    onClick={handleExportJson}
+                    className="text-xs font-black text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
                   >
-                    🗑️ ログをすべて消す
+                    📋 JSONをコピー
                   </button>
-                ) : (
-                  <div className="flex items-center gap-2 bg-rose-50 border-2 border-rose-300 rounded-xl px-3 py-2 animate-scaleUp">
-                    <span className="text-xs font-black text-rose-600">
-                      けんきゅうログをすべて消します。よろしいですか？
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleClearLogs}
-                      className="text-xs font-black bg-rose-500 hover:bg-rose-600 text-white px-3 py-1 rounded-lg cursor-pointer transition-colors"
-                    >
-                      消す
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowClearConfirm(false)}
-                      className="text-xs font-black bg-slate-200 hover:bg-slate-300 text-slate-600 px-3 py-1 rounded-lg cursor-pointer transition-colors"
-                    >
-                      やめる
-                    </button>
+                </div>
+
+                {/* ログ整理（さらに折りたたみ） */}
+                <details className="bg-slate-50 border border-slate-200 rounded-xl">
+                  <summary className="text-[10px] font-black text-slate-400 cursor-pointer px-3 py-2 select-none hover:text-slate-600 transition-colors">
+                    🔧 パパ・ママ用：けんきゅうログを整理する
+                  </summary>
+                  <div className="px-3 pb-3 pt-1">
+                    {!showClearConfirm ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowClearConfirm(true)}
+                        className="text-xs font-black text-rose-400 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                      >
+                        🗑️ けんきゅうログをすべてクリアする
+                      </button>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2 bg-rose-50 border-2 border-rose-300 rounded-xl px-3 py-2 animate-scaleUp">
+                        <span className="text-xs font-black text-rose-600">
+                          けんきゅうログをすべて消します。よろしいですか？
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleClearLogs}
+                          className="text-xs font-black bg-rose-500 hover:bg-rose-600 text-white px-3 py-1 rounded-lg cursor-pointer transition-colors"
+                        >
+                          消す
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowClearConfirm(false)}
+                          className="text-xs font-black bg-slate-200 hover:bg-slate-300 text-slate-600 px-3 py-1 rounded-lg cursor-pointer transition-colors"
+                        >
+                          やめる
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+                </details>
               </div>
             )}
 
