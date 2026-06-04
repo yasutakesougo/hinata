@@ -703,6 +703,9 @@ interface HomeScreenProps {
   selectedSpot: 'spot1' | 'spot2' | 'spot3' | null;
   setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
   onGoPlayTracing: () => void;
+  seasonMode: 'auto' | Season;
+  onChangeSeason: (mode: 'auto' | Season) => void;
+  currentSeason: Season;
 }
 
 const THEMES = [
@@ -712,6 +715,48 @@ const THEMES = [
   { id: 'orange', name: 'オレンジ', bg: 'bg-[#FFF5EB]', cardBg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700', activeBg: 'bg-orange-100', dot: 'bg-orange-400' },
   { id: 'sky', name: 'そらいろ', bg: 'bg-[#F0F9FF]', cardBg: 'bg-sky-50', border: 'border-sky-300', text: 'text-sky-700', activeBg: 'bg-sky-100', dot: 'bg-sky-400' }
 ];
+
+const SEASON_CONFIGS: Record<Season, {
+  name: string;
+  bgClass: string;
+  borderClass: string;
+  groundClass: string;
+  decorations: string[];
+  particleEmoji: string;
+}> = {
+  spring: {
+    name: 'はる',
+    bgClass: 'bg-gradient-to-b from-[#FFF5F8] to-[#ECFDF5]',
+    borderClass: 'border-pink-200',
+    groundClass: 'bg-emerald-300/40 rounded-b-xl border-t border-emerald-300/20 absolute bottom-0 left-0',
+    decorations: ['🌲', '🌸', '🍀', '🌷'],
+    particleEmoji: '🌸'
+  },
+  summer: {
+    name: 'なつ',
+    bgClass: 'bg-gradient-to-b from-[#E0F2FE] to-[#F2FDF5]',
+    borderClass: 'border-sky-300',
+    groundClass: 'bg-emerald-400/40 rounded-b-xl border-t border-emerald-400/20 absolute bottom-0 left-0',
+    decorations: ['🌳', '🌻', '☁️', '🍉'],
+    particleEmoji: '✨'
+  },
+  autumn: {
+    name: 'あき',
+    bgClass: 'bg-gradient-to-b from-[#FEF3C7] to-[#FFFBEB]',
+    borderClass: 'border-amber-300',
+    groundClass: 'bg-amber-200/40 rounded-b-xl border-t border-amber-300/20 absolute bottom-0 left-0',
+    decorations: ['🍁', '🍂', '🍄', '🌰'],
+    particleEmoji: '🍂'
+  },
+  winter: {
+    name: 'ふゆ',
+    bgClass: 'bg-gradient-to-b from-[#F1F5F9] to-[#E2E8F0]',
+    borderClass: 'border-blue-200',
+    groundClass: 'bg-slate-200/50 rounded-b-xl border-t border-slate-300/30 absolute bottom-0 left-0',
+    decorations: ['🌲', '⛄', '❄️', '🍊'],
+    particleEmoji: '❄️'
+  }
+};
 
 const HomeScreen: React.FC<HomeScreenProps> = ({
   unlockedStageId,
@@ -728,9 +773,35 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   setIsDecorating,
   selectedSpot,
   setSelectedSpot,
-  onGoPlayTracing
+  onGoPlayTracing,
+  seasonMode,
+  onChangeSeason,
+  currentSeason
 }) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
+  const [decorTrigger, setDecorTrigger] = React.useState<Record<number, boolean>>({});
+  const decorTimers = React.useRef<Record<number, ReturnType<typeof setTimeout> | null>>({});
+
+  React.useEffect(() => {
+    const currentTimers = decorTimers.current;
+    return () => {
+      Object.values(currentTimers).forEach(timer => {
+        if (timer) clearTimeout(timer);
+      });
+    };
+  }, []);
+
+  const handleDecorTap = (idx: number) => {
+    playSoundEffect('pop');
+    setDecorTrigger(prev => ({ ...prev, [idx]: true }));
+    if (decorTimers.current[idx]) {
+      clearTimeout(decorTimers.current[idx]!);
+    }
+    decorTimers.current[idx] = setTimeout(() => {
+      setDecorTrigger(prev => ({ ...prev, [idx]: false }));
+      decorTimers.current[idx] = null;
+    }, 400); // 400ms wiggle
+  };
 
   const handleKokugoClick = () => {
     playSoundEffect('tap');
@@ -744,6 +815,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const recommendedStageId = unlockedStageId <= STAGES.length ? unlockedStageId : 1;
   const recommendedStageName = STAGES.find(s => s.id === recommendedStageId)?.jpName || 'もりの ひろば';
+  const seasonConfig = SEASON_CONFIGS[currentSeason];
 
   return (
     <div className="w-full max-w-2xl bg-white border-8 border-emerald-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 relative">
@@ -794,15 +866,34 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             <span>うごきを とめる</span>
           </label>
 
+          {/* きせつ切り替え */}
+          <div className="flex items-center gap-1.5 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100 shadow-xs">
+            <span className="text-[10px] font-black text-emerald-700 sm:block hidden">きせつ：</span>
+            <select
+              value={seasonMode}
+              onChange={(e) => {
+                playSoundEffect('tap');
+                onChangeSeason(e.target.value as 'auto' | Season);
+              }}
+              className="bg-white border border-emerald-200 text-[10px] font-black text-emerald-800 rounded-lg px-1.5 py-0.5 cursor-pointer outline-none focus:ring-1 focus:ring-emerald-400"
+            >
+              <option value="auto">📅 じどう</option>
+              <option value="spring">🌸 はる</option>
+              <option value="summer">🌻 なつ</option>
+              <option value="autumn">🍁 あき</option>
+              <option value="winter">❄️ ふゆ</option>
+            </select>
+          </div>
+
           {/* テーマカラー切り替え */}
-          <div className="flex items-center gap-2 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100">
+          <div className="flex items-center gap-2 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100 shadow-xs">
             <span className="text-[10px] font-black text-emerald-700 sm:block hidden">テーマ色：</span>
             <div className="flex gap-1.5">
               {THEMES.map(t => (
                 <button
                   key={t.id}
                   onClick={() => onChangeTheme(t.id)}
-                  className={`w-6 h-6 rounded-full border-2 transition-all active:scale-90 flex items-center justify-center cursor-pointer ${t.dot} ${
+                  className={`w-6 h-6 rounded-full border-2 transition-all active:scale-95 flex items-center justify-center cursor-pointer ${t.dot} ${
                     themeId === t.id ? 'border-emerald-500 scale-110 shadow-sm' : 'border-transparent opacity-75 hover:opacity-100'
                   }`}
                   title={t.name}
@@ -818,12 +909,53 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* 広場エリア (中景) */}
-      <div className="w-full bg-[#E6F4EA] border-4 border-emerald-200 rounded-3xl p-5 relative overflow-hidden h-40 flex flex-col justify-end shadow-inner">
-        {/* 背景装飾 */}
-        <div className="absolute top-2 left-4 text-3xl opacity-30 select-none">🌲</div>
-        <div className="absolute top-4 right-8 text-2xl opacity-35 select-none">🌲</div>
-        <div className="absolute top-1 left-1/3 text-xl opacity-20 select-none">🌸</div>
-        <div className="absolute top-3 right-1/3 text-2xl opacity-20 select-none">🌼</div>
+      <div className={`w-full ${seasonConfig.bgClass} border-4 ${seasonConfig.borderClass} rounded-3xl p-5 relative overflow-hidden h-40 flex flex-col justify-end shadow-inner`}>
+        {/* 舞い散るパーティクルエフェクト (reducedMotion がオフのときのみ表示) */}
+        {!reducedMotion && Array.from({ length: 8 }).map((_, i) => {
+          const delay = i * 1.2;
+          const duration = 6 + (i % 3) * 2.5; // 6s ~ 11s
+          const left = 5 + (i * 13) % 90; // 5% ~ 95%
+          const scale = 0.6 + (i % 3) * 0.3; // 0.6 ~ 1.2
+          const rotation = i * 45;
+          return (
+            <div
+              key={`particle-${i}`}
+              className="absolute pointer-events-none select-none text-xl animate-fall z-20"
+              style={{
+                left: `${left}%`,
+                top: `-20px`,
+                animationDelay: `${delay}s`,
+                animationDuration: `${duration}s`,
+                transform: `scale(${scale}) rotate(${rotation}deg)`,
+              }}
+            >
+              {seasonConfig.particleEmoji}
+            </div>
+          );
+        })}
+
+        {/* 背景装飾（隠し探索要素：タップすると wiggle 揺れる） */}
+        {seasonConfig.decorations.map((emoji, i) => {
+          const positions = [
+            'top-2 left-4 text-3xl',
+            'top-4 right-8 text-2xl',
+            'top-1 left-1/3 text-xl',
+            'top-3 right-1/3 text-2xl'
+          ];
+          const isTriggered = decorTrigger[i];
+          const wiggleClass = isTriggered ? 'animate-wiggle' : '';
+          
+          return (
+            <button
+              key={`decor-${i}`}
+              onClick={() => handleDecorTap(i)}
+              className={`absolute ${positions[i]} select-none cursor-pointer filter drop-shadow-xs active:scale-95 transition-transform duration-100 hover:scale-110 z-20 outline-none border-none bg-transparent ${wiggleClass}`}
+              title="タップしてみてね！"
+            >
+              {emoji}
+            </button>
+          );
+        })}
 
         {/* かざりつけモード切り替えボタン */}
         <button
@@ -921,10 +1053,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           reducedMotion={reducedMotion}
           onPlaySound={playSoundEffect}
           isDecorating={isDecorating}
+          season={currentSeason}
         />
 
         {/* 地面 */}
-        <div className="w-full h-8 bg-emerald-300/40 rounded-b-xl border-t border-emerald-300/20 absolute bottom-0 left-0" />
+        <div className={seasonConfig.groundClass} />
       </div>
 
       {/* かざりつけ用家具選択ツールボックス（おすすめカードと排他） */}
@@ -1278,11 +1411,28 @@ const StageClearScreen: React.FC<StageClearScreenProps> = ({ stage, onContinue }
 // ■ SECTION 6: MAIN APP (全体統括、ルーティング、状態管理)
 // ============================================================================
 
+type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+
+function getSeason(month: number): Season {
+  if (month >= 2 && month <= 4) return 'spring'; // 3, 4, 5月
+  if (month >= 5 && month <= 7) return 'summer'; // 6, 7, 8月
+  if (month >= 8 && month <= 10) return 'autumn'; // 9, 10, 11月
+  return 'winter'; // 12, 1, 2月
+}
+
 export default function App() {
   const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+
+  const [seasonMode, setSeasonMode] = useState<'auto' | Season>(() => {
+    try {
+      return (localStorage.getItem('sansu_quest_season') as 'auto' | Season) || 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
 
   const [themeId, setThemeId] = useState<string>(() => {
     try {
@@ -1637,6 +1787,15 @@ export default function App() {
       console.error('Failed to save reducedMotion:', e);
     }
   }, [reducedMotion]);
+
+  // 季節設定保存
+  useEffect(() => {
+    try {
+      localStorage.setItem('sansu_quest_season', seasonMode);
+    } catch (e) {
+      console.error('Failed to save seasonMode:', e);
+    }
+  }, [seasonMode]);
 
 
   // がんばり時間のタイマー
@@ -2512,6 +2671,7 @@ export default function App() {
   }, [synQuestion]);
 
   const currentTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
+  const currentSeason = seasonMode === 'auto' ? getSeason(new Date().getMonth()) : seasonMode;
   
   // がんばりレポート用プロセスメトリクス計算の実行
   const { retryCount, maxAttempts } = getProcessMetrics();
@@ -2555,6 +2715,9 @@ export default function App() {
             selectedSpot={selectedSpot}
             setSelectedSpot={setSelectedSpot}
             onGoPlayTracing={() => setScreen('play_tracing')}
+            seasonMode={seasonMode}
+            onChangeSeason={setSeasonMode}
+            currentSeason={currentSeason}
           />
         )}
 
