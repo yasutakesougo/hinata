@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Sparkles, Plus, Minus } from 'lucide-react';
 import { StarProgress } from '../App';
 
@@ -84,6 +84,18 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   const [showSuccessAnim, setShowSuccessAnim] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
+  // タイマー参照
+  const speakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const processTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // コンポーネント破棄時にタイマーをクリア
+  useEffect(() => {
+    return () => {
+      if (speakTimerRef.current) clearTimeout(speakTimerRef.current);
+      if (processTimerRef.current) clearTimeout(processTimerRef.current);
+    };
+  }, []);
+
   // マウント時の音声アナウンス
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -166,7 +178,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
       setShowSuccessAnim(true);
       
       // アニメーションと音声が被らないよう、0.4秒ずらして読み上げる
-      setTimeout(() => {
+      speakTimerRef.current = setTimeout(() => {
         speakText(
           `せいかい！ ${question.total} は ${question.leftTarget} と ${question.rightTarget} だね！`,
           soundEnabled
@@ -174,7 +186,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
       }, 400);
 
       // 音声再生タイミングに合わせ、1.2秒後に processing フラグを解除しボタンを有効化する
-      setTimeout(() => {
+      processTimerRef.current = setTimeout(() => {
         setIsProcessing(false);
       }, 1200);
 
@@ -199,7 +211,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
         speakText(`ひだりの おへやに ${question.leftTarget}ひき いれると、みぎは ${question.rightTarget}ひき だよ。`, soundEnabled);
       }
       // 間違えた場合は1秒後に再度回答可能にする
-      setTimeout(() => {
+      processTimerRef.current = setTimeout(() => {
         setIsProcessing(false);
       }, 1000);
     }
