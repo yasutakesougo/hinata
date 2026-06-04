@@ -23,7 +23,7 @@ export const SIGN_LABELS: Record<SignKey, { emoji: string; label: string }> = {
   light:             { emoji: '☀️', label: 'まぶしい' },
   noise:             { emoji: '📢', label: 'うるさい' },
   stomach:           { emoji: '🤢', label: 'おなかが いたい / きもちわるい' },
-  thumbSucking:      { emoji: '👍', label: 'ゆびしゃぶりが いつもより おおい' },
+  thumbSucking:      { emoji: '👍', label: 'ゆびで おちつきたくなる' },
   crying:            { emoji: '😢', label: 'なみだが でる' },
   schoolReluctance:  { emoji: '🏫', label: 'がっこうのことを かんがえると からだが おもい' },
 };
