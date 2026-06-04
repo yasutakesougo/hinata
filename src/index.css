@@ -67,7 +67,8 @@
   .animate-walk-c,
   .animate-fall,
   .animate-bounce-once,
-  .animate-wiggle {
+  .animate-wiggle,
+  .animate-float {
     animation: none !important;
     left: var(--static-left, 50%) !important;
     transform: translateX(-50%) !important;
@@ -131,6 +132,20 @@
 
 .animate-wiggle {
   animation: wiggle 0.4s ease-in-out;
+}
+
+/* ３択カード用のふわふわ浮動アニメーション */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }
 
 

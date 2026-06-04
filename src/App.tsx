@@ -14,6 +14,14 @@ function getNow(): number {
   return Date.now();
 }
 
+function getTodayDateString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${date}`;
+}
+
 function getRandom(): number {
   return Math.random();
 }
@@ -706,6 +714,8 @@ interface HomeScreenProps {
   seasonMode: 'auto' | Season;
   onChangeSeason: (mode: 'auto' | Season) => void;
   currentSeason: Season;
+  todayChoiceMade: boolean;
+  onChooseActivity: (activity: 'walk' | 'math' | 'tracing') => void;
 }
 
 const THEMES = [
@@ -786,7 +796,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onGoPlayTracing,
   seasonMode,
   onChangeSeason,
-  currentSeason
+  currentSeason,
+  todayChoiceMade,
+  onChooseActivity
 }) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
   const [decorTrigger, setDecorTrigger] = React.useState<Record<number, boolean>>({});
@@ -832,6 +844,67 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div className="w-full max-w-2xl bg-white border-8 border-emerald-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 relative">
       
+      {/* 今日の3択パネル (自己決定・自律性の支援) */}
+      {!todayChoiceMade && !isDecorating && (
+        <div className="absolute inset-0 bg-slate-950/40 rounded-2xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
+          <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
+            <div className="space-y-1">
+              <h3 className="text-2xl md:text-3xl font-black text-emerald-700 flex items-center justify-center gap-1.5">
+                <span>🌟</span> きょうは なにから はじめる？ <span>🌟</span>
+              </h3>
+              <p className="text-xs font-bold text-slate-500">
+                じぶんで えらんで ぼうけんを はじめよう！
+              </p>
+            </div>
+
+            {/* 3つの選択カード */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* 選択 1: もりであそぶ */}
+              <button
+                type="button"
+                onClick={() => onChooseActivity('walk')}
+                aria-label="もりであそぶ"
+                className={`bg-emerald-50 hover:bg-emerald-100/80 border-4 border-emerald-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0s' }}
+              >
+                <span className="text-4xl">🌲</span>
+                <span className="text-xs font-black text-emerald-800">もりであそぶ</span>
+              </button>
+
+              {/* 選択 2: さんすうをする */}
+              <button
+                type="button"
+                onClick={() => onChooseActivity('math')}
+                aria-label="さんすうをする"
+                className={`bg-amber-50 hover:bg-amber-100/80 border-4 border-amber-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0.4s' }}
+              >
+                <span className="text-4xl">🍎</span>
+                <span className="text-xs font-black text-amber-800">さんすうをする</span>
+              </button>
+
+              {/* 選択 3: もじをなぞる */}
+              <button
+                type="button"
+                onClick={() => onChooseActivity('tracing')}
+                aria-label="もじをなぞる"
+                className={`bg-sky-50 hover:bg-sky-100/80 border-4 border-sky-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0.8s' }}
+              >
+                <span className="text-4xl">✍️</span>
+                <span className="text-xs font-black text-sky-800">もじをなぞる</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* おしまいモーダル */}
       {showGoodbye && (
         <div className="absolute inset-0 bg-slate-900/40 rounded-2xl flex items-center justify-center z-50 animate-fadeIn backdrop-blur-xs">
@@ -1457,6 +1530,15 @@ export default function App() {
     }
   });
 
+  const [todayChoiceMade, setTodayChoiceMade] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('sansu_quest_today_choice_made_' + getTodayDateString());
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('hinata_reduced_motion');
@@ -1901,6 +1983,10 @@ export default function App() {
       localStorage.removeItem(`sansu_quest_active_time_${dateStr}`);
       setActiveTimeToday(0);
 
+      // ３択選択状態の初期化
+      localStorage.removeItem('sansu_quest_today_choice_made_' + getTodayDateString());
+      setTodayChoiceMade(false);
+
       const initialLog: ActivityLog = {
         id: `${getNow()}-${Math.floor(getRandom() * 1000)}`,
         timestamp: getNow(),
@@ -2066,6 +2152,34 @@ export default function App() {
     setIsTransitioning(false);
     setScreen('home');
     speakText("さんすうアドベンチャー！くだものキングダムへようこそ！", soundEnabled);
+  };
+
+  const handleChooseActivity = (activity: 'walk' | 'math' | 'tracing') => {
+    playSoundEffect('tap');
+    
+    // 選択状態を永続化
+    const todayStr = getTodayDateString();
+    try {
+      localStorage.setItem('sansu_quest_today_choice_made_' + todayStr, 'true');
+    } catch (e) {
+      console.error('Failed to save today choice:', e);
+    }
+    setTodayChoiceMade(true);
+
+    if (activity === 'walk') {
+      speakText("もりを おさんぽ しよう！", soundEnabled);
+      // ホーム（広場）に留まる
+    } else if (activity === 'math') {
+      speakText("さんすうクエストへ しゅっぱつ！", soundEnabled);
+      // さんすうマップへ遷移
+      setIsTransitioning(false);
+      setScreen('map');
+    } else if (activity === 'tracing') {
+      speakText("もじなぞり書きへ しゅっぱつ！", soundEnabled);
+      // こくごなぞり書きへ遷移
+      setIsTransitioning(false);
+      setScreen('play_tracing');
+    }
   };
 
   const handleGoMap = () => {
@@ -2733,6 +2847,8 @@ export default function App() {
             seasonMode={seasonMode}
             onChangeSeason={setSeasonMode}
             currentSeason={currentSeason}
+            todayChoiceMade={todayChoiceMade}
+            onChooseActivity={handleChooseActivity}
           />
         )}
 
