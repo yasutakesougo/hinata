@@ -27,6 +27,7 @@
 | :--- | :--- |
 | **アプリ名** | さんすうクエスト 〜くだものキングダム〜（およびハブ画面『森の広場』） |
 | **対象年齢** | 5歳〜7歳（幼児期後半〜小学校低学年） |
+| **テスト用URL** | [https://hinata-app-76745.web.app](https://hinata-app-76745.web.app) |
 | **主なコンテンツ** | 算数（合成・10づくり・引き算・数の分解）、国語（ひらがななぞり書き）、動物コレクション |
 | **ビジネスモデル** | 完全広告なし、ガチャなし、アプリ内課金誘導なし（完全買い切りまたは無料提供を想定） |
 | **動作環境** | タブレット（iPad等推奨）およびスマートフォン（iOS / Android対応のWebアプリ/PWA） |
@@ -100,7 +101,11 @@
 
 ---
 
-## 6. レビュー方法について
-別紙の **「教育監修チェックリスト（`advisor-review-checklist.md`）」** に基づき、スプレッドシートやドキュメント、またはテストアプリを操作しながら、気づいた点・コメントをご記入ください。
+## 6. レビュー方法と添付資料について
+レビューにあたっては、以下の添付資料をご参照ください。
+
+1. **[教育監修チェックリスト](file:///Users/yasutakesougo/Desktop/ひなたアプリ/docs/education/advisor-review-checklist.md)** (`advisor-review-checklist.md`): 監修者様のコメント・改善点・優先度をご記入いただくシートです。
+2. **[教育監修前 P0/P1 セルフレビュー報告書](file:///Users/yasutakesougo/Desktop/ひなたアプリ/docs/education/pre-advisor-self-review.md)** (`pre-advisor-self-review.md`): 開発チームが事前に行った、致命的・重大レベルのUX/UDLガイドライン適合レビュー結果です。既知の未対応事項や、特にご意見をいただきたいポイントを整理しています。
+3. **[教育監修TODOリスト](file:///Users/yasutakesougo/Desktop/ひなたアプリ/docs/education/education-supervision-todo.md)** (`education-supervision-todo.md`): 監修時の主要確認画面の案内や、実装・デザイン・文言のTODOリストです。
 
 お気づきの点は、軽微な表現の修正から、学習モデルの根本的な見直しまで、どのようなことでも結構です。子どもたちの笑顔と健やかな学びのために、お力添えをどうぞよろしくお願いいたします。
