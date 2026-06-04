@@ -7,6 +7,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { CompanionWalker } from './components/CompanionWalker';
 import { CatRoomSplitScreen } from './components/CatRoomSplitScreen';
 import { FURNITURE_LIST } from './constants/furnitureList';
+import { HiraganaTracingScreen } from './components/HiraganaTracingScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -700,6 +701,7 @@ interface HomeScreenProps {
   setIsDecorating: (val: boolean) => void;
   selectedSpot: 'spot1' | 'spot2' | 'spot3' | null;
   setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
+  onGoPlayTracing: () => void;
 }
 
 const THEMES = [
@@ -724,21 +726,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   isDecorating,
   setIsDecorating,
   selectedSpot,
-  setSelectedSpot
+  setSelectedSpot,
+  onGoPlayTracing
 }) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
-  const [showKokugoHint, setShowKokugoHint] = React.useState(false);
 
   const handleKokugoClick = () => {
     playSoundEffect('tap');
-    setShowKokugoHint(true);
-    if (globalSoundEnabled) {
-      window.speechSynthesis?.cancel();
-      const utterance = new SpeechSynthesisUtterance("こくごクエストは、ただいまじゅんびちゅうだよ。おたのしみに！");
-      utterance.lang = 'ja-JP';
-      window.speechSynthesis?.speak(utterance);
-    }
-    setTimeout(() => setShowKokugoHint(false), 3000);
+    onGoPlayTracing();
   };
 
   const handleSpotClick = (spot: 'spot1' | 'spot2' | 'spot3') => {
@@ -1061,33 +1056,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
 
-        {/* こくごカード (予告) */}
+        {/* こくごカード */}
         <div
           onClick={handleKokugoClick}
-          className="bg-slate-50 hover:bg-slate-100/50 border-4 border-slate-200 rounded-2xl p-5 flex flex-col justify-between gap-4 opacity-75 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-all"
+          className="bg-sky-50 hover:bg-sky-100 border-4 border-sky-300 rounded-2xl p-5 flex flex-col justify-between gap-4 cursor-pointer active:scale-[0.98] transition-all group relative overflow-hidden shadow-md"
         >
-          {showKokugoHint && (
-            <div className="absolute inset-0 bg-[#f8fafcfa] flex items-center justify-center p-3 text-center z-20 animate-fadeIn">
-              <p className="text-xs font-black text-slate-600 leading-relaxed">
-                ✏️ こくごクエストは じゅんびちゅうだよ！<br/>あそべるようになるのを おたのしみに！
-              </p>
-            </div>
-          )}
-          <div className="absolute top-2 right-2 text-4xl opacity-5">✏️</div>
+          <div className="absolute top-2 right-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">✏️</div>
           <div className="space-y-1">
-            <h3 className="text-xl font-black text-slate-400 flex items-center gap-1.5">
+            <h3 className="text-xl font-black text-sky-800 flex items-center gap-1.5">
               <span>✏️</span> こくごクエスト
             </h3>
-            <p className="text-xs text-slate-400 font-bold leading-relaxed">
+            <p className="text-xs text-sky-700 font-bold leading-relaxed">
               ひらがなをなぞって、もじのかきかたをれんしゅうするよ。
             </p>
           </div>
-          <div className="flex justify-between items-center border-t border-slate-200 pt-2 mt-2">
-            <span className="text-[10px] font-black text-slate-400 bg-slate-200 px-2 py-0.5 rounded-full">
-              じゅんびちゅう ⏳
+          <div className="flex justify-between items-center border-t border-sky-200/50 pt-2 mt-2">
+            <span className="text-[10px] font-black text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full">
+              「し」をれんしゅう ✍️
             </span>
-            <span className="text-slate-300 font-black text-sm">
-              もうすぐ
+            <span className="text-sky-600 font-black text-sm group-hover:translate-x-1 transition-transform">
+              すすむ ➔
             </span>
           </div>
         </div>
@@ -1290,7 +1278,7 @@ const StageClearScreen: React.FC<StageClearScreenProps> = ({ stage, onContinue }
 // ============================================================================
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -2355,6 +2343,7 @@ export default function App() {
             setIsDecorating={setIsDecorating}
             selectedSpot={selectedSpot}
             setSelectedSpot={setSelectedSpot}
+            onGoPlayTracing={() => setScreen('play_tracing')}
           />
         )}
 
@@ -2836,6 +2825,17 @@ export default function App() {
             onGoBack={handleGoMap}
             onStepComplete={handleCatSplitStepComplete}
             onNextStep={handleNextStep}
+          />
+        )}
+
+        {/* 6.8. もじなぞり書きプレイ画面 */}
+        {screen === 'play_tracing' && (
+          <HiraganaTracingScreen
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={() => { playSoundEffect('tap'); setScreen('home'); }}
+            logActivity={logActivity}
           />
         )}
 
