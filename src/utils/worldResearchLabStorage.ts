@@ -17,7 +17,16 @@ export function loadWorldResearchLabLogs(): WorldResearchLabLog[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed;
+    // 不正な形状のアイテムを除外し、クラッシュを防ぐ
+    return parsed.filter(
+      (item): item is WorldResearchLabLog =>
+        item != null &&
+        typeof item === 'object' &&
+        typeof item.id === 'string' &&
+        typeof item.hp === 'number' &&
+        typeof item.signs === 'object' &&
+        item.signs != null
+    );
   } catch {
     return [];
   }
