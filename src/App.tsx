@@ -47,6 +47,8 @@ interface SynthesisQuestion {
   answer: number;
   choices: number[];
   fruit: string;
+  isWordProblem?: boolean;
+  storyText?: string;
 }
 
 interface SubtractionQuestion {
@@ -55,6 +57,8 @@ interface SubtractionQuestion {
   answer: number;
   choices: number[];
   fruit: string;
+  isWordProblem?: boolean;
+  storyText?: string;
 }
 
 interface Make10Question {
@@ -464,7 +468,19 @@ const generateSynthesisQuestion = (maxVal: number): SynthesisQuestion => {
   const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
   const choices = generateThreeChoices(answer, 2, maxVal);
 
-  return { left, right, answer, choices, fruit };
+  const isWordProblem = Math.random() < 0.35;
+  let storyText = '';
+
+  if (isWordProblem) {
+    const isCombine = Math.random() < 0.5;
+    if (isCombine) {
+      storyText = `${fruit}が ひだりに ${left}こ、みぎに ${right}こ あります。あわせて いくつかな？`;
+    } else {
+      storyText = `${fruit}が ${left}こ ありました。あとから ${right}こ もらいました。ぜんぶで いくつかな？`;
+    }
+  }
+
+  return { left, right, answer, choices, fruit, isWordProblem, storyText };
 };
 
 // モード2: 10をつくろう問題生成
@@ -485,7 +501,19 @@ const generateSubtractionQuestion = (maxVal: number): SubtractionQuestion => {
   const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
   const choices = generateThreeChoices(answer, 1, maxVal);
 
-  return { left, minus, answer, choices, fruit };
+  const isWordProblem = Math.random() < 0.35;
+  let storyText = '';
+
+  if (isWordProblem) {
+    const isEat = Math.random() < 0.5;
+    if (isEat) {
+      storyText = `${fruit}が ${left}こ ありました。${minus}こ たべました。のこりは いくつかな？`;
+    } else {
+      storyText = `${fruit}が ${left}こ、おともだちが ${minus}こ もっています。ちがいは いくつかな？`;
+    }
+  }
+
+  return { left, minus, answer, choices, fruit, isWordProblem, storyText };
 };
 
 
@@ -1708,6 +1736,7 @@ export default function App() {
   const [synAnswer, setSynAnswer] = useState<number | null>(null);
   const [synResult, setSynResult] = useState<'correct' | 'wrong' | null>(null);
   const [synAttempt, setSynAttempt] = useState<number>(0);
+  const [synPraiseText, setSynPraiseText] = useState<string>("せいかい！おみごと！");
 
   // モード2 (make10) 状態
   const [m10Question, setM10Question] = useState<Make10Question | null>(null);
@@ -1721,6 +1750,7 @@ export default function App() {
   const [subAnswer, setSubAnswer] = useState<number | null>(null);
   const [subResult, setSubResult] = useState<'correct' | 'wrong' | null>(null);
   const [subAttempt, setSubAttempt] = useState<number>(0);
+  const [subPraiseText, setSubPraiseText] = useState<string>("せいかい！おみごと！");
 
   // ボス戦状態
   const [bossHp, setBossHp] = useState<number>(100);
@@ -2292,7 +2322,11 @@ export default function App() {
     setIsTransitioning(false);
 
     setTimeout(() => {
-      speakText(`ひだりに${q.left}こ、みぎに${q.right}こ。がったいすると、いくつかな？`, soundEnabled);
+      if (q.isWordProblem && q.storyText) {
+        speakText(q.storyText, soundEnabled);
+      } else {
+        speakText(`ひだりに${q.left}こ、みぎに${q.right}こ。がったいすると、いくつかな？`, soundEnabled);
+      }
     }, 450);
   };
 
@@ -2325,7 +2359,11 @@ export default function App() {
     setIsTransitioning(false);
 
     setTimeout(() => {
-      speakText(`${q.left}こ から ${q.minus}こ ひくと、のこりは いくつかな？`, soundEnabled);
+      if (q.isWordProblem && q.storyText) {
+        speakText(q.storyText, soundEnabled);
+      } else {
+        speakText(`${q.left}こ から ${q.minus}こ ひくと、のこりは いくつかな？`, soundEnabled);
+      }
     }, 450);
   };
 
@@ -2454,16 +2492,24 @@ export default function App() {
       } else {
         setStarResults(prev => [...prev, false]);
       }
-      speakText("せいかい！おみごと！", soundEnabled);
+      
+      let praise = "せいかい！ よく かんがえたね！🌟";
+      if (synAttempt === 1) {
+        praise = "せいかい！ あきらめずに チャレンジできたね！👏";
+      } else if (synAttempt >= 2) {
+        praise = "せいかい！ ヒントを よくみて かんがえられたね！💡";
+      }
+      setSynPraiseText(praise);
+      speakText(praise, soundEnabled);
     } else {
       playSoundEffect('wrong');
       setSynResult('wrong');
       const nextAttempt = synAttempt + 1;
       setSynAttempt(nextAttempt);
       if (nextAttempt === 1) {
-        speakText("ちがうよ、ボウルの中をかぞえてみてね", soundEnabled);
+        speakText("ひだりと みぎの くだものを ひとつずつ かぞえてみよう！", soundEnabled);
       } else {
-        speakText(`ひだりに ${synQuestion.left}こ、みぎに ${synQuestion.right}こ あるよ。あわせて いくつになるかな？`, soundEnabled);
+        speakText(`ひだりの ${synQuestion.left}こ から つづけて みぎの ${synQuestion.right}こ を かぞえてみよう！`, soundEnabled);
       }
       setTimeout(() => setIsTransitioning(false), 1000);
     }
@@ -2572,16 +2618,24 @@ export default function App() {
       } else {
         setStarResults(prev => [...prev, false]);
       }
-      speakText(`せいかい！ のこりは ${subQuestion.answer}こ だね！`, soundEnabled);
+      
+      let praise = `せいかい！ のこりは ${subQuestion.answer}こ だね！よく かんがえたね！🌟`;
+      if (subAttempt === 1) {
+        praise = "せいかい！ あきらめずに チャレンジできたね！👏";
+      } else if (subAttempt >= 2) {
+        praise = "せいかい！ ヒントを よくみて かんがえられたね！💡";
+      }
+      setSubPraiseText(praise);
+      speakText(praise, soundEnabled);
     } else {
       playSoundEffect('wrong');
       setSubResult('wrong');
       const nextAttempt = subAttempt + 1;
       setSubAttempt(nextAttempt);
       if (nextAttempt === 1) {
-        speakText("ちがうよ、のこったくだものをかぞえてみてね", soundEnabled);
+        speakText("のこった くだものを ひとつずつ ていねいに かぞえてみよう！", soundEnabled);
       } else {
-        speakText(`${subQuestion.left}こ から ${subQuestion.minus}こ たべちゃったから、のこりは いくつかな？`, soundEnabled);
+        speakText(`💡 ヒント：ばつじるし（❌）の ついていない くだものの かずを かぞえてみよう！`, soundEnabled);
       }
       setTimeout(() => setIsTransitioning(false), 1000);
     }
@@ -2887,6 +2941,19 @@ export default function App() {
           <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
             <StarProgress currentStep={currentStep} totalSteps={totalSteps} title={selectedStage.jpName} starResults={starResults} />
 
+            {/* おはなし（文章題）吹き出し */}
+            {synQuestion.isWordProblem && synQuestion.storyText && (
+              <div className="w-full max-w-2xl bg-amber-50/90 border-4 border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn relative flex items-start gap-3">
+                <span className="text-3xl select-none">💬</span>
+                <div className="flex-1 space-y-1">
+                  <span className="text-xs font-black text-amber-600 block">きょうの おはなし</span>
+                  <p className="text-lg md:text-xl font-black text-slate-700 leading-relaxed text-left">
+                    {synQuestion.storyText}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* ボード(テンフレーム) */}
             <div className="relative w-full max-w-2xl bg-orange-50/70 rounded-3xl border-4 border-orange-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
               {/* 左皿 */}
@@ -3027,7 +3094,7 @@ export default function App() {
             <div className="min-h-[100px] flex flex-col items-center justify-center">
               {synResult === 'correct' && (
                 <div className="text-center animate-bounce">
-                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">🌟 せいかい！ 🌟</span>
+                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{synPraiseText}</span>
                   <button
                     onClick={handleNextStep}
                     className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-10 py-2 rounded-xl"
@@ -3039,8 +3106,8 @@ export default function App() {
               {synResult === 'wrong' && (
                 <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
                   {synAttempt === 1 
-                    ? "もういちど、よくかぞえてみよう！" 
-                    : `💡 ヒント：ひだり（${synQuestion.left}）と みぎ（${synQuestion.right}）を あわせると いくつになるかな？`}
+                    ? "ひだりと みぎの くだものを ひとつずつ かぞえてみよう！" 
+                    : `💡 ヒント：ひだりの ${synQuestion.left}こ から つづけて みぎの ${synQuestion.right}こ を かぞえてみよう！`}
                 </div>
               )}
             </div>
@@ -3051,6 +3118,19 @@ export default function App() {
         {screen === 'play_subtraction' && subQuestion && selectedStage && (
           <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
             <StarProgress currentStep={currentStep} totalSteps={totalSteps} title={selectedStage.jpName} starResults={starResults} />
+
+            {/* おはなし（文章題）吹き出し */}
+            {subQuestion.isWordProblem && subQuestion.storyText && (
+              <div className="w-full max-w-2xl bg-amber-50/90 border-4 border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn relative flex items-start gap-3">
+                <span className="text-3xl select-none">💬</span>
+                <div className="flex-1 space-y-1">
+                  <span className="text-xs font-black text-amber-600 block">きょうの おはなし</span>
+                  <p className="text-lg md:text-xl font-black text-slate-700 leading-relaxed text-left">
+                    {subQuestion.storyText}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* ボード(川と芝生の対比) */}
             <div className="relative w-full max-w-2xl bg-[#E6F4F8] rounded-3xl border-4 border-sky-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
@@ -3063,27 +3143,62 @@ export default function App() {
 
               {/* 芝生のひろば (左側 65%) */}
               <div className="absolute left-0 top-0 bottom-0 w-[65%] bg-emerald-50/60 p-4 flex flex-col justify-between">
-                <span className="text-emerald-800/60 font-black text-xs">のこる くだもの ({subQuestion.left - subQuestion.minus}こ)</span>
+                <span className="text-emerald-800/60 font-black text-xs">
+                  {subQuestion.isWordProblem 
+                    ? `ぜんぶで (${subQuestion.left}こ)` 
+                    : `のこる くだもの (${subQuestion.left - subQuestion.minus}こ)`
+                  }
+                </span>
                 
                 {/* のこるくだもののコンテナ */}
                 <div className="flex-1 flex items-center justify-center gap-3 flex-wrap p-2">
-                  {Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, idx) => {
-                    const countNum = idx + 1;
-                    const isCounted = countedCount >= countNum;
-                    return (
-                      <div
-                        key={`sub-remain-${idx}`}
-                        className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
-                      >
-                        <span>{subQuestion.fruit}</span>
-                        {isCounted && (
-                          <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
-                            {countNum}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {subQuestion.isWordProblem ? (
+                    Array.from({ length: isSubtracted ? (subQuestion.left - subQuestion.minus) : subQuestion.left }).map((_, idx) => {
+                      const remainCount = subQuestion.left - subQuestion.minus;
+                      const isMinusTarget = idx >= remainCount;
+                      const countNum = idx + 1;
+                      const isCounted = countedCount >= countNum;
+
+                      return (
+                        <div
+                          key={`sub-remain-wp-${idx}`}
+                          className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${
+                            isMinusTarget ? 'opacity-30' : ''
+                          } ${isCounted ? 'scale-125' : ''}`}
+                        >
+                          <span>{subQuestion.fruit}</span>
+                          {isMinusTarget && (
+                            <span className="absolute inset-0 flex items-center justify-center text-red-500 font-bold text-3xl select-none">
+                              ❌
+                            </span>
+                          )}
+                          {isCounted && !isMinusTarget && (
+                            <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                              {countNum}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, idx) => {
+                      const countNum = idx + 1;
+                      const isCounted = countedCount >= countNum;
+                      return (
+                        <div
+                          key={`sub-remain-${idx}`}
+                          className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
+                        >
+                          <span>{subQuestion.fruit}</span>
+                          {isCounted && (
+                            <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                              {countNum}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -3096,19 +3211,23 @@ export default function App() {
                 }`}
               >
                 <div className="flex flex-col items-center">
-                  <span className="text-sky-800/60 font-black text-[10px] mb-1">たべる ({subQuestion.minus}こ)</span>
+                  <span className="text-sky-800/60 font-black text-[10px] mb-1">
+                    {subQuestion.isWordProblem ? 'たべるよ' : `たべる (${subQuestion.minus}こ)`}
+                  </span>
                   <span className="text-5xl animate-bounce">
                     {selectedStage.id === 2 ? '🦜' : '🐹'}
                   </span>
                 </div>
                 
-                <div className="bg-white/80 border-2 border-sky-200 rounded-2xl p-2.5 flex gap-1.5 flex-wrap justify-center max-w-[120px] shadow-sm relative">
-                  {Array.from({ length: subQuestion.minus }).map((_, idx) => (
-                    <span key={`sub-minus-${idx}`} className="text-3xl select-none relative">
-                      {subQuestion.fruit}
-                    </span>
-                  ))}
-                </div>
+                {!subQuestion.isWordProblem && (
+                  <div className="bg-white/80 border-2 border-sky-200 rounded-2xl p-2.5 flex gap-1.5 flex-wrap justify-center max-w-[120px] shadow-sm relative">
+                    {Array.from({ length: subQuestion.minus }).map((_, idx) => (
+                      <span key={`sub-minus-${idx}`} className="text-3xl select-none relative">
+                        {subQuestion.fruit}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* オバケ 👻 演出 */}
@@ -3200,7 +3319,7 @@ export default function App() {
             <div className="min-h-[100px] flex flex-col items-center justify-center">
               {subResult === 'correct' && (
                 <div className="text-center animate-bounce">
-                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">🌟 せいかい！ 🌟</span>
+                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{subPraiseText}</span>
                   <button
                     onClick={handleNextStep}
                     className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-10 py-2 rounded-xl"
@@ -3212,8 +3331,8 @@ export default function App() {
               {subResult === 'wrong' && (
                 <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
                   {subAttempt === 1 
-                    ? "もういちど、のこったくだものを よくかぞえてみよう！" 
-                    : `💡 ヒント：${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`}
+                    ? "のこった くだものを ひとつずつ ていねいに かぞえてみよう！" 
+                    : `💡 ヒント：ばつじるし（❌）の ついていない くだものの かずを かぞえてみよう！`}
                 </div>
               )}
             </div>
