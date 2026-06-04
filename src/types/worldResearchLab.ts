@@ -13,7 +13,7 @@ export interface WorldResearchLabLog {
     stomach: boolean;           // おなかが痛い / 気持ち悪い
     thumbSucking: boolean;      // ゆびで おちつきたくなる
     crying: boolean;            // 涙が出る
-    schoolReluctance: boolean;  // 学校のことを考えると体が重い
+    schoolReluctance: boolean;  // 今日の予定・登校前負荷のサイン
   };
 }
 
@@ -25,7 +25,7 @@ export const SIGN_LABELS: Record<SignKey, { emoji: string; label: string }> = {
   stomach:           { emoji: '🤢', label: 'おなかが いたい / きもちわるい' },
   thumbSucking:      { emoji: '👍', label: 'ゆびで おちつきたくなる' },
   crying:            { emoji: '😢', label: 'なみだが でる' },
-  schoolReluctance:  { emoji: '🏫', label: 'がっこうのことを かんがえると からだが おもい' },
+  schoolReluctance:  { emoji: '📅', label: 'きょうのよていを かんがえると からだが おもい' },
 };
 
 export const SIGN_KEYS = Object.keys(SIGN_LABELS) as SignKey[];
