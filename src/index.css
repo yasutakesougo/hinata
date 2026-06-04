@@ -338,23 +338,11 @@
 }
 
 /* --- Reduced Motion 一括停止ルール --- */
-/* prefers-reduced-motion メディアクエリ対応 */
-@media (prefers-reduced-motion: reduce) {
-  .animate-walk-a-pos,
-  .animate-walk-b-pos,
-  .animate-walk-c-pos,
-  .animate-walk-a-flip,
-  .animate-walk-b-flip,
-  .animate-walk-c-flip,
-  .animate-fall,
-  .animate-bounce-once,
-  .animate-wiggle,
-  .animate-float {
-    animation: none !important;
-    left: var(--static-left, 50%) !important;
-    transform: translateX(-50%) !important;
-  }
-}
+/* prefers-reduced-motion メディアクエリ対応
+   JSの状態管理(data-reduced-motion)と衝突して手動トグルが効かなくなるのを防ぐため、
+   OSの prefers-reduced-motion 設定はJS側(App.tsx)で検知して初期値にのみ反映し、
+   CSSでの強制停止は data-reduced-motion="true" 属性セレクタに一本化します。
+*/
 
 /* 「うごきを とめる」設定（data-reduced-motion="true"）がONの時のCSS一括上書き */
 [data-reduced-motion="true"] *,

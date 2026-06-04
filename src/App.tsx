@@ -13,6 +13,7 @@ import { FriendTaikoScreen } from './components/FriendTaikoScreen';
 import { HiraganaBoardScreen } from './components/HiraganaBoardScreen';
 import { WorldResearchLabScreen } from './components/WorldResearchLabScreen';
 import { CherryCombineScreen } from './components/CherryCombineScreen';
+import { TenFrameSnackBoxScreen } from './components/TenFrameSnackBox';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -40,7 +41,7 @@ interface Stage {
   name: string;
   jpName: string;
   desc: string;
-  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine' | 'ten_frame_snack_box';
   maxVal: number;
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
@@ -75,7 +76,7 @@ interface Make10Question {
 }
 
 interface AnswerRecord {
-  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine' | 'ten_frame_snack_box';
   questionText: string;
   userChoice: number;
   correctAnswer: number;
@@ -133,6 +134,16 @@ const STAGES: Stage[] = [
   },
   {
     id: 5,
+    name: 'ten_frame_snack_box',
+    jpName: 'おやつばこ テンフレーム',
+    desc: 'おやつが 1つずつ はこに はいるよ。5と10の まとまりを みてみよう！',
+    type: 'ten_frame_snack_box',
+    maxVal: 10,
+    reward: { name: 'のんびりカピバラ', emoji: '🦦', desc: 'おやつが箱に入るのをのんびり眺めるのが好きなカピバラ。' },
+    difficulty: '★★☆☆☆'
+  },
+  {
+    id: 6,
     name: 'snack_split',
     jpName: 'どうぶつ おやつわけ',
     desc: '7〜10の おやつを 5のまとまりで 見て、どうぶつに わけてみよう！',
@@ -142,7 +153,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★☆☆'
   },
   {
-    id: 6,
+    id: 7,
     name: 'friend_taiko',
     jpName: '10の ともだちたいこ',
     desc: 'あといくつで10かな？たりない数だけ たいこを トントン叩こう！',
@@ -152,7 +163,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★☆☆'
   },
   {
-    id: 7,
+    id: 8,
     name: 'pack',
     jpName: 'たまごの パック',
     desc: '10をつくる パズルゲーム！あといくつ必要かな？',
@@ -162,7 +173,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 8,
+    id: 9,
     name: 'hamster',
     jpName: 'もぐもぐ ハムスター',
     desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
@@ -172,7 +183,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 9,
+    id: 10,
     name: 'boss',
     jpName: 'さんすうキングの しろ',
     desc: 'ラスボス登場！たしざんと ひきざんの スピードMIXバトル！',
@@ -222,7 +233,7 @@ const getAudioContext = (forceCreate = false): AudioContext | null => {
 };
 
 // 統一効果音プレイヤー
-const playSoundEffect = (type: 'correct' | 'wrong' | 'tap' | 'whoosh' | 'pop' | 'damage' | 'victory' | 'clear' | 'eat') => {
+const playSoundEffect = (type: 'correct' | 'wrong' | 'tap' | 'whoosh' | 'pop' | 'damage' | 'victory' | 'clear' | 'eat' | 'sparkle' | 'ton') => {
   if (!globalSoundEnabled) return;
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -317,6 +328,36 @@ const playSoundEffect = (type: 'correct' | 'wrong' | 'tap' | 'whoosh' | 'pop' | 
       g2.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
       o2.start(now + 0.12);
       o2.stop(now + 0.2);
+      break;
+    }
+
+    case 'sparkle': {
+      // 控えめな高音のシャララン（発見音）
+      const notes = [880.00, 1046.50, 1318.51, 1567.98]; // A5, C6, E6, G6
+      notes.forEach((freq, idx) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, now + idx * 0.06);
+        g.gain.setValueAtTime(0.04, now + idx * 0.06); // 音量は控えめ
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.2);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start(now + idx * 0.06);
+        o.stop(now + idx * 0.06 + 0.2);
+      });
+      break;
+    }
+
+    case 'ton': {
+      // 下段に入る時の少し低めの「とん」
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
+      gain.gain.setValueAtTime(0.08, now); // 音量控えめ
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
       break;
     }
 
@@ -1844,9 +1885,13 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_cherry_combine' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_cherry_combine' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab' | 'play_ten_frame_snack_box'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     try {
+      const saved = localStorage.getItem('hinata_sound_enabled');
+      if (saved !== null) {
+        return saved === 'true';
+      }
       const todayStr = getTodayDateString();
       const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
       if (savedCondition === 'quiet') {
@@ -1897,15 +1942,15 @@ export default function App() {
 
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
     try {
+      const saved = localStorage.getItem('hinata_reduced_motion');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+
       const todayStr = getTodayDateString();
       const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
       if (savedCondition === 'relaxed' || savedCondition === 'quiet') {
         return true;
-      }
-
-      const saved = localStorage.getItem('hinata_reduced_motion');
-      if (saved !== null) {
-        return saved === 'true';
       }
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch {
@@ -2251,6 +2296,15 @@ export default function App() {
       console.error('Failed to save reducedMotion:', e);
     }
   }, [reducedMotion]);
+
+  // 音声の有効設定保存
+  useEffect(() => {
+    try {
+      localStorage.setItem('hinata_sound_enabled', soundEnabled.toString());
+    } catch (e) {
+      console.error('Failed to save soundEnabled:', e);
+    }
+  }, [soundEnabled]);
 
   // 季節設定保存
   useEffect(() => {
@@ -2772,6 +2826,10 @@ export default function App() {
       setTotalSteps(normalSteps);
       setupNextSnackSplit(1);
       setScreen('play_snack_split');
+    } else if (stage.type === 'ten_frame_snack_box') {
+      setTotalSteps(normalSteps);
+      setupNextTenFrameSnackBox(1);
+      setScreen('play_ten_frame_snack_box');
     } else if (stage.type === 'friend_taiko') {
       setTotalSteps(normalSteps);
       setupNextFriendTaiko(1);
@@ -2803,6 +2861,12 @@ export default function App() {
 
   // 0.6. どうぶつおやつ分け問題セット
   const setupNextSnackSplit = (step: number) => {
+    setCurrentStep(step);
+    setIsTransitioning(false);
+  };
+
+  // 0.6.5. おやつばこテンフレーム問題セット
+  const setupNextTenFrameSnackBox = (step: number) => {
     setCurrentStep(step);
     setIsTransitioning(false);
   };
@@ -2989,6 +3053,20 @@ export default function App() {
       questionText: `${total} のおやつわけ`,
       userChoice: leftVal,
       correctAnswer: leftVal,
+      isCorrect: true,
+      timestamp: getNow(),
+    };
+    setHistory(prev => [record, ...prev].slice(0, 100));
+    setStarResults(prev => [...prev, true]);
+  };
+
+  // --- おやつばこテンフレームの回答記録 ---
+  const handleTenFrameSnackBoxStepComplete = (total: number) => {
+    const record: AnswerRecord = {
+      type: 'ten_frame_snack_box',
+      questionText: `${total} のおやつばこ`,
+      userChoice: total,
+      correctAnswer: total,
       isCorrect: true,
       timestamp: getNow(),
     };
@@ -4169,6 +4247,23 @@ export default function App() {
             onStepComplete={handleSnackSplitStepComplete}
             onNextStep={handleNextStep}
             maxVal={selectedStage.maxVal}
+          />
+        )}
+
+        {/* 6.6.5. おやつばこテンフレームプレイ画面 */}
+        {screen === 'play_ten_frame_snack_box' && selectedStage && (
+          <TenFrameSnackBoxScreen
+            key={currentStep}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            starResults={starResults}
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={handleGoMap}
+            onStepComplete={handleTenFrameSnackBoxStepComplete}
+            onNextStep={handleNextStep}
+            reducedMotion={reducedMotion}
           />
         )}
 
