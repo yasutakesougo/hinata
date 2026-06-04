@@ -9,6 +9,8 @@ interface HiraganaTracingScreenProps {
   speakText: (text: string, enabled: boolean) => void;
   onGoBack: () => void;
   logActivity: (message: string) => void;
+  completedLetters: string[];
+  onCompleteLetter: (letter: string) => void;
 }
 
 const BRUSH_COLORS = [
@@ -31,6 +33,8 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
   speakText,
   onGoBack,
   logActivity,
+  completedLetters,
+  onCompleteLetter,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -38,7 +42,6 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
 
   // ステート
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [completedLetters, setCompletedLetters] = useState<string[]>([]);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [hasDrawn, setHasDrawn] = useState<boolean>(false);
   const [brushColor, setBrushColor] = useState<string>('#3b82f6');
@@ -263,9 +266,7 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     setIsCompleted(true);
     
     // クリアした文字を記録
-    if (!completedLetters.includes(selectedLetter)) {
-      setCompletedLetters(prev => [...prev, selectedLetter]);
-    }
+    onCompleteLetter(selectedLetter);
     
     logActivity(`ひらがな「${selectedLetter}」のなぞり書きをクリア！`);
 

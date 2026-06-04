@@ -1315,6 +1315,19 @@ export default function App() {
     }
     return [];
   });
+
+  const [completedHiragana, setCompletedHiragana] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('sansu_quest_completed_hiragana');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to parse completed hiragana:', e);
+    }
+    return [];
+  });
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [parentEmail, setParentEmail] = useState<string>('');
   const [parentPassword, setParentPassword] = useState<string>('');
@@ -1444,7 +1457,7 @@ export default function App() {
   };
 
   // Firestore へのセーブ処理
-  const saveToCloud = async (uid: string, stageId: number, rewards: string[], hist: AnswerRecord[], logs: ActivityLog[], furniture: Record<string, string | null>) => {
+  const saveToCloud = async (uid: string, stageId: number, rewards: string[], hist: AnswerRecord[], logs: ActivityLog[], furniture: Record<string, string | null>, hiragana: string[]) => {
     setSyncStatus('syncing');
 
     let isFinished = false;
@@ -1461,6 +1474,7 @@ export default function App() {
         history: hist,
         activityLogs: logs,
         placedFurniture: furniture,
+        completedHiragana: hiragana,
         updatedAt: getNow()
       });
       const setDocTimeoutPromise = new Promise<void>((_, reject) =>
@@ -1523,6 +1537,9 @@ export default function App() {
             if (data.placedFurniture) {
               setPlacedFurniture(data.placedFurniture);
             }
+            if (data.completedHiragana) {
+              setCompletedHiragana(data.completedHiragana);
+            }
           } else {
             // 新しいユーザーならローカルの進捗を初回アップロード
             const setDocPromise = setDoc(doc(db, 'users', currentUser.uid), {
@@ -1531,6 +1548,7 @@ export default function App() {
               history,
               activityLogs,
               placedFurniture,
+              completedHiragana,
               updatedAt: getNow()
             });
             const setDocTimeoutPromise = new Promise<void>((_, reject) =>
@@ -1560,6 +1578,7 @@ export default function App() {
       localStorage.setItem('sansu_quest_theme', themeId);
       localStorage.setItem('sansu_quest_activity_logs', JSON.stringify(activityLogs));
       localStorage.setItem('sansu_quest_placed_furniture', JSON.stringify(placedFurniture));
+      localStorage.setItem('sansu_quest_completed_hiragana', JSON.stringify(completedHiragana));
     } catch (e) {
       console.error('Failed to save progress:', e);
     }
@@ -1568,11 +1587,11 @@ export default function App() {
 
     const uid = user.uid;
     const timer = setTimeout(() => {
-      saveToCloud(uid, unlockedStageId, unlockedRewards, history, activityLogs, placedFurniture);
+      saveToCloud(uid, unlockedStageId, unlockedRewards, history, activityLogs, placedFurniture, completedHiragana);
     }, 500); // 500ms debounce to avoid rapid writes and resolve React synchronous setState-in-effect warning
 
     return () => clearTimeout(timer);
-  }, [unlockedStageId, unlockedRewards, history, themeId, activityLogs, placedFurniture, user]);
+  }, [unlockedStageId, unlockedRewards, history, themeId, activityLogs, placedFurniture, completedHiragana, user]);
 
   // うごきを少なくする設定保存
   useEffect(() => {
@@ -1624,8 +1643,21 @@ export default function App() {
       setUnlockedStageId(1);
       setUnlockedRewards([]);
       setHistory([]);
-      setActivityLogs([]);
       setPlacedFurniture({ spot1: null, spot2: null, spot3: null });
+      setCompletedHiragana([]);
+      
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const initialLog: ActivityLog = {
+        id: `${getNow()}-${Math.floor(getRandom() * 1000)}`,
+        timestamp: getNow(),
+        date: dateStr,
+        message: 'がんばり記録と進捗をリセットしました。'
+      };
+      setActivityLogs([initialLog]);
       speakText("はじめから やりなおすよ！", soundEnabled);
     }
   };
@@ -2836,6 +2868,12 @@ export default function App() {
             speakText={speakText}
             onGoBack={() => { playSoundEffect('tap'); setScreen('home'); }}
             logActivity={logActivity}
+            completedLetters={completedHiragana}
+            onCompleteLetter={(letter) => {
+              if (!completedHiragana.includes(letter)) {
+                setCompletedHiragana(prev => [...prev, letter]);
+              }
+            }}
           />
         )}
 
@@ -3169,7 +3207,7 @@ export default function App() {
             {/* 学習カテゴリーごとの分析 */}
             <div className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 flex flex-col gap-3">
               <h3 className="text-sm font-black text-slate-700 border-b-2 border-slate-200 pb-1">📊 カテゴリー別の正答率</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 {/* たしざん（合成） */}
                 <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200/50 flex justify-between items-center">
                   <div>
@@ -3211,6 +3249,56 @@ export default function App() {
                       ? Math.round((history.filter(h => h.type === 'subtraction' && h.isCorrect).length / history.filter(h => h.type === 'subtraction').length) * 100)
                       : 0}%
                   </span>
+                </div>
+                {/* お部屋分け（数の分解） */}
+                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200/50 flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-black text-slate-500 block">お部屋分け（数の分解）</span>
+                    <span className="text-sm font-bold text-slate-700">
+                      回答: {history.filter(h => h.type === 'cat_split').length}回
+                    </span>
+                  </div>
+                  <span className="text-xl font-black text-violet-500">
+                    {history.filter(h => h.type === 'cat_split').length > 0
+                      ? Math.round((history.filter(h => h.type === 'cat_split' && h.isCorrect).length / history.filter(h => h.type === 'cat_split').length) * 100)
+                      : 0}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* こくご（なぞり書き）のしんちょく */}
+            <div className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 flex flex-col gap-3">
+              <h3 className="text-sm font-black text-slate-700 border-b-2 border-slate-200 pb-1">✍️ こくご（ひらがななぞり書き）のしんちょく</h3>
+              <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200/50 gap-4 w-full">
+                <div className="text-center sm:text-left">
+                  <span className="text-xs font-black text-slate-500 block">ひらがな れんしゅうの進捗</span>
+                  <span className="text-xl font-black text-violet-600">
+                    {completedHiragana.length} / 5 文字 クリア
+                  </span>
+                </div>
+                
+                <div className="flex gap-2">
+                  {['し', 'く', 'つ', 'へ', 'い'].map(char => {
+                    const isDone = completedHiragana.includes(char);
+                    return (
+                      <div
+                        key={char}
+                        className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center font-black text-md border-2 relative transition-all ${
+                          isDone
+                            ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm animate-pulse'
+                            : 'bg-slate-100 border-slate-200 text-slate-300'
+                        }`}
+                      >
+                        <span className="leading-none">{char}</span>
+                        {isDone && (
+                          <span className="absolute -top-1 -right-1 text-[8px] bg-yellow-400 text-white rounded-full p-0.5 shadow-xs leading-none">
+                            ★
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -3330,6 +3418,48 @@ export default function App() {
                       </button>
                     </div>
                   </form>
+                </div>
+              )}
+            </div>
+
+            {/* 最近のあゆみ（行動ログ） */}
+            <div className="w-full flex flex-col gap-2">
+              <h3 className="text-sm font-black text-slate-700 flex items-center gap-1.5 text-left">
+                <span>🐾</span>
+                最近のあゆみ（こうどうログ）
+              </h3>
+              {activityLogs.length === 0 ? (
+                <div className="text-center p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 font-bold text-xs">
+                  まだこうどうの記録がありません。
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto border-2 border-slate-100 rounded-2xl w-full bg-slate-50/30 p-3 flex flex-col gap-2">
+                  {activityLogs.slice(0, 20).map((log) => {
+                    let icon = '📝';
+                    if (log.message.includes('なぞり書き')) icon = '✍️';
+                    else if (log.message.includes('クリア！')) icon = '🎉';
+                    else if (log.message.includes('はっけん！')) icon = '🐾';
+                    else if (log.message.includes('開始！')) icon = '🗺️';
+                    else if (log.message.includes('リセット')) icon = '🔄';
+                    else if (log.message.includes('かざり')) icon = '🪑';
+                    
+                    const timeStr = new Date(log.timestamp).toLocaleDateString('ja-JP', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+
+                    return (
+                      <div key={log.id} className="bg-white p-2.5 rounded-xl border border-slate-150 shadow-xs flex items-start gap-2.5 text-xs font-bold">
+                        <span className="text-base select-none">{icon}</span>
+                        <div className="flex-1 flex flex-col gap-0.5 text-left">
+                          <p className="text-slate-800 leading-tight">{log.message}</p>
+                          <span className="text-[10px] text-slate-400 font-mono font-semibold">{timeStr}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
