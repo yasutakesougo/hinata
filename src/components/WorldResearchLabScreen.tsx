@@ -95,22 +95,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   const hpInfo = getHpMessage(hp);
 
   // --- HP color helpers ---
-  const getHpBtnClasses = (value: number, currentHp: number): string => {
-    const isSelected = value === currentHp;
-    if (value <= 3) {
-      return isSelected
-        ? 'bg-violet-500 text-white border-violet-600 shadow-md scale-110'
-        : 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100';
-    }
-    if (value <= 6) {
-      return isSelected
-        ? 'bg-amber-400 text-amber-950 border-amber-500 shadow-md scale-110'
-        : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
-    }
-    return isSelected
-      ? 'bg-emerald-500 text-white border-emerald-600 shadow-md scale-110'
-      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
-  };
+
 
   const getHpBarColor = (hp: number): string => {
     if (hp <= 3) return 'bg-violet-400';
@@ -143,7 +128,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   // ============================================================================
 
   return (
-    <div className="w-full max-w-2xl bg-white bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] [background-size:24px_24px] border-8 border-violet-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 animate-scaleUp">
+    <div className="w-full max-w-2xl bg-white bg-[linear-gradient(to_right,rgba(226,232,240,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.15)_1px,transparent_1px)] [background-size:24px_24px] border-8 border-violet-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 animate-scaleUp">
 
       {/* ヘッダー */}
       <div className="text-center space-y-1">
@@ -169,46 +154,32 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
           <span>🔋</span> こころの バッテリー
         </h3>
 
-        {/* HP数値ボタン 1〜10 */}
-        <div
-          className="grid grid-cols-5 sm:grid-cols-10 gap-2"
-          role="radiogroup"
-          aria-label="こころのバッテリー 1から10"
-        >
-          {Array.from({ length: 10 }, (_, i) => i + 1).map(value => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={hp === value}
-              aria-label={`バッテリー ${value}`}
-              onClick={() => handleHpChange(value)}
-              className={`w-full aspect-square rounded-2xl border-3 font-black text-lg md:text-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center ${getHpBtnClasses(value, hp)}`}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-
-        {/* HPバー(10セグメントインジケータ) */}
+        {/* HPバー型 10セグメントボタン */}
         <div 
-          className="flex gap-1.5 w-full h-6 p-1 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden"
-          role="progressbar"
-          aria-valuenow={hp}
-          aria-valuemin={1}
-          aria-valuemax={10}
-          aria-label={`バッテリー ${hp} / 10`}
+          className="flex gap-1.5 w-full p-1.5 bg-slate-100 border-2 border-slate-200 rounded-2xl"
+          role="radiogroup"
+          aria-label="こころバッテリーのじゅうでんりょう"
         >
-          {Array.from({ length: 10 }, (_, i) => i + 1).map(segment => {
-            const isActive = segment <= hp;
+          {Array.from({ length: 10 }, (_, i) => i + 1).map(value => {
+            const isActive = value <= hp;
             const activeColor = getHpBarColor(hp);
             return (
-              <div
-                key={segment}
-                className={`flex-1 rounded-[4px] transition-all duration-300 ${
-                  isActive ? activeColor : 'bg-slate-200/50'
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={hp === value}
+                aria-label={`こころバッテリー ${value}`}
+                aria-pressed={hp === value}
+                onClick={() => handleHpChange(value)}
+                className={`flex-1 h-12 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center font-black text-sm relative border-b-2 ${
+                  isActive 
+                    ? `${activeColor} text-white shadow-sm border-black/10`
+                    : 'bg-slate-200/40 text-slate-400 hover:bg-slate-200 border-slate-300/50'
                 }`}
-              />
+              >
+                {value}
+              </button>
             );
           })}
         </div>
@@ -257,7 +228,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
                     ? 'bg-violet-200 text-violet-800' 
                     : 'bg-slate-100 text-slate-400'
                 }`}>
-                  {isChecked ? 'けんきゅう中' : 'しらべる'}
+                  {isChecked ? 'きょうのサイン' : 'しらべる'}
                 </span>
               </button>
             );
@@ -270,7 +241,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
         <button
           type="button"
           onClick={handleSave}
-          className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-black text-base md:text-lg py-4 px-8 rounded-2xl border-b-6 border-violet-800 shadow-lg transition-all active:translate-y-[3px] active:border-b-2 cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-black text-base md:text-lg py-4 px-8 rounded-2xl border-b-4 border-violet-800 shadow-md transition-all active:translate-y-[1px] active:border-b-3 cursor-pointer flex items-center justify-center gap-2"
         >
           <span>📝</span>
           けんきゅうカードを ほぞんする
@@ -426,7 +397,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
         <button
           type="button"
           onClick={onGoBack}
-          className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-6 py-2.5 rounded-2xl border-b-4 border-slate-300 transition-all active:translate-y-[2px] active:border-b-2 text-sm cursor-pointer"
+          className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black px-6 py-2.5 rounded-2xl border-b-3 border-slate-300 transition-all active:translate-y-[1px] active:border-b-2 text-sm cursor-pointer"
         >
           <span>🏡</span>
           ひろばに もどる
