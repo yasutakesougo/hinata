@@ -1847,6 +1847,10 @@ export default function App() {
   const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_cherry_combine' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     try {
+      const saved = localStorage.getItem('hinata_sound_enabled');
+      if (saved !== null) {
+        return saved === 'true';
+      }
       const todayStr = getTodayDateString();
       const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
       if (savedCondition === 'quiet') {
@@ -1897,15 +1901,15 @@ export default function App() {
 
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => {
     try {
+      const saved = localStorage.getItem('hinata_reduced_motion');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+
       const todayStr = getTodayDateString();
       const savedCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
       if (savedCondition === 'relaxed' || savedCondition === 'quiet') {
         return true;
-      }
-
-      const saved = localStorage.getItem('hinata_reduced_motion');
-      if (saved !== null) {
-        return saved === 'true';
       }
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch {
@@ -2251,6 +2255,15 @@ export default function App() {
       console.error('Failed to save reducedMotion:', e);
     }
   }, [reducedMotion]);
+
+  // 音声の有効設定保存
+  useEffect(() => {
+    try {
+      localStorage.setItem('hinata_sound_enabled', soundEnabled.toString());
+    } catch (e) {
+      console.error('Failed to save soundEnabled:', e);
+    }
+  }, [soundEnabled]);
 
   // 季節設定保存
   useEffect(() => {
