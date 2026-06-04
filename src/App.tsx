@@ -1379,6 +1379,25 @@ export default function App() {
   });
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
 
+  // 今日のがんばり時間（秒数）
+  const [activeTimeToday, setActiveTimeToday] = useState<number>(() => {
+    try {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const savedTime = localStorage.getItem(`sansu_quest_active_time_${dateStr}`);
+      if (savedTime) {
+        const parsed = parseInt(savedTime, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to parse active time:', e);
+    }
+    return 0;
+  });
+
   // 家具配置状態
   const [placedFurniture, setPlacedFurniture] = useState<Record<string, string | null>>(() => {
     try {
@@ -1619,6 +1638,31 @@ export default function App() {
     }
   }, [reducedMotion]);
 
+
+  // がんばり時間のタイマー
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.hasFocus()) {
+        setActiveTimeToday(prev => {
+          const newTime = prev + 1;
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const dd = String(today.getDate()).padStart(2, '0');
+          const dateStr = `${yyyy}-${mm}-${dd}`;
+          try {
+            localStorage.setItem(`sansu_quest_active_time_${dateStr}`, String(newTime));
+          } catch (e) {
+            console.error('Failed to save active time:', e);
+          }
+          return newTime;
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // 効果音の有効状態をグローバル同期する
   useEffect(() => {
     globalSoundEnabled = soundEnabled;
@@ -1678,6 +1722,11 @@ export default function App() {
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
       const dateStr = `${yyyy}-${mm}-${dd}`;
+      
+      // がんばり時間の初期化
+      localStorage.removeItem(`sansu_quest_active_time_${dateStr}`);
+      setActiveTimeToday(0);
+
       const initialLog: ActivityLog = {
         id: `${getNow()}-${Math.floor(getRandom() * 1000)}`,
         timestamp: getNow(),
@@ -1687,6 +1736,44 @@ export default function App() {
       setActivityLogs([initialLog]);
       speakText("はじめから やりなおすよ！", soundEnabled);
     }
+  };
+
+  // がんばりレポート用プロセスメトリクス計算
+  const getProcessMetrics = () => {
+    if (history.length === 0) {
+      return { retryCount: 0, maxAttempts: 0 };
+    }
+
+    const chronoHistory = [...history].reverse();
+    
+    // 1. 各問題ごとの試行回数を集計
+    const attemptsMap: Record<string, number> = {};
+    chronoHistory.forEach(record => {
+      attemptsMap[record.questionText] = (attemptsMap[record.questionText] || 0) + 1;
+    });
+    
+    const attemptsValues = Object.values(attemptsMap);
+    const maxAttempts = attemptsValues.length > 0 ? Math.max(...attemptsValues) : 0;
+
+    // 2. まちがえても再挑戦した回数の算出
+    const questionSequences: Record<string, boolean[]> = {};
+    chronoHistory.forEach(record => {
+      if (!questionSequences[record.questionText]) {
+        questionSequences[record.questionText] = [];
+      }
+      questionSequences[record.questionText].push(record.isCorrect);
+    });
+
+    let retryCount = 0;
+    Object.values(questionSequences).forEach(sequence => {
+      for (let i = 0; i < sequence.length - 1; i++) {
+        if (sequence[i] === false) {
+          retryCount++;
+        }
+      }
+    });
+
+    return { retryCount, maxAttempts };
   };
 
   const handleGoReport = () => {
@@ -2425,6 +2512,9 @@ export default function App() {
   }, [synQuestion]);
 
   const currentTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
+  
+  // がんばりレポート用プロセスメトリクス計算の実行
+  const { retryCount, maxAttempts } = getProcessMetrics();
 
   return (
     <div className={`min-h-screen ${currentTheme.bg} flex flex-col justify-between select-none font-sans text-slate-800 pb-4`}>
@@ -3357,6 +3447,43 @@ export default function App() {
                       ? '👑 ラストステージ' 
                       : `🐾 ステージ ${unlockedStageId} まで`}
                 </span>
+              </div>
+            </div>
+
+            {/* 🌱 がんばったプロセスの承認 (P2) */}
+            <div className="w-full bg-emerald-50/40 border-4 border-emerald-200 rounded-2xl p-5 flex flex-col gap-3 text-left animate-fadeIn">
+              <div className="flex items-center gap-2 text-emerald-800 border-b border-emerald-200 pb-2">
+                <span className="text-xl">🌱</span>
+                <h3 className="text-sm font-black">がんばったプロセスの承認（非認知能力）</h3>
+              </div>
+              <p className="text-xs text-slate-600 font-bold leading-relaxed mb-1">
+                点数や正解率だけでなく、お子様が試行錯誤した「プロセス（がんばり）」を褒めてあげるためのデータです。
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-white p-3 rounded-xl border border-emerald-100 flex flex-col justify-between gap-1 shadow-sm">
+                  <span className="text-[10px] font-black text-slate-400">⏱️ がんばった時間</span>
+                  <span className="text-sm font-black text-emerald-800">
+                    きょうは <span className="text-lg font-black text-emerald-600">{activeTimeToday < 60 ? "1分未満" : `${Math.floor(activeTimeToday / 60)}分`}</span> がんばってとりくみました
+                  </span>
+                  <p className="text-[9px] text-slate-400 leading-normal">今日アプリを開いて学習した合計時間です。</p>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-emerald-100 flex flex-col justify-between gap-1 shadow-sm">
+                  <span className="text-[10px] font-black text-slate-400">🔥 あきらめないちから</span>
+                  <span className="text-sm font-black text-emerald-800">
+                    まちがえても、もういっかい やってみる ちからが <span className="text-lg font-black text-emerald-600">{retryCount}回</span> でました！
+                  </span>
+                  <p className="text-[9px] text-slate-400 leading-normal">間違えても諦めずに解き直した回数です。</p>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-emerald-100 flex flex-col justify-between gap-1 shadow-sm">
+                  <span className="text-[10px] font-black text-slate-400">🚀 なんどもチャレンジ</span>
+                  <span className="text-sm font-black text-emerald-800">
+                    おなじもんだいに 最大 <span className="text-lg font-black text-emerald-600">{maxAttempts}回</span> チャレンジしました！
+                  </span>
+                  <p className="text-[9px] text-slate-400 leading-normal">一つの問題に粘り強く取り組んだ最大の回数です。</p>
+                </div>
               </div>
             </div>
 
