@@ -356,7 +356,7 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
                     ) : (
                       <div className="flex flex-wrap items-center gap-2 bg-rose-50 border-2 border-rose-300 rounded-xl px-3 py-2 animate-scaleUp">
                         <span className="text-xs font-black text-rose-600">
-                          けんきゅうログをすべて消します。よろしいですか？
+                          けんきゅうログをすべてクリアします。よろしいですか？
                         </span>
                         <button
                           type="button"
