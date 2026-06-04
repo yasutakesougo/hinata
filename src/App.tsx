@@ -2309,7 +2309,7 @@ export default function App() {
 
     // ③ レジリエンス
     if (retryCount >= 1) {
-      messages.push(`間違えても諦めずに、もう一度挑戦して解き直すことができました。失敗を乗り越えて前進するしなやかな強さ（レジリエンス）が見られます。`);
+      messages.push(`間違えても諦めずに、もう一度挑戦して解き直すことができました。うまくいかない時も前に進むしなやかな強さ（レジリエンス）が見られます。`);
     }
 
     // ④ 達成感
@@ -4283,10 +4283,10 @@ export default function App() {
 
                   <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
                     <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
-                      <span>🧸</span> 失敗を責めないフィードバック
+                      <span>🧸</span> まちがえても だいじょうぶな フィードバック
                     </h4>
                     <p className="text-[10px] text-slate-500 leading-normal">
-                      間違えた時も不快な警告音は鳴らさず、「すこしへらそう」「もう一度かぞえよう」など次につながるヒントを伝えます。
+                      間違えた時も不快な音は鳴らさず、「すこしへらそう」「もう一度かぞえよう」など次につながるヒントを伝えます。
                     </p>
                   </div>
 

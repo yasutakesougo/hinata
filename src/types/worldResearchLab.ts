@@ -11,7 +11,7 @@ export interface WorldResearchLabLog {
     light: boolean;             // まぶしい
     noise: boolean;             // うるさい
     stomach: boolean;           // おなかが痛い / 気持ち悪い
-    thumbSucking: boolean;      // 指しゃぶりが多い
+    thumbSucking: boolean;      // ゆびで おちつきたくなる
     crying: boolean;            // 涙が出る
     schoolReluctance: boolean;  // 学校のことを考えると体が重い
   };

@@ -170,7 +170,6 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
                 role="radio"
                 aria-checked={hp === value}
                 aria-label={`こころバッテリー ${value}`}
-                aria-pressed={hp === value}
                 onClick={() => handleHpChange(value)}
                 className={`flex-1 h-12 rounded-xl transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center font-black text-sm relative border-b-2 ${
                   isActive 
