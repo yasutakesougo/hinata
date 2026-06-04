@@ -12,6 +12,7 @@ import { SnackSplitScreen } from './components/SnackSplitScreen';
 import { FriendTaikoScreen } from './components/FriendTaikoScreen';
 import { HiraganaBoardScreen } from './components/HiraganaBoardScreen';
 import { WorldResearchLabScreen } from './components/WorldResearchLabScreen';
+import { CherryCombineScreen } from './components/CherryCombineScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -39,7 +40,7 @@ interface Stage {
   name: string;
   jpName: string;
   desc: string;
-  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine';
   maxVal: number; 
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
@@ -74,7 +75,7 @@ interface Make10Question {
 }
 
 interface AnswerRecord {
-  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split' | 'friend_taiko';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine';
   questionText: string;
   userChoice: number;
   correctAnswer: number;
@@ -179,6 +180,16 @@ const STAGES: Stage[] = [
     maxVal: 10,
     reward: { name: 'くだものドラゴン', emoji: '🐲', desc: 'さんすうキングに飼われていた伝説のドラゴン。' },
     difficulty: '★★★★★'
+  },
+  {
+    id: 10,
+    name: 'cherry_combine',
+    jpName: 'さくらんぼたいじ',
+    desc: '10をつくってから、たしざんをする れんしゅうだよ！',
+    type: 'cherry_combine',
+    maxVal: 15,
+    reward: { name: 'さくらんぼリス', emoji: '🐿️', desc: 'さくらんぼを10個にまとめるのが得意なリス。' },
+    difficulty: '★★★★☆'
   }
 ];
 
@@ -1660,7 +1671,7 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_cherry_combine' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -2568,6 +2579,10 @@ export default function App() {
       setTotalSteps(normalSteps);
       setupNextFriendTaiko(1);
       setScreen('play_friend_taiko');
+    } else if (stage.type === 'cherry_combine') {
+      setTotalSteps(4); // さくらんぼたいじは全4問
+      setupNextCherryCombine(1);
+      setScreen('play_cherry_combine');
     } else if (stage.type === 'boss') {
       setTotalSteps(bossSteps);
       setBossHp(100);
@@ -2597,6 +2612,12 @@ export default function App() {
 
   // 0.7. ともだちたいこ問題セット
   const setupNextFriendTaiko = (step: number) => {
+    setCurrentStep(step);
+    setIsTransitioning(false);
+  };
+
+  // 0.8. さくらんぼたいじ問題セット
+  const setupNextCherryCombine = (step: number) => {
     setCurrentStep(step);
     setIsTransitioning(false);
   };
@@ -2789,6 +2810,23 @@ export default function App() {
       userChoice: tapped,
       correctAnswer: 10 - initial,
       isCorrect: tapped === (10 - initial),
+      timestamp: getNow(),
+    };
+    setHistory(prev => [record, ...prev].slice(0, 100));
+    setStarResults(prev => [...prev, true]);
+  };
+
+  // --- さくらんぼたいじの回答記録 ---
+  const handleCherryCombineStepComplete = (
+    formula: string,
+    isCorrect: boolean
+  ) => {
+    const record: AnswerRecord = {
+      type: 'cherry_combine',
+      questionText: formula,
+      userChoice: 10,
+      correctAnswer: 10,
+      isCorrect: isCorrect,
       timestamp: getNow(),
     };
     setHistory(prev => [record, ...prev].slice(0, 100));
@@ -3129,6 +3167,8 @@ export default function App() {
         setupNextSnackSplit(nextStep);
       } else if (selectedStage?.type === 'friend_taiko') {
         setupNextFriendTaiko(nextStep);
+      } else if (selectedStage?.type === 'cherry_combine') {
+        setupNextCherryCombine(nextStep);
       }
     }
   };
@@ -3863,6 +3903,23 @@ export default function App() {
           />
         )}
 
+        {/* 6.7.5. さくらんぼたいじプレイ画面 */}
+        {screen === 'play_cherry_combine' && selectedStage && (
+          <CherryCombineScreen
+            key={currentStep}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            starResults={starResults}
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={handleGoMap}
+            onStepComplete={handleCherryCombineStepComplete}
+            onNextStep={handleNextStep}
+            reducedMotion={reducedMotion}
+          />
+        )}
+
         {/* 6.8. もじなぞり書きプレイ画面 */}
         {screen === 'play_tracing' && (
           <HiraganaTracingScreen
@@ -4436,6 +4493,20 @@ export default function App() {
                       : 0}%
                   </span>
                 </div>
+                {/* 10をつくる（さくらんぼ） */}
+                {history.filter(h => h.type === 'cherry_combine').length > 0 && (
+                  <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200/50 flex justify-between items-center col-span-1 sm:col-span-2">
+                    <div>
+                      <span className="text-xs font-black text-slate-500 block">10をつくる（さくらんぼ）</span>
+                      <span className="text-sm font-bold text-slate-700">
+                        たいけん: {history.filter(h => h.type === 'cherry_combine').length}回
+                      </span>
+                    </div>
+                    <span className="text-xs font-black text-violet-600 bg-violet-50 border border-violet-200 px-3 py-1 rounded-xl">
+                      10を作る見方にふれました
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
