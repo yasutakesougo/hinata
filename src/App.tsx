@@ -773,9 +773,12 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart }) => {
 interface HomeScreenProps {
   unlockedStageId: number;
   unlockedRewards: string[];
+  themeId: string;
+  onChangeTheme: (themeId: string) => void;
   onGoPlayMap: () => void;
   onSelectStageById: (id: number) => void;
   reducedMotion: boolean;
+  onChangeReducedMotion: (val: boolean) => void;
   placedFurniture: Record<string, string | null>;
   setPlacedFurniture: React.Dispatch<React.SetStateAction<Record<string, string | null>>>;
   isDecorating: boolean;
@@ -784,6 +787,8 @@ interface HomeScreenProps {
   setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
   onGoPlayHiraganaBoard: () => void;
   onGoWorldResearchLab: () => void;
+  seasonMode: 'auto' | Season;
+  onChangeSeason: (mode: 'auto' | Season) => void;
   currentSeason: Season;
   todayChoiceMade: boolean;
   onChooseActivity: (activity: 'walk' | 'math' | 'hiragana_board' | 'later') => void;
@@ -854,9 +859,12 @@ const PARTICLES = [
 const HomeScreen: React.FC<HomeScreenProps> = ({
   unlockedStageId,
   unlockedRewards,
+  themeId,
+  onChangeTheme,
   onGoPlayMap,
   onSelectStageById,
   reducedMotion,
+  onChangeReducedMotion,
   placedFurniture,
   setPlacedFurniture,
   isDecorating,
@@ -865,6 +873,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   setSelectedSpot,
   onGoPlayHiraganaBoard,
   onGoWorldResearchLab,
+  seasonMode,
+  onChangeSeason,
   currentSeason,
   todayChoiceMade,
   onChooseActivity,
@@ -1214,14 +1224,73 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       )}
 
-      {/* ヘッダーエリア */}
-      <div className="border-b border-emerald-100 pb-4 w-full text-center sm:text-left">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1 justify-center sm:justify-start" style={{ whiteSpace: 'nowrap' }}>
-          <span>🌲</span> もりのひろば <span>🏡</span>
-        </h2>
-        <p className="text-xs text-slate-400 font-bold mt-1">
-          もりのひろばへようこそ！あそぶクエストをえらんでね。
-        </p>
+      {/* ヘッダーエリア: タイトルとテーマ変更 */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-emerald-100 pb-4">
+        <div className="text-center sm:text-left">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1 justify-center sm:justify-start" style={{ whiteSpace: 'nowrap' }}>
+            <span>🌲</span> もりのひろば <span>🏡</span>
+          </h2>
+          <p className="text-xs text-slate-400 font-bold mt-1">
+            もりのひろばへようこそ！あそぶクエストをえらんでね。
+          </p>
+        </div>
+
+        {/* 設定・テーマ選択エリア */}
+        <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-end">
+          {/* うごきをとめる（刺激少なめ）設定 */}
+          <label className="flex items-center gap-1.5 bg-emerald-50/50 hover:bg-emerald-100 p-2 rounded-2xl border border-emerald-100 cursor-pointer select-none text-[10px] font-black text-emerald-700 transition-colors shadow-xs">
+            <input
+              type="checkbox"
+              checked={reducedMotion}
+              onChange={(e) => {
+                playSoundEffect('tap');
+                onChangeReducedMotion(e.target.checked);
+              }}
+              className="accent-emerald-500 w-3.5 h-3.5 rounded cursor-pointer"
+            />
+            <span>うごきを とめる</span>
+          </label>
+
+          {/* きせつ切り替え */}
+          <div className="flex items-center gap-1.5 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100 shadow-xs">
+            <span className="text-[10px] font-black text-emerald-700 sm:block hidden">きせつ：</span>
+            <select
+              value={seasonMode}
+              onChange={(e) => {
+                playSoundEffect('tap');
+                onChangeSeason(e.target.value as 'auto' | Season);
+              }}
+              className="bg-white border border-emerald-200 text-[10px] font-black text-emerald-800 rounded-lg px-1.5 py-0.5 cursor-pointer outline-none focus:ring-1 focus:ring-emerald-400"
+            >
+              <option value="auto">📅 じどう</option>
+              <option value="spring">🌸 はる</option>
+              <option value="summer">🌻 なつ</option>
+              <option value="autumn">🍁 あき</option>
+              <option value="winter">❄️ ふゆ</option>
+            </select>
+          </div>
+
+          {/* テーマカラー切り替え */}
+          <div className="flex items-center gap-2 bg-emerald-50/50 p-2 rounded-2xl border border-emerald-100 shadow-xs">
+            <span className="text-[10px] font-black text-emerald-700 sm:block hidden">テーマ色：</span>
+            <div className="flex gap-1.5">
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => onChangeTheme(t.id)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all active:scale-95 flex items-center justify-center cursor-pointer ${t.dot} ${
+                    themeId === t.id ? 'border-emerald-500 scale-110 shadow-sm' : 'border-transparent opacity-75 hover:opacity-100'
+                  }`}
+                  title={t.name}
+                >
+                  {themeId === t.id && (
+                    <span className="text-[10px] text-white font-bold">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 広場エリア (中景) */}
@@ -3382,9 +3451,12 @@ export default function App() {
           <HomeScreen
             unlockedStageId={unlockedStageId}
             unlockedRewards={unlockedRewards}
+            themeId={themeId}
+            onChangeTheme={setThemeId}
             onGoPlayMap={handleGoPlayMap}
             onSelectStageById={handleSelectStageById}
             reducedMotion={effectiveReducedMotion}
+            onChangeReducedMotion={setReducedMotion}
             placedFurniture={placedFurniture}
             setPlacedFurniture={setPlacedFurniture}
             isDecorating={isDecorating}
@@ -3393,6 +3465,8 @@ export default function App() {
             setSelectedSpot={setSelectedSpot}
             onGoPlayHiraganaBoard={() => setScreen('play_hiragana_board')}
             onGoWorldResearchLab={() => { playSoundEffect('tap'); setScreen('world_research_lab'); }}
+            seasonMode={seasonMode}
+            onChangeSeason={setSeasonMode}
             currentSeason={currentSeason}
             todayChoiceMade={todayChoiceMade}
             onChooseActivity={handleChooseActivity}

@@ -338,7 +338,6 @@
 }
 
 /* --- Reduced Motion 一括停止ルール --- */
-
 /* prefers-reduced-motion メディアクエリ対応 */
 @media (prefers-reduced-motion: reduce) {
   .animate-walk-a-pos,
