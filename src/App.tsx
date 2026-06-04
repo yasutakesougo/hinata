@@ -8,6 +8,7 @@ import { CompanionWalker } from './components/CompanionWalker';
 import { CatRoomSplitScreen } from './components/CatRoomSplitScreen';
 import { FURNITURE_LIST } from './constants/furnitureList';
 import { HiraganaTracingScreen } from './components/HiraganaTracingScreen';
+import { SnackSplitScreen } from './components/SnackSplitScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -35,7 +36,7 @@ interface Stage {
   name: string;
   jpName: string;
   desc: string;
-  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split';
   maxVal: number; 
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
@@ -70,7 +71,7 @@ interface Make10Question {
 }
 
 interface AnswerRecord {
-  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split';
   questionText: string;
   userChoice: number;
   correctAnswer: number;
@@ -128,6 +129,16 @@ const STAGES: Stage[] = [
   },
   {
     id: 5,
+    name: 'snack_split',
+    jpName: 'どうぶつ おやつわけ',
+    desc: '7〜10の おやつを 5のまとまりで 見て、どうぶつに わけてみよう！',
+    type: 'snack_split',
+    maxVal: 10,
+    reward: { name: 'おしゃれコアラ', emoji: '🐨', desc: 'おやつをきれいに分けるのが好きなおしゃれなコアラ。' },
+    difficulty: '★★★☆☆'
+  },
+  {
+    id: 6,
     name: 'pack',
     jpName: 'たまごの パック',
     desc: '10をつくる パズルゲーム！あといくつ必要かな？',
@@ -137,7 +148,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 6,
+    id: 7,
     name: 'hamster',
     jpName: 'もぐもぐ ハムスター',
     desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
@@ -147,7 +158,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 7,
+    id: 8,
     name: 'boss',
     jpName: 'さんすうキングの しろ',
     desc: 'ラスボス登場！たしざんと ひきざんの スピードMIXバトル！',
@@ -1371,13 +1382,13 @@ const MapScreen: React.FC<MapScreenProps> = ({ unlockedStageId, onSelectStage, o
         </p>
       </div>
 
-      <div className="w-full bg-[#EAF7FF] border-4 border-dashed border-sky-300 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-2 lg:gap-4 relative overflow-hidden">
+      <div className="w-full bg-[#EAF7FF] border-4 border-dashed border-sky-300 rounded-2xl p-5 flex flex-col md:flex-row items-center md:justify-start gap-6 md:gap-10 lg:gap-12 relative overflow-x-auto md:pb-8">
         {STAGES.map((stage, idx) => {
           const isUnlocked = stage.id <= unlockedStageId;
           const isCurrent = stage.id === unlockedStageId;
           
           return (
-            <div key={stage.id} className="flex flex-col items-center relative z-10 w-full md:w-[86px] lg:w-[96px]">
+            <div key={stage.id} className="flex flex-col items-center relative z-10 w-full md:w-[86px] lg:w-[96px] flex-shrink-0">
               <button
                 onClick={() => onSelectStage(stage)}
                 disabled={!isUnlocked}
@@ -1548,7 +1559,7 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -2379,6 +2390,10 @@ export default function App() {
       setTotalSteps(5);
       setupNextCatSplit(1);
       setScreen('play_cat_split');
+    } else if (stage.type === 'snack_split') {
+      setTotalSteps(5);
+      setupNextSnackSplit(1);
+      setScreen('play_snack_split');
     } else if (stage.type === 'boss') {
       setTotalSteps(10);
       setBossHp(100);
@@ -2396,6 +2411,12 @@ export default function App() {
 
   // 0.5. ネコちゃんお部屋分け問題セット
   const setupNextCatSplit = (step: number) => {
+    setCurrentStep(step);
+    setIsTransitioning(false);
+  };
+
+  // 0.6. どうぶつおやつ分け問題セット
+  const setupNextSnackSplit = (step: number) => {
     setCurrentStep(step);
     setIsTransitioning(false);
   };
@@ -2557,6 +2578,24 @@ export default function App() {
         setStarResults(prev => [...prev, false]);
       }
     }
+  };
+
+  // --- どうぶつおやつわけの回答記録 ---
+  const handleSnackSplitStepComplete = (
+    leftVal: number,
+    _rightVal: number,
+    total: number
+  ) => {
+    const record: AnswerRecord = {
+      type: 'snack_split',
+      questionText: `${total} のおやつわけ`,
+      userChoice: leftVal,
+      correctAnswer: leftVal,
+      isCorrect: true,
+      timestamp: getNow(),
+    };
+    setHistory(prev => [record, ...prev].slice(0, 100));
+    setStarResults(prev => [...prev, true]);
   };
 
   // --- 答えを選択したとき (モード1) ---
@@ -2887,6 +2926,8 @@ export default function App() {
         setupNextSubtraction(nextStep, selectedStage.maxVal);
       } else if (selectedStage?.type === 'cat_split') {
         setupNextCatSplit(nextStep);
+      } else if (selectedStage?.type === 'snack_split') {
+        setupNextSnackSplit(nextStep);
       }
     }
   };
@@ -3574,6 +3615,23 @@ export default function App() {
             onNextStep={handleNextStep}
             maxVal={selectedStage.maxVal}
             onWrongAnswer={incrementTodayHintsCount}
+          />
+        )}
+
+        {/* 6.6. どうぶつおやつわけプレイ画面 */}
+        {screen === 'play_snack_split' && selectedStage && (
+          <SnackSplitScreen
+            key={currentStep}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            starResults={starResults}
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={handleGoMap}
+            onStepComplete={handleSnackSplitStepComplete}
+            onNextStep={handleNextStep}
+            maxVal={selectedStage.maxVal}
           />
         )}
 
