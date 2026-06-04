@@ -10,6 +10,7 @@ import { FURNITURE_LIST } from './constants/furnitureList';
 import { HiraganaTracingScreen } from './components/HiraganaTracingScreen';
 import { SnackSplitScreen } from './components/SnackSplitScreen';
 import { FriendTaikoScreen } from './components/FriendTaikoScreen';
+import { HiraganaBoardScreen } from './components/HiraganaBoardScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -760,12 +761,12 @@ interface HomeScreenProps {
   setIsDecorating: (val: boolean) => void;
   selectedSpot: 'spot1' | 'spot2' | 'spot3' | null;
   setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
-  onGoPlayTracing: () => void;
+  onGoPlayHiraganaBoard: () => void;
   seasonMode: 'auto' | Season;
   onChangeSeason: (mode: 'auto' | Season) => void;
   currentSeason: Season;
   todayChoiceMade: boolean;
-  onChooseActivity: (activity: 'walk' | 'math' | 'tracing' | 'later') => void;
+  onChooseActivity: (activity: 'walk' | 'math' | 'hiragana_board' | 'later') => void;
   todayCondition: 'energetic' | 'relaxed' | 'quiet' | null;
   onChooseCondition: (condition: 'energetic' | 'relaxed' | 'quiet') => void;
 }
@@ -845,7 +846,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   setIsDecorating,
   selectedSpot,
   setSelectedSpot,
-  onGoPlayTracing,
+  onGoPlayHiraganaBoard,
   seasonMode,
   onChangeSeason,
   currentSeason,
@@ -883,7 +884,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const handleKokugoClick = () => {
     playSoundEffect('tap');
-    onGoPlayTracing();
+    onGoPlayHiraganaBoard();
   };
 
   const handleSpotClick = (spot: 'spot1' | 'spot2' | 'spot3') => {
@@ -965,55 +966,55 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
             <div className="space-y-1">
               <h3 className="text-2xl md:text-3xl font-black text-emerald-700 flex items-center justify-center gap-1.5">
-                <span>🌟</span> きょうは なにから はじめる？ <span>🌟</span>
+                <span>🌟</span> きょうの もりを えらぼう <span>🌟</span>
               </h3>
               <p className="text-xs font-bold text-slate-500">
-                じぶんで えらんで ぼうけんを はじめよう！
+                すきな もりから ぼうけんをはじめよう！
               </p>
             </div>
 
             {/* 3つの選択カード */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* 選択 1: もりであそぶ */}
+              {/* 選択 1: もりの さんぽ */}
               <button
                 type="button"
                 onClick={() => onChooseActivity('walk')}
-                aria-label="もりであそぶ"
+                aria-label="もりの さんぽ"
                 className={`bg-emerald-50 hover:bg-emerald-100/80 border-4 border-emerald-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0s' }}
               >
                 <span className="text-4xl">🌲</span>
-                <span className="text-xs font-black text-emerald-800">もりであそぶ</span>
+                <span className="text-xs font-black text-emerald-800">もりの さんぽ</span>
               </button>
 
-              {/* 選択 2: さんすうをする */}
+              {/* 選択 2: さんすうの ぼうけん */}
               <button
                 type="button"
                 onClick={() => onChooseActivity('math')}
-                aria-label="さんすうをする"
+                aria-label="さんすうの ぼうけん"
                 className={`bg-amber-50 hover:bg-amber-100/80 border-4 border-amber-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.4s' }}
               >
-                <span className="text-4xl">🍎</span>
-                <span className="text-xs font-black text-amber-800">さんすうをする</span>
+                <span className="text-4xl">🍪</span>
+                <span className="text-xs font-black text-amber-800">さんすうの ぼうけん<br/>(1もんだけ)</span>
               </button>
 
-              {/* 選択 3: もじをなぞる */}
+              {/* 選択 3: あいう おんどくの もり */}
               <button
                 type="button"
-                onClick={() => onChooseActivity('tracing')}
-                aria-label="もじをなぞる"
+                onClick={() => onChooseActivity('hiragana_board')}
+                aria-label="あいう おんどくの もり"
                 className={`bg-sky-50 hover:bg-sky-100/80 border-4 border-sky-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.8s' }}
               >
-                <span className="text-4xl">✍️</span>
-                <span className="text-xs font-black text-sky-800">もじをなぞる</span>
+                <span className="text-4xl">🗣️</span>
+                <span className="text-xs font-black text-sky-800">あいう おんどくの もり</span>
               </button>
             </div>
 
@@ -1402,18 +1403,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           onClick={handleKokugoClick}
           className="bg-sky-50 hover:bg-sky-100 border-4 border-sky-300 rounded-2xl p-5 flex flex-col justify-between gap-4 cursor-pointer active:scale-[0.98] transition-all group relative overflow-hidden shadow-md"
         >
-          <div className="absolute top-2 right-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">✏️</div>
+          <div className="absolute top-2 right-2 text-4xl opacity-10 group-hover:scale-110 transition-transform">🗣️</div>
           <div className="space-y-1">
             <h3 className="text-xl font-black text-sky-800 flex items-center gap-1.5">
-              <span>✏️</span> こくごクエスト
+              <span>🗣️</span> おんどくの もり
             </h3>
             <p className="text-xs text-sky-700 font-bold leading-relaxed">
-              ひらがなをなぞって、もじのかきかたをれんしゅうするよ。
+              ひらがなを ならべて、おんどくあそびを しよう！
             </p>
           </div>
           <div className="flex justify-between items-center border-t border-sky-200/50 pt-2 mt-2">
             <span className="text-[10px] font-black text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full">
-              「し」をれんしゅう ✍️
+              あいうおんどく 🗣️
             </span>
             <span className="text-sky-600 font-black text-sm group-hover:translate-x-1 transition-transform">
               すすむ ➔
@@ -1635,7 +1636,7 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -2260,9 +2261,9 @@ export default function App() {
     // ① 自律性
     if (chosenActivity && chosenActivity !== 'later') {
       let actName = "ぼうけん";
-      if (chosenActivity === 'walk') actName = "「もりであそぶ」";
-      if (chosenActivity === 'math') actName = "「さんすうをする」";
-      if (chosenActivity === 'tracing') actName = "「もじをなぞる」";
+      if (chosenActivity === 'walk') actName = "「もりのさんぽ」";
+      if (chosenActivity === 'math') actName = "「さんすうのぼうけん（1もんだけ）」";
+      if (chosenActivity === 'hiragana_board') actName = "「あいうおんどくのもり」";
       messages.push(`今日は${actName}を自分で選んで、主体的に学習（または散策）を始めることができました。`);
     }
 
@@ -2436,7 +2437,7 @@ export default function App() {
     }
   };
 
-  const handleChooseActivity = (activity: 'walk' | 'math' | 'tracing' | 'later') => {
+  const handleChooseActivity = (activity: 'walk' | 'math' | 'hiragana_board' | 'later') => {
     playSoundEffect('tap');
     
     // 選択状態を永続化
@@ -2452,15 +2453,18 @@ export default function App() {
       speakText("もりを おさんぽ しよう！", soundEnabled);
       // ホーム（広場）に留まる
     } else if (activity === 'math') {
-      speakText("さんすうクエストへ しゅっぱつ！", soundEnabled);
-      // さんすうマップへ遷移
+      speakText("さんすうの ぼうけんへ しゅっぱつ！", soundEnabled);
+      // 最新ステージを自動選択して開始
+      const currentStageId = unlockedStageId <= STAGES.length ? unlockedStageId : 1;
+      const stage = STAGES.find(s => s.id === currentStageId) || STAGES[0];
+      handleSelectStage(stage);
+      // 1問だけにする
+      setTotalSteps(1);
+    } else if (activity === 'hiragana_board') {
+      speakText("おんどくの もりへ しゅっぱつ！", soundEnabled);
+      // ひらがな盤へ遷移
       setIsTransitioning(false);
-      setScreen('map');
-    } else if (activity === 'tracing') {
-      speakText("もじなぞり書きへ しゅっぱつ！", soundEnabled);
-      // こくごなぞり書きへ遷移
-      setIsTransitioning(false);
-      setScreen('play_tracing');
+      setScreen('play_hiragana_board');
     } else if (activity === 'later') {
       speakText("もりのひろばへ いこう！", soundEnabled);
       // ホーム（広場）に留まる
@@ -3228,7 +3232,7 @@ export default function App() {
             setIsDecorating={setIsDecorating}
             selectedSpot={selectedSpot}
             setSelectedSpot={setSelectedSpot}
-            onGoPlayTracing={() => setScreen('play_tracing')}
+            onGoPlayHiraganaBoard={() => setScreen('play_hiragana_board')}
             seasonMode={seasonMode}
             onChangeSeason={setSeasonMode}
             currentSeason={currentSeason}
@@ -3842,6 +3846,16 @@ export default function App() {
                 return [...prev, letter];
               });
             }}
+          />
+        )}
+
+        {/* 6.9. ひらがな盤（おんどくの もり）プレイ画面 */}
+        {screen === 'play_hiragana_board' && (
+          <HiraganaBoardScreen
+            onGoBack={() => { playSoundEffect('tap'); setScreen('home'); }}
+            soundEnabled={soundEnabled}
+            speakText={speakText}
+            reducedMotion={reducedMotion}
           />
         )}
 
