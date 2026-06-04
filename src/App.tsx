@@ -155,6 +155,7 @@ const FRUITS = ['🍎', '🍊', '🍓', '🍇', '🍑', '🍋', '🍒', '🍈'];
 // AudioContext の Singleton 管理（メモリリーク・重さ対策）
 let globalAudioContext: AudioContext | null = null;
 let globalSoundEnabled = true;
+let globalSpeechRate = 1.15;
 
 const getAudioContext = (forceCreate = false): AudioContext | null => {
   if (typeof window === 'undefined') return null;
@@ -301,7 +302,7 @@ const speakText = (text: string, enabled: boolean) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
-    utterance.rate = 1.15;
+    utterance.rate = globalSpeechRate;
     window.speechSynthesis.speak(utterance);
   }
 };
@@ -538,7 +539,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
         {screen !== 'title' && screen !== 'home' && screen !== 'report' && (
           <button
             onClick={onGoHome}
-            className="flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-black px-4 py-2.5 rounded-2xl border-b-4 border-amber-300 transition-all active:translate-y-[2px] active:border-b-2"
+            className="flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-black px-5 py-3 min-h-[48px] rounded-2xl border-b-4 border-amber-300 transition-all active:translate-y-[2px] active:border-b-2"
           >
             <Home className="w-5 h-5" />
             <span className="text-sm md:text-base">ひろば</span>
@@ -547,7 +548,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
         {(screen === 'home' || screen === 'map' || screen === 'report') && (
           <button
             onClick={onGoZukan}
-            className="flex items-center gap-1 bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-4 py-2.5 rounded-2xl border-b-4 border-pink-300 transition-all active:translate-y-[2px] active:border-b-2"
+            className="flex items-center gap-1 bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-5 py-3 min-h-[48px] rounded-2xl border-b-4 border-pink-300 transition-all active:translate-y-[2px] active:border-b-2"
           >
             <BookOpen className="w-5 h-5" />
             <span className="text-sm md:text-base">ずかん</span>
@@ -567,7 +568,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
             onMouseLeave={endHold}
             onTouchStart={startHold}
             onTouchEnd={endHold}
-            className={`relative flex items-center gap-1 bg-violet-100 hover:bg-violet-200 text-violet-700 font-black px-4 py-2.5 md:py-2 rounded-2xl border-b-4 border-violet-300 transition-all active:translate-y-[2px] active:border-b-2 text-xs md:text-sm select-none ${
+            className={`relative flex items-center gap-1 bg-violet-100 hover:bg-violet-200 text-violet-700 font-black px-5 py-3 md:py-3 md:px-5 min-h-[48px] rounded-2xl border-b-4 border-violet-300 transition-all active:translate-y-[2px] active:border-b-2 text-xs md:text-sm select-none ${
               isHolding ? 'scale-95' : ''
             }`}
           >
@@ -675,7 +676,7 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart }) => {
 
       <button
         onClick={onStart}
-        className="w-full bg-emerald-400 hover:bg-emerald-500 border-b-8 border-emerald-600 text-white font-black text-xl md:text-2xl py-4 md:py-5 rounded-2xl shadow-xl transition-all active:translate-y-[4px] active:border-b-2 flex items-center justify-center gap-2"
+        className="w-full bg-emerald-600 hover:bg-emerald-700 border-b-8 border-emerald-800 text-white font-black text-xl md:text-2xl py-4 md:py-5 rounded-2xl shadow-xl transition-all active:translate-y-[4px] active:border-b-2 flex items-center justify-center gap-2"
       >
         <Compass className="w-7 h-7" />
         ぼうけんを はじめる！
@@ -758,7 +759,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </p>
             <button
               onClick={() => setShowGoodbye(false)}
-              className="bg-emerald-400 hover:bg-emerald-500 text-white font-black py-2.5 px-6 rounded-xl border-b-4 border-emerald-600 active:translate-y-[2px] active:border-b-2 text-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-6 min-h-[48px] rounded-xl border-b-4 border-emerald-800 active:translate-y-[2px] active:border-b-2 text-sm"
             >
               ひろばに もどる
             </button>
@@ -854,7 +855,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
                   selectedSpot === 'spot1'
                     ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
-                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                    : 'border-emerald-600 bg-emerald-100/30 hover:border-emerald-700 hover:bg-emerald-100/50'
                 }`
               : 'pointer-events-none w-14 h-14'
           }`}
@@ -864,7 +865,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot1)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
           )}
         </button>
 
@@ -877,7 +878,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
                   selectedSpot === 'spot2'
                     ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
-                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                    : 'border-emerald-600 bg-emerald-100/30 hover:border-emerald-700 hover:bg-emerald-100/50'
                 }`
               : 'pointer-events-none w-14 h-14'
           }`}
@@ -887,7 +888,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot2)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
           )}
         </button>
 
@@ -900,7 +901,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
                   selectedSpot === 'spot3'
                     ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
-                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                    : 'border-emerald-600 bg-emerald-100/30 hover:border-emerald-700 hover:bg-emerald-100/50'
                 }`
               : 'pointer-events-none w-14 h-14'
           }`}
@@ -910,7 +911,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot3)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
           )}
         </button>
 
@@ -933,8 +934,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             <span className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
               <span>🔨</span> かざりつけする スポットを タップしてえらんでね
             </span>
-            <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-full select-none">
-              {selectedSpot === 'spot1' ? 'ひだり' : selectedSpot === 'spot2' ? 'まんなか' : selectedSpot === 'spot3' ? 'みぎ' : 'えらんでね'} を選択中
+            <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2.5 py-0.5 rounded-full select-none">
+              {selectedSpot === 'spot1' ? '👈 ひだり' : selectedSpot === 'spot2' ? '⭐ まんなか' : selectedSpot === 'spot3' ? '👉 みぎ' : 'えらんでね'} をえらんでいるよ
             </span>
           </div>
 
@@ -1131,7 +1132,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ unlockedStageId, onSelectStage, o
                   isCurrent 
                     ? 'bg-amber-400 border-amber-500 scale-110 animate-bounce' 
                     : isUnlocked 
-                      ? 'bg-white border-emerald-400 hover:bg-emerald-50' 
+                      ? 'bg-white border-emerald-600 hover:bg-emerald-50' 
                       : 'bg-slate-300 border-slate-400 cursor-not-allowed'
                 }`}
               >
@@ -1399,6 +1400,22 @@ export default function App() {
   });
   const [isDecorating, setIsDecorating] = useState<boolean>(false);
   const [selectedSpot, setSelectedSpot] = useState<'spot1' | 'spot2' | 'spot3' | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [speechRate, setSpeechRate] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('sansu_quest_speech_rate');
+      if (saved) {
+        const rate = parseFloat(saved);
+        if (!isNaN(rate)) {
+          globalSpeechRate = rate;
+          return rate;
+        }
+      }
+    } catch {
+      // Ignored
+    }
+    return 1.15;
+  });
 
   // ステージ内部状態
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -1607,6 +1624,16 @@ export default function App() {
     globalSoundEnabled = soundEnabled;
   }, [soundEnabled]);
 
+  // 音声読み上げスピードの同期
+  useEffect(() => {
+    globalSpeechRate = speechRate;
+    try {
+      localStorage.setItem('sansu_quest_speech_rate', speechRate.toString());
+    } catch {
+      // Ignored
+    }
+  }, [speechRate]);
+
   // BGM 音源管理の自動制御
   useEffect(() => {
     if (!soundEnabled || !audioUnlocked) {
@@ -1672,6 +1699,7 @@ export default function App() {
       const parsedAnswer = parseInt(parentAnswer.trim(), 10);
       if (parsedAnswer === correctAnswer) {
         playSoundEffect('correct');
+        setIsTransitioning(false);
         setScreen('report');
         speakText("がんばりレポートがひらいたよ", soundEnabled);
       } else {
@@ -1774,18 +1802,21 @@ export default function App() {
   const handleStartGame = async () => {
     await unlockAudio();
     playSoundEffect('tap');
+    setIsTransitioning(false);
     setScreen('home');
     speakText("さんすうアドベンチャー！くだものキングダムへようこそ！", soundEnabled);
   };
 
   const handleGoMap = () => {
     playSoundEffect('tap');
+    setIsTransitioning(false);
     setScreen('home');
     speakText("つぎは どこへいこうかな？", soundEnabled);
   };
 
   const handleGoPlayMap = () => {
     playSoundEffect('tap');
+    setIsTransitioning(false);
     setScreen('map');
     speakText("ぼうけんマップから、いくところをえらんでね！", soundEnabled);
   };
@@ -1817,6 +1848,7 @@ export default function App() {
     setSelectedStage(stage);
     setCurrentStep(1);
     setStarResults([]);
+    setIsTransitioning(false);
     logActivity(`「${stage.jpName}」のぼうけんを開始！`);
 
     if (stage.type === 'synthesis') {
@@ -1853,6 +1885,7 @@ export default function App() {
   // 0.5. ネコちゃんお部屋分け問題セット
   const setupNextCatSplit = (step: number) => {
     setCurrentStep(step);
+    setIsTransitioning(false);
   };
 
   // 1. 合成問題セット
@@ -1866,6 +1899,7 @@ export default function App() {
     setSynResult(null);
     setSynAttempt(0);
     setCurrentStep(step);
+    setIsTransitioning(false);
 
     setTimeout(() => {
       speakText(`ひだりに${q.left}こ、みぎに${q.right}こ。がったいすると、いくつかな？`, soundEnabled);
@@ -1880,6 +1914,7 @@ export default function App() {
     setM10Result(null);
     setM10Attempt(0);
     setCurrentStep(step);
+    setIsTransitioning(false);
 
     setTimeout(() => {
       speakText(`10こにするには、あといくつ必要かな？`, soundEnabled);
@@ -1897,6 +1932,7 @@ export default function App() {
     setSubResult(null);
     setSubAttempt(0);
     setCurrentStep(step);
+    setIsTransitioning(false);
 
     setTimeout(() => {
       speakText(`${q.left}こ から ${q.minus}こ ひくと、のこりは いくつかな？`, soundEnabled);
@@ -1916,6 +1952,7 @@ export default function App() {
     setSubAnswer(null);
     setSubResult(null);
     setSubAttempt(0);
+    setIsTransitioning(false);
 
     if (questType === 'synthesis') {
       const q = generateSynthesisQuestion(10);
@@ -2004,7 +2041,8 @@ export default function App() {
 
   // --- 答えを選択したとき (モード1) ---
   const handleSelectSynAnswer = (choice: number) => {
-    if (!synQuestion || synResult === 'correct') return;
+    if (!synQuestion || synResult === 'correct' || isTransitioning) return;
+    setIsTransitioning(true);
     setSynAnswer(choice);
 
     const isCorrect = choice === synQuestion.answer;
@@ -2032,12 +2070,13 @@ export default function App() {
       setSynResult('wrong');
       setSynAttempt(prev => prev + 1);
       speakText("ちがうよ、ボウルの中をかぞえてみてね", soundEnabled);
+      setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
 
   // --- モード2調整 ---
   const adjustM10Added = (amount: number) => {
-    if (m10Result === 'correct') return;
+    if (m10Result === 'correct' || isTransitioning) return;
     const nextVal = m10Added + amount;
     if (nextVal >= 0 && nextVal <= 10) {
       playSoundEffect('tap');
@@ -2046,7 +2085,8 @@ export default function App() {
   };
 
   const checkM10Answer = () => {
-    if (!m10Question || m10Result === 'correct') return;
+    if (!m10Question || m10Result === 'correct' || isTransitioning) return;
+    setIsTransitioning(true);
 
     const isCorrect = m10Added === m10Question.needed;
     const record: AnswerRecord = {
@@ -2077,6 +2117,7 @@ export default function App() {
         speakText("のせすぎだよ、すこしへらそう", soundEnabled);
       }
       setM10Attempt(prev => prev + 1);
+      setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
 
@@ -2108,7 +2149,8 @@ export default function App() {
   };
 
   const handleSelectSubAnswer = (choice: number) => {
-    if (!subQuestion || subResult === 'correct') return;
+    if (!subQuestion || subResult === 'correct' || isTransitioning) return;
+    setIsTransitioning(true);
     setSubAnswer(choice);
 
     const isCorrect = choice === subQuestion.answer;
@@ -2136,6 +2178,7 @@ export default function App() {
       setSubResult('wrong');
       setSubAttempt(prev => prev + 1);
       speakText("ちがうよ、のこったくだものをかぞえてみてね", soundEnabled);
+      setTimeout(() => setIsTransitioning(false), 1000);
     }
   };
 
@@ -2145,6 +2188,8 @@ export default function App() {
     if (bossQuestType === 'synthesis' && synResult === 'correct') return;
     if (bossQuestType === 'make10' && m10Result === 'correct') return;
     if (bossQuestType === 'subtraction' && subResult === 'correct') return;
+    if (isTransitioning) return;
+    setIsTransitioning(true);
 
     if (bossQuestType === 'synthesis' && synQuestion) {
       const isCorrect = choice === synQuestion.answer;
@@ -2175,6 +2220,7 @@ export default function App() {
         playSoundEffect('wrong');
         setSynResult('wrong');
         speakText("ちがうよ、もう一回かぞえて！", soundEnabled);
+        setTimeout(() => setIsTransitioning(false), 1000);
       }
     } else if (bossQuestType === 'make10' && m10Question) {
       const isCorrect = choice === m10Question.needed;
@@ -2205,6 +2251,7 @@ export default function App() {
         playSoundEffect('wrong');
         setM10Result('wrong');
         speakText("あわないよ、もういちど考えてね", soundEnabled);
+        setTimeout(() => setIsTransitioning(false), 1000);
       }
     } else if (bossQuestType === 'subtraction' && subQuestion) {
       const isCorrect = choice === subQuestion.answer;
@@ -2235,6 +2282,7 @@ export default function App() {
         playSoundEffect('wrong');
         setSubResult('wrong');
         speakText("ちがうよ、のこった数をよく考えてね", soundEnabled);
+        setTimeout(() => setIsTransitioning(false), 1000);
       }
     }
   };
@@ -2245,6 +2293,8 @@ export default function App() {
     if (selectedStage?.type === 'synthesis' && synResult !== 'correct') return;
     if (selectedStage?.type === 'subtraction' && subResult !== 'correct') return;
     if (selectedStage?.type === 'make10' && m10Result !== 'correct') return;
+    if (isTransitioning) return;
+    setIsTransitioning(true);
 
     playSoundEffect('tap');
     const nextStep = currentStep + 1;
@@ -2267,13 +2317,15 @@ export default function App() {
     if (!selectedStage) return;
     playSoundEffect('victory');
     setScreen('stage_clear');
+    setIsTransitioning(false);
 
     logActivity(`「${selectedStage.jpName}」をクリア！`);
 
-    if (!unlockedRewards.includes(selectedStage.reward.name)) {
-      setUnlockedRewards(prev => [...prev, selectedStage.reward.name]);
+    setUnlockedRewards(prev => {
+      if (prev.includes(selectedStage.reward.name)) return prev;
       logActivity(`新しいなかま「${selectedStage.reward.name}」をはっけん！`);
-    }
+      return [...prev, selectedStage.reward.name];
+    });
 
     if (selectedStage.id === unlockedStageId && unlockedStageId < STAGES.length) {
       setUnlockedStageId(prev => prev + 1);
@@ -2283,12 +2335,16 @@ export default function App() {
   };
 
   const handleFinishClearScreen = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
     playSoundEffect('tap');
     if (selectedStage?.id === STAGES.length) {
       setScreen('all_clear');
       speakText("すごすぎる！さんすうキングダムをぜんぶすくってくれたよ！おめでとう！", soundEnabled);
+      setIsTransitioning(false);
     } else {
       setScreen('map');
+      setIsTransitioning(false);
     }
   };
 
@@ -2346,7 +2402,7 @@ export default function App() {
         soundEnabled={soundEnabled} 
         onGoHome={handleGoMap} 
         onToggleSound={handleToggleSound} 
-        onGoZukan={() => { playSoundEffect('tap'); setScreen('zukan'); }} 
+        onGoZukan={() => { playSoundEffect('tap'); setIsTransitioning(false); setScreen('zukan'); }} 
         onGoReport={handleGoReport}
       />
 
@@ -2514,8 +2570,8 @@ export default function App() {
                     let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50";
                     if (isSelected) {
                       btnStyle = synResult === 'correct' 
-                        ? "bg-emerald-400 text-white border-emerald-600 border-b-4 translate-y-[4px]" 
-                        : "bg-rose-400 text-white border-rose-600 border-b-4 translate-y-[4px]";
+                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
+                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
                     } else if (synResult === 'correct') {
                       btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                     }
@@ -2685,8 +2741,8 @@ export default function App() {
                     let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50";
                     if (isSelected) {
                       btnStyle = subResult === 'correct' 
-                        ? "bg-emerald-400 text-white border-emerald-600 border-b-4 translate-y-[4px]" 
-                        : "bg-rose-400 text-white border-rose-600 border-b-4 translate-y-[4px]";
+                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
+                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
                     } else if (subResult === 'correct') {
                       btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                     }
@@ -2870,9 +2926,10 @@ export default function App() {
             logActivity={logActivity}
             completedLetters={completedHiragana}
             onCompleteLetter={(letter) => {
-              if (!completedHiragana.includes(letter)) {
-                setCompletedHiragana(prev => [...prev, letter]);
-              }
+              setCompletedHiragana(prev => {
+                if (prev.includes(letter)) return prev;
+                return [...prev, letter];
+              });
             }}
           />
         )}
@@ -2898,21 +2955,21 @@ export default function App() {
             <div className="w-full max-w-md flex justify-between items-center bg-orange-50/50 p-6 border-4 border-orange-100 rounded-3xl relative overflow-hidden h-40">
               {/* プレイヤー側 (なかまたち) */}
               <div className="flex flex-col items-center gap-1">
-                <span className="text-5xl animate-bounce">🐯</span>
+                <span className={`text-5xl ${reducedMotion ? '' : 'animate-bounce'}`}>🐯</span>
                 <span className="text-[10px] font-black text-slate-500">ぼうけんしゃ</span>
               </div>
               
               {/* バトルエフェクト */}
               {bossDmgAnim && (
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-5xl animate-ping font-black text-rose-500 select-none">
-                  💥 ズバッ！
+                  {reducedMotion ? '✨ アタック！' : '💥 ズバッ！'}
                 </div>
               )}
 
               <div className="text-3xl font-black text-orange-300">VS</div>
 
               {/* ボス側 */}
-              <div className={`flex flex-col items-center gap-1 ${bossDmgAnim ? 'animate-bounce filter invert' : ''}`}>
+              <div className={`flex flex-col items-center gap-1 ${bossDmgAnim ? (reducedMotion ? '' : 'animate-bounce filter invert') : ''}`}>
                 <span className="text-6xl">😈</span>
                 <span className="text-xs font-black text-red-600">さんすうキング</span>
               </div>
@@ -3023,8 +3080,8 @@ export default function App() {
                   let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50";
                   if (isSelected) {
                     btnStyle = synResult === 'correct' 
-                      ? "bg-emerald-400 text-white border-emerald-600 border-b-4 translate-y-[4px]" 
-                      : "bg-rose-400 text-white border-rose-600 border-b-4 translate-y-[4px]";
+                      ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
+                      : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
                   } else if (synResult === 'correct') {
                     btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                   }
@@ -3046,7 +3103,7 @@ export default function App() {
                   let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-emerald-50";
                   if (isAnswered) {
                     if (choice === m10Question.needed) {
-                      btnStyle = "bg-emerald-400 text-white border-emerald-600 border-b-4 translate-y-[4px]";
+                      btnStyle = "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]";
                     } else if (m10Result === 'wrong') {
                       btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                     }
@@ -3071,8 +3128,8 @@ export default function App() {
                   let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50";
                   if (isSelected) {
                     btnStyle = subResult === 'correct' 
-                      ? "bg-emerald-400 text-white border-emerald-600 border-b-4 translate-y-[4px]" 
-                      : "bg-rose-400 text-white border-rose-600 border-b-4 translate-y-[4px]";
+                      ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
+                      : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
                   } else if (subResult === 'correct') {
                     btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                   }
@@ -3227,19 +3284,19 @@ export default function App() {
 
             {/* サマリーカード */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-              <div className="bg-violet-50/50 border-2 border-violet-100 rounded-2xl p-4 text-center">
-                <span className="text-xs font-black text-violet-700 block mb-1">総回答数</span>
-                <span className="text-2xl md:text-3xl font-black text-violet-950">{history.length} 回</span>
+              <div className="bg-violet-50/50 border-2 border-violet-100 rounded-2xl p-4 text-center flex flex-col justify-between">
+                <span className="text-xs font-black text-violet-700 block mb-1">いっしょに といた問題</span>
+                <span className="text-lg md:text-xl font-black text-violet-950">{history.length}回 あそんだよ</span>
               </div>
-              <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-4 text-center">
-                <span className="text-xs font-black text-emerald-700 block mb-1">正解数</span>
-                <span className="text-2xl md:text-3xl font-black text-emerald-950">
-                  {history.filter(h => h.isCorrect).length} 回
+              <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-4 text-center flex flex-col justify-between">
+                <span className="text-xs font-black text-emerald-700 block mb-1">せいかいできた数</span>
+                <span className="text-lg md:text-xl font-black text-emerald-950">
+                  {history.filter(h => h.isCorrect).length}回 できたよ
                 </span>
               </div>
-              <div className="bg-amber-50/50 border-2 border-amber-100 rounded-2xl p-4 text-center">
-                <span className="text-xs font-black text-amber-700 block mb-1">正答率</span>
-                <span className="text-2xl md:text-3xl font-black text-amber-950">
+              <div className="bg-amber-50/50 border-2 border-amber-100 rounded-2xl p-4 text-center flex flex-col justify-between">
+                <span className="text-xs font-black text-amber-700 block mb-1">できた！の割合</span>
+                <span className="text-lg md:text-xl font-black text-amber-950">
                   {history.length > 0 
                     ? Math.round((history.filter(h => h.isCorrect).length / history.length) * 100) 
                     : 0}%
@@ -3257,9 +3314,52 @@ export default function App() {
               </div>
             </div>
 
+            {/* よみあげスピードの設定 (P1) */}
+            <div className="w-full bg-violet-50/50 border-4 border-violet-200 rounded-2xl p-5 flex flex-col gap-3 text-left">
+              <div className="flex items-center gap-2 text-violet-800 border-b border-violet-200 pb-2">
+                <span className="text-xl">⚙️</span>
+                <h3 className="text-sm font-black">よみあげスピードの設定</h3>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-1">
+                <p className="text-xs text-slate-600 font-bold leading-relaxed">
+                  問題文やメッセージの音声読み上げスピードを調整できます。
+                </p>
+                <div className="flex bg-white border-2 border-violet-200 rounded-xl p-1 shrink-0 self-center sm:self-auto">
+                  <button
+                    onClick={() => {
+                      playSoundEffect('tap');
+                      setSpeechRate(1.15);
+                      speakText("ふつうのスピードだよ", soundEnabled);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+                      speechRate === 1.15
+                        ? 'bg-violet-500 text-white shadow-sm'
+                        : 'text-violet-700 hover:bg-violet-50'
+                    }`}
+                  >
+                    ふつう 🐇
+                  </button>
+                  <button
+                    onClick={() => {
+                      playSoundEffect('tap');
+                      setSpeechRate(0.85);
+                      speakText("ゆっくりスピードだよ", soundEnabled);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+                      speechRate === 0.85
+                        ? 'bg-violet-500 text-white shadow-sm'
+                        : 'text-violet-700 hover:bg-violet-50'
+                    }`}
+                  >
+                    ゆっくり 🐢
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* 学習カテゴリーごとの分析 */}
             <div className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 flex flex-col gap-3">
-              <h3 className="text-sm font-black text-slate-700 border-b-2 border-slate-200 pb-1">📊 カテゴリー別の正答率</h3>
+              <h3 className="text-sm font-black text-slate-700 border-b-2 border-slate-200 pb-1">📊 あそんだゲームと できた！の割合</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 {/* たしざん（合成） */}
                 <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200/50 flex justify-between items-center">
@@ -3327,12 +3427,12 @@ export default function App() {
                 <div className="text-center sm:text-left">
                   <span className="text-xs font-black text-slate-500 block">ひらがな れんしゅうの進捗</span>
                   <span className="text-xl font-black text-violet-600">
-                    {completedHiragana.length} / 5 文字 クリア
+                    {completedHiragana.length} / 8 文字 クリア
                   </span>
                 </div>
                 
-                <div className="flex gap-2">
-                  {['し', 'く', 'つ', 'へ', 'い'].map(char => {
+                <div className="flex gap-2 flex-wrap justify-center">
+                  {['し', 'く', 'つ', 'へ', 'い', 'こ', 'り', 'て'].map(char => {
                     const isDone = completedHiragana.includes(char);
                     return (
                       <div
@@ -3547,9 +3647,9 @@ export default function App() {
                             <td className="p-3 text-center font-mono">{record.correctAnswer}</td>
                             <td className="p-3 text-center">
                               {record.isCorrect ? (
-                                <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px]">⭕ せいかい</span>
+                                <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px]">💮 できた！</span>
                               ) : (
-                                <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-[10px]">❌ ちがい</span>
+                                <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-[10px]">⭐ あとすこし</span>
                               )}
                             </td>
                           </tr>
@@ -3559,6 +3659,52 @@ export default function App() {
                   </table>
                 </div>
               )}
+            </div>
+
+            {/* 💖 おうちでのあたたかい寄り添い方アドバイス (P2) */}
+            <div className="w-full bg-amber-50/50 border-4 border-amber-200 rounded-2xl p-5 flex flex-col gap-3 text-left">
+              <div className="flex items-center gap-2 text-amber-800 border-b border-amber-200 pb-2">
+                <span className="text-xl">💝</span>
+                <h3 className="text-sm font-black">おうちでのあたたかい寄り添い方アドバイス</h3>
+              </div>
+              <div className="text-xs text-slate-600 font-bold leading-relaxed space-y-3">
+                <div className="space-y-1">
+                  <h4 className="font-black text-amber-900 text-[11px]">⏳ 利用時間のめやす</h4>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    幼児の集中力は「年齢＋1分」程度と言われています。1日10〜15分程度を目安にし、楽しく終わるタイミングで「またあした遊ぼうね」と声をかけるのが理想的です。
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-black text-amber-900 text-[11px]">💬 間違えてしまったとき</h4>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    「ちがうよ」と否定するのではなく、「オウムさんが食べちゃったね」「お皿のりんご、もういっかい一緒に数えてみようか！」と、ゲームのストーリーに乗せてやさしく促してあげてください。
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-black text-amber-900 text-[11px]">💮 プロセス（がんばり）をほめる</h4>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    「正解したこと」よりも、「最後まで考えたこと」や「なぞり書きを丁寧に書こうとしたこと」など、取り組んでいる姿そのものを「しっかり見ていたよ」と言葉にして伝えてあげると、自信につながります。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 🔒 データ保存とプライバシーについて (P3) */}
+            <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 flex flex-col gap-3 text-left">
+              <div className="flex items-center gap-2 text-slate-700 border-b border-slate-200 pb-2">
+                <span className="text-xl">🔒</span>
+                <h3 className="text-sm font-black">データ保存とプライバシーポリシー</h3>
+              </div>
+              <div className="text-xs text-slate-500 font-bold leading-relaxed space-y-2">
+                <p className="text-[10px] leading-normal">
+                  本アプリは、お子様の大切な学習データ（回答履歴、進行状況、お部屋の飾りの配置状況など）を安全に保管します。
+                </p>
+                <ul className="list-disc pl-4 text-[9px] text-slate-400 space-y-1">
+                  <li><strong>個人情報の不取得</strong>: お子様の本名、年齢、住所などの個人情報は一切取得いたしません。</li>
+                  <li><strong>暗号化による保護</strong>: クラウド保存時の認証用メールアドレスは、Firebase Authを通じて高度に暗号化され、安全に保管されます。</li>
+                  <li><strong>ローカル保存対応</strong>: アカウントを作成しない場合でも、ブラウザのローカルストレージを用いて端末内に進行状況が安全に保持されます。</li>
+                </ul>
+              </div>
             </div>
 
             {/* ボタンアクション */}

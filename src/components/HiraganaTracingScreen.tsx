@@ -22,9 +22,12 @@ const BRUSH_COLORS = [
 const SELECTION_LETTERS = [
   { letter: 'し', desc: '1画の もじ (しお・しか)' },
   { letter: 'く', desc: '1画の もじ (くま・くるま)' },
-  { letter: 'つ', desc: '1画 of もじ (つくえ・つみき)' },
+  { letter: 'つ', desc: '1画の もじ (つくえ・つみき)' },
   { letter: 'へ', desc: '1画の もじ (へび・へや)' },
   { letter: 'い', desc: '2画の もじ (いぬ・いちご)' },
+  { letter: 'こ', desc: '2画の もじ (こま・こいぬ)' },
+  { letter: 'り', desc: '2画の もじ (りんご・りす)' },
+  { letter: 'て', desc: '1画の もじ (てがみ・てんとうむし)' },
 ];
 
 export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
@@ -295,7 +298,7 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
         <div className="w-full max-w-2xl flex items-center justify-between gap-4">
           <button
             onClick={onGoBack}
-            className="bg-white hover:bg-slate-50 border-4 border-slate-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
+            className="bg-white hover:bg-slate-50 border-4 border-slate-200 w-12 h-12 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
             title="ひろばにもどる"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -365,7 +368,7 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
       <div className="w-full max-w-2xl flex items-center justify-between gap-4">
         <button
           onClick={handleBackToSelection}
-          className="bg-white hover:bg-slate-50 border-4 border-slate-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
+          className="bg-white hover:bg-slate-50 border-4 border-slate-200 w-12 h-12 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
           title="もじ選択にもどる"
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />

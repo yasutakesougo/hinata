@@ -80,5 +80,54 @@ export const TRACING_GUIDES: Record<string, TracingGuideData> = {
         { x: 205, y: 180 }
       ]
     ]
+  },
+  'こ': {
+    guides: [
+      { id: 1, start: { x: 80, y: 100 }, arrow: { x: 140, y: 100, rotate: 'rotate-0' } },
+      { id: 2, start: { x: 90, y: 190 }, arrow: { x: 140, y: 190, rotate: 'rotate-0' } }
+    ],
+    keypoints: [
+      [
+        { x: 80, y: 100 },
+        { x: 190, y: 100 },
+        { x: 175, y: 125 }
+      ],
+      [
+        { x: 90, y: 190 },
+        { x: 190, y: 185 }
+      ]
+    ]
+  },
+  'り': {
+    guides: [
+      { id: 1, start: { x: 90, y: 90 }, arrow: { x: 90, y: 130, rotate: 'rotate-90' } },
+      { id: 2, start: { x: 180, y: 70 }, arrow: { x: 180, y: 130, rotate: 'rotate-90' } }
+    ],
+    keypoints: [
+      [
+        { x: 90, y: 90 },
+        { x: 90, y: 165 },
+        { x: 110, y: 155 }
+      ],
+      [
+        { x: 180, y: 70 },
+        { x: 180, y: 180 },
+        { x: 170, y: 220 }
+      ]
+    ]
+  },
+  'て': {
+    guides: [
+      { id: 1, start: { x: 80, y: 90 }, arrow: { x: 140, y: 90, rotate: 'rotate-0' } }
+    ],
+    keypoints: [
+      [
+        { x: 80, y: 90 },
+        { x: 190, y: 90 },
+        { x: 190, y: 130 },
+        { x: 140, y: 200 },
+        { x: 90, y: 210 }
+      ]
+    ]
   }
 };

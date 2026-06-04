@@ -76,6 +76,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [attempt, setAttempt] = useState<number>(0);
   const [showSuccessAnim, setShowSuccessAnim] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   // マウント時の音声アナウンス
   useEffect(() => {
@@ -94,7 +95,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
   // ネコちゃんをタップしたときの処理
   const handleCatTap = (cat: CatState) => {
-    if (result === 'correct') return;
+    if (result === 'correct' || isProcessing) return;
     onPlaySound('tap');
     
     if (cat.position === 'wait') {
@@ -111,7 +112,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
   // お部屋をタップしたときの処理
   const handleRoomTap = (room: 'left' | 'right') => {
-    if (selectedCatId === null || result === 'correct') return;
+    if (selectedCatId === null || result === 'correct' || isProcessing) return;
     onPlaySound('tap');
     
     setCats(prev =>
@@ -122,7 +123,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
   // アジャスターボタンによる調整
   const adjustCats = (room: 'left' | 'right', amount: number) => {
-    if (result === 'correct') return;
+    if (result === 'correct' || isProcessing) return;
     onPlaySound('tap');
 
     if (amount > 0) {
@@ -147,7 +148,8 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
   // 回答確認
   const handleCheckAnswer = () => {
-    if (result === 'correct') return;
+    if (result === 'correct' || isProcessing) return;
+    setIsProcessing(true);
 
     const isCorrect =
       currentLeft === question.leftTarget && currentRight === question.rightTarget;
@@ -179,6 +181,10 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
       setResult('wrong');
       setAttempt(prev => prev + 1);
       speakText('ちがうよ、おへやのネコちゃんのかずを よくかぞえてみよう！', soundEnabled);
+      // 間違えた場合は1秒後に再度回答可能にする
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1000);
     }
   };
 
@@ -277,7 +283,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
               <span className="text-xs font-black text-sky-800 flex items-center gap-1">
                 🔵 ひだりのおへや
               </span>
-              <span className="bg-sky-400 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full">
+              <span className="bg-sky-600 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
                 {currentLeft}ひき
               </span>
             </div>
@@ -302,20 +308,20 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
             </div>
 
             {/* アジャスターボタン */}
-            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-2.5" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => adjustCats('left', -1)}
                 disabled={currentLeft === 0}
-                className="bg-white border-2 border-sky-200 hover:bg-sky-50 disabled:opacity-40 disabled:cursor-not-allowed text-sky-600 font-extrabold rounded-full w-8 h-8 flex items-center justify-center shadow-xs active:translate-y-[1px]"
+                className="bg-white border-2 border-sky-300 hover:bg-sky-50 disabled:opacity-40 disabled:cursor-not-allowed text-sky-700 font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs active:translate-y-[1px]"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-5 h-5" />
               </button>
               <button
                 onClick={() => adjustCats('left', 1)}
                 disabled={currentWait === 0}
-                className="bg-sky-400 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-8 h-8 flex items-center justify-center shadow-xs border-b-2 border-sky-600 active:translate-y-[1px]"
+                className="bg-sky-600 hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs border-b-4 border-sky-800 active:translate-y-[1px]"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -331,7 +337,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
               <span className="text-xs font-black text-pink-800 flex items-center gap-1">
                 🔴 みぎのおへや
               </span>
-              <span className="bg-pink-400 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full">
+              <span className="bg-pink-600 text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
                 {currentRight}ひき
               </span>
             </div>
@@ -356,20 +362,20 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
             </div>
 
             {/* アジャスターボタン */}
-            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-2.5" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => adjustCats('right', -1)}
                 disabled={currentRight === 0}
-                className="bg-white border-2 border-pink-200 hover:bg-pink-50 disabled:opacity-40 disabled:cursor-not-allowed text-pink-600 font-extrabold rounded-full w-8 h-8 flex items-center justify-center shadow-xs active:translate-y-[1px]"
+                className="bg-white border-2 border-pink-300 hover:bg-pink-50 disabled:opacity-40 disabled:cursor-not-allowed text-pink-700 font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs active:translate-y-[1px]"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-5 h-5" />
               </button>
               <button
                 onClick={() => adjustCats('right', 1)}
                 disabled={currentWait === 0}
-                className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-8 h-8 flex items-center justify-center shadow-xs border-b-2 border-pink-600 active:translate-y-[1px]"
+                className="bg-pink-600 hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs border-b-4 border-pink-800 active:translate-y-[1px]"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -406,21 +412,26 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
           {result !== 'correct' ? (
             <button
               onClick={handleCheckAnswer}
-              disabled={currentWait !== 0}
+              disabled={currentWait !== 0 || isProcessing}
               className={`font-black text-md px-14 py-3 rounded-2xl transition-all shadow-md active:translate-y-[2px] active:border-b-2 border-b-4 ${
-                currentWait === 0
+                currentWait === 0 && !isProcessing
                   ? 'bg-amber-400 hover:bg-amber-500 border-amber-600 text-amber-950 scale-105 animate-pulse'
                   : 'bg-slate-200 border-slate-400 text-slate-400 cursor-not-allowed'
               }`}
             >
-              {currentWait > 0 ? `のこり ${currentWait}匹 をお部屋にいれてね` : 'できた！'}
+              {currentWait > 0 ? `のこり ${currentWait}匹 をお部屋にいれてね` : isProcessing ? 'かくにんちゅう...' : 'できた！'}
             </button>
           ) : (
             <div className="text-center animate-bounce flex flex-col items-center">
               <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">🌟 せいかい！ 🌟</span>
               <button
-                onClick={onNextStep}
-                className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-14 py-2.5 rounded-xl shadow-md"
+                onClick={() => {
+                  if (isProcessing) return;
+                  setIsProcessing(true);
+                  onNextStep();
+                }}
+                disabled={isProcessing}
+                className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-14 py-2.5 rounded-xl shadow-md disabled:opacity-50"
               >
                 つぎへすすむ ➔
               </button>
