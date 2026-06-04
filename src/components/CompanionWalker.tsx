@@ -6,6 +6,7 @@ interface CompanionWalkerProps {
   unlockedRewards: string[];
   reducedMotion: boolean;
   onPlaySound: (type: 'tap') => void;
+  isDecorating?: boolean;
 }
 
 const REWARD_EMOJIS: Record<string, string> = {
@@ -31,6 +32,7 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
   unlockedRewards,
   reducedMotion,
   onPlaySound,
+  isDecorating = false,
 }) => {
   const [activeBubbles, setActiveBubbles] = useState<Record<number, string | null>>({});
   const bubbleTimers = useRef<Record<number, ReturnType<typeof setTimeout> | null>>({});
@@ -65,6 +67,7 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
   const displayAnimals = unlockedAnimals.slice(0, 3);
 
   const handleTap = (idx: number, emoji: string) => {
+    if (isDecorating) return; // かざりつけ中はタップ無効
     onPlaySound('tap');
 
     // メッセージの決定
@@ -105,16 +108,20 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
         return (
           <div
             key={idx}
-            className={`absolute bottom-0 -translate-x-1/2 flex flex-col items-center pointer-events-auto transition-all duration-300 ${walkClass}`}
+            className={`absolute bottom-0 -translate-x-1/2 flex flex-col items-center transition-all duration-300 ${walkClass} ${
+              isDecorating ? 'pointer-events-none' : 'pointer-events-auto'
+            }`}
             style={{
               // CSS prefers-reduced-motion 用のフォールバック位置をカスタムプロパティで渡す
               '--static-left': staticLeftValues[idx],
             } as React.CSSProperties}
           >
-            {hasBubble && <CompanionBubble message={bubbleMsg} />}
+            {hasBubble && !isDecorating && <CompanionBubble message={bubbleMsg} />}
             <span
               onClick={() => handleTap(idx, animal.emoji)}
-              className="text-5xl select-none cursor-pointer filter drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-150 block"
+              className={`text-5xl select-none filter drop-shadow-md hover:scale-110 active:scale-95 transition-transform duration-150 block ${
+                isDecorating ? 'cursor-default opacity-80' : 'cursor-pointer'
+              }`}
               role="img"
               aria-label={animal.name}
             >

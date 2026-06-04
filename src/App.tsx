@@ -6,6 +6,7 @@ import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { CompanionWalker } from './components/CompanionWalker';
 import { CatRoomSplitScreen } from './components/CatRoomSplitScreen';
+import { FURNITURE_LIST } from './constants/furnitureList';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -693,6 +694,12 @@ interface HomeScreenProps {
   onSelectStageById: (id: number) => void;
   reducedMotion: boolean;
   onChangeReducedMotion: (val: boolean) => void;
+  placedFurniture: Record<string, string | null>;
+  setPlacedFurniture: React.Dispatch<React.SetStateAction<Record<string, string | null>>>;
+  isDecorating: boolean;
+  setIsDecorating: (val: boolean) => void;
+  selectedSpot: 'spot1' | 'spot2' | 'spot3' | null;
+  setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
 }
 
 const THEMES = [
@@ -711,7 +718,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onGoPlayMap,
   onSelectStageById,
   reducedMotion,
-  onChangeReducedMotion
+  onChangeReducedMotion,
+  placedFurniture,
+  setPlacedFurniture,
+  isDecorating,
+  setIsDecorating,
+  selectedSpot,
+  setSelectedSpot
 }) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
   const [showKokugoHint, setShowKokugoHint] = React.useState(false);
@@ -726,6 +739,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       window.speechSynthesis?.speak(utterance);
     }
     setTimeout(() => setShowKokugoHint(false), 3000);
+  };
+
+  const handleSpotClick = (spot: 'spot1' | 'spot2' | 'spot3') => {
+    playSoundEffect('tap');
+    setSelectedSpot(spot);
   };
 
   const recommendedStageId = unlockedStageId <= STAGES.length ? unlockedStageId : 1;
@@ -811,35 +829,211 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="absolute top-1 left-1/3 text-xl opacity-20 select-none">🌸</div>
         <div className="absolute top-3 right-1/3 text-2xl opacity-20 select-none">🌼</div>
 
+        {/* かざりつけモード切り替えボタン */}
+        <button
+          onClick={() => {
+            playSoundEffect('tap');
+            setIsDecorating(!isDecorating);
+            if (!isDecorating) {
+              setSelectedSpot('spot2'); // 真ん中をデフォルトに選択
+            } else {
+              setSelectedSpot(null);
+            }
+          }}
+          className={`absolute top-2 right-2 px-3 py-1.5 rounded-full text-xs font-black shadow-sm border cursor-pointer active:translate-y-[1px] transition-all z-30 ${
+            isDecorating
+              ? 'bg-amber-400 border-amber-500 text-amber-950 hover:bg-amber-500 animate-pulse'
+              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+          }`}
+        >
+          {isDecorating ? '✓ おわる' : '🔨 かざりつけ'}
+        </button>
+
+        {/* --- 家具配置スポット (かざりつけ) --- */}
+        {/* Spot 1: Left */}
+        <button
+          onClick={() => isDecorating && handleSpotClick('spot1')}
+          disabled={!isDecorating}
+          className={`absolute left-[12%] bottom-[12px] transition-all flex items-center justify-center select-none ${
+            isDecorating
+              ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
+                  selectedSpot === 'spot1'
+                    ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
+                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                }`
+              : 'pointer-events-none w-14 h-14'
+          }`}
+        >
+          {placedFurniture.spot1 ? (
+            <span className="text-4xl filter drop-shadow-sm select-none">
+              {FURNITURE_LIST.find(f => f.id === placedFurniture.spot1)?.emoji}
+            </span>
+          ) : (
+            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+          )}
+        </button>
+
+        {/* Spot 2: Center */}
+        <button
+          onClick={() => isDecorating && handleSpotClick('spot2')}
+          disabled={!isDecorating}
+          className={`absolute left-[50%] -translate-x-1/2 bottom-[16px] transition-all flex items-center justify-center select-none ${
+            isDecorating
+              ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
+                  selectedSpot === 'spot2'
+                    ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
+                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                }`
+              : 'pointer-events-none w-14 h-14'
+          }`}
+        >
+          {placedFurniture.spot2 ? (
+            <span className="text-4xl filter drop-shadow-sm select-none">
+              {FURNITURE_LIST.find(f => f.id === placedFurniture.spot2)?.emoji}
+            </span>
+          ) : (
+            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+          )}
+        </button>
+
+        {/* Spot 3: Right */}
+        <button
+          onClick={() => isDecorating && handleSpotClick('spot3')}
+          disabled={!isDecorating}
+          className={`absolute left-[88%] -translate-x-1/2 bottom-[12px] transition-all flex items-center justify-center select-none ${
+            isDecorating
+              ? `w-14 h-14 rounded-2xl border-4 border-dashed z-20 cursor-pointer ${
+                  selectedSpot === 'spot3'
+                    ? 'border-yellow-400 bg-yellow-100/60 shadow-md scale-110 animate-pulse'
+                    : 'border-emerald-400 bg-emerald-100/30 hover:border-emerald-500 hover:bg-emerald-100/50'
+                }`
+              : 'pointer-events-none w-14 h-14'
+          }`}
+        >
+          {placedFurniture.spot3 ? (
+            <span className="text-4xl filter drop-shadow-sm select-none">
+              {FURNITURE_LIST.find(f => f.id === placedFurniture.spot3)?.emoji}
+            </span>
+          ) : (
+            isDecorating && <span className="text-emerald-500 font-extrabold text-xl">＋</span>
+          )}
+        </button>
+
         {/* なかま動物歩行表示 */}
         <CompanionWalker
           unlockedRewards={unlockedRewards}
           reducedMotion={reducedMotion}
           onPlaySound={playSoundEffect}
+          isDecorating={isDecorating}
         />
 
         {/* 地面 */}
         <div className="w-full h-8 bg-emerald-300/40 rounded-b-xl border-t border-emerald-300/20 absolute bottom-0 left-0" />
       </div>
 
-      {/* 今日のおすすめ (CTA) */}
-      <div
-        onClick={() => onSelectStageById(recommendedStageId)}
-        className="w-full bg-amber-50 hover:bg-amber-100 border-4 border-amber-300 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all active:scale-[0.99] shadow-sm animate-pulse"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🍎</span>
-          <div>
-            <span className="bg-amber-400 text-amber-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase">
-              きょうのおすすめ
+      {/* かざりつけ用家具選択ツールボックス（おすすめカードと排他） */}
+      {isDecorating ? (
+        <div className="w-full bg-emerald-50 border-4 border-emerald-200 rounded-3xl p-4 flex flex-col gap-3 animate-scaleUp">
+          <div className="flex justify-between items-center border-b border-emerald-100 pb-2 flex-wrap gap-2">
+            <span className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
+              <span>🔨</span> かざりつけする スポットを タップしてえらんでね
             </span>
-            <p className="text-sm font-black text-amber-800 mt-1">
-              ステージ {recommendedStageId} : 「{recommendedStageName}」であそぼう！
-            </p>
+            <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-full select-none">
+              {selectedSpot === 'spot1' ? 'ひだり' : selectedSpot === 'spot2' ? 'まんなか' : selectedSpot === 'spot3' ? 'みぎ' : 'えらんでね'} を選択中
+            </span>
           </div>
+
+          {/* 家具アイテムリスト */}
+          <div className="flex gap-3 overflow-x-auto py-2 px-1 scrollbar-thin">
+            {/* かたづけるボタン */}
+            <button
+              onClick={() => {
+                if (!selectedSpot) return;
+                playSoundEffect('tap');
+                setPlacedFurniture(prev => ({ ...prev, [selectedSpot]: null }));
+              }}
+              disabled={!selectedSpot || !placedFurniture[selectedSpot]}
+              className={`flex-shrink-0 bg-white border-2 border-slate-200 p-2.5 rounded-2xl flex flex-col items-center justify-center min-w-[76px] shadow-sm transition-all ${
+                !selectedSpot || !placedFurniture[selectedSpot]
+                  ? 'opacity-40 cursor-not-allowed'
+                  : 'hover:border-rose-300 hover:bg-rose-50 cursor-pointer active:scale-95'
+              }`}
+            >
+              <span className="text-2xl">📦</span>
+              <span className="text-[10px] font-black text-slate-500 mt-1">かたづける</span>
+            </button>
+
+            {/* 各家具アイテム */}
+            {FURNITURE_LIST.map(f => {
+              const isUnlocked = unlockedRewards.includes(f.requiredReward);
+              const isSelected = selectedSpot ? placedFurniture[selectedSpot] === f.id : false;
+
+              if (!isUnlocked) {
+                return (
+                  <div
+                    key={f.id}
+                    className="flex-shrink-0 bg-slate-100 border-2 border-slate-200 p-2.5 rounded-2xl flex flex-col items-center justify-center min-w-[76px] opacity-40 select-none"
+                    title={`${f.requiredReward} が なかまになると 解放されます`}
+                  >
+                    <span className="text-2xl filter grayscale">❓</span>
+                    <span className="text-[9px] font-bold text-slate-400 mt-1">ひみつ</span>
+                  </div>
+                );
+              }
+
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => {
+                    if (!selectedSpot) return;
+                    playSoundEffect('tap');
+                    setPlacedFurniture(prev => ({ ...prev, [selectedSpot]: f.id }));
+                  }}
+                  disabled={!selectedSpot}
+                  className={`flex-shrink-0 bg-white border-2 p-2.5 rounded-2xl flex flex-col items-center justify-center min-w-[76px] shadow-sm transition-all ${
+                    !selectedSpot
+                      ? 'opacity-40 cursor-not-allowed'
+                      : isSelected
+                        ? 'border-emerald-500 ring-4 ring-emerald-200 bg-emerald-50/50 scale-105 cursor-pointer font-black'
+                        : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50 cursor-pointer active:scale-95'
+                  }`}
+                  title={f.desc}
+                >
+                  <span className="text-3xl filter drop-shadow-sm">{f.emoji}</span>
+                  <span className="text-[9px] font-black text-slate-700 mt-1 truncate max-w-[68px]">
+                    {f.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          
+          {!selectedSpot && (
+            <p className="text-[10px] font-extrabold text-rose-500 text-center animate-pulse">
+              ⚠️ 広場の「かざりつけしたい スポット（点線）」を タップして選んでね！
+            </p>
+          )}
         </div>
-        <span className="text-amber-500 font-extrabold text-xl">➔</span>
-      </div>
+      ) : (
+        /* 今日のおすすめ (CTA) */
+        <div
+          onClick={() => onSelectStageById(recommendedStageId)}
+          className="w-full bg-amber-50 hover:bg-amber-100 border-4 border-amber-300 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all active:scale-[0.99] shadow-sm animate-pulse"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">🍎</span>
+            <div>
+              <span className="bg-amber-400 text-amber-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase">
+                きょうのおすすめ
+              </span>
+              <p className="text-sm font-black text-amber-800 mt-1">
+                ステージ {recommendedStageId} : 「{recommendedStageName}」であそぼう！
+              </p>
+            </div>
+          </div>
+          <span className="text-amber-500 font-extrabold text-xl">➔</span>
+        </div>
+      )}
 
       {/* 教科カードグリッド */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1183,6 +1377,28 @@ export default function App() {
   });
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
 
+  // 家具配置状態
+  const [placedFurniture, setPlacedFurniture] = useState<Record<string, string | null>>(() => {
+    try {
+      const saved = localStorage.getItem('sansu_quest_placed_furniture');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            spot1: parsed.spot1 || null,
+            spot2: parsed.spot2 || null,
+            spot3: parsed.spot3 || null,
+          };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse saved placedFurniture:', e);
+    }
+    return { spot1: null, spot2: null, spot3: null };
+  });
+  const [isDecorating, setIsDecorating] = useState<boolean>(false);
+  const [selectedSpot, setSelectedSpot] = useState<'spot1' | 'spot2' | 'spot3' | null>(null);
+
   // ステージ内部状態
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [totalSteps, setTotalSteps] = useState<number>(5);
@@ -1240,7 +1456,7 @@ export default function App() {
   };
 
   // Firestore へのセーブ処理
-  const saveToCloud = async (uid: string, stageId: number, rewards: string[], hist: AnswerRecord[], logs: ActivityLog[]) => {
+  const saveToCloud = async (uid: string, stageId: number, rewards: string[], hist: AnswerRecord[], logs: ActivityLog[], furniture: Record<string, string | null>) => {
     setSyncStatus('syncing');
 
     let isFinished = false;
@@ -1256,6 +1472,7 @@ export default function App() {
         unlockedRewards: rewards,
         history: hist,
         activityLogs: logs,
+        placedFurniture: furniture,
         updatedAt: getNow()
       });
       const setDocTimeoutPromise = new Promise<void>((_, reject) =>
@@ -1315,6 +1532,9 @@ export default function App() {
             if (data.activityLogs) {
               setActivityLogs(data.activityLogs);
             }
+            if (data.placedFurniture) {
+              setPlacedFurniture(data.placedFurniture);
+            }
           } else {
             // 新しいユーザーならローカルの進捗を初回アップロード
             const setDocPromise = setDoc(doc(db, 'users', currentUser.uid), {
@@ -1322,6 +1542,7 @@ export default function App() {
               unlockedRewards,
               history,
               activityLogs,
+              placedFurniture,
               updatedAt: getNow()
             });
             const setDocTimeoutPromise = new Promise<void>((_, reject) =>
@@ -1350,6 +1571,7 @@ export default function App() {
       localStorage.setItem('sansu_quest_history', JSON.stringify(history));
       localStorage.setItem('sansu_quest_theme', themeId);
       localStorage.setItem('sansu_quest_activity_logs', JSON.stringify(activityLogs));
+      localStorage.setItem('sansu_quest_placed_furniture', JSON.stringify(placedFurniture));
     } catch (e) {
       console.error('Failed to save progress:', e);
     }
@@ -1358,11 +1580,11 @@ export default function App() {
 
     const uid = user.uid;
     const timer = setTimeout(() => {
-      saveToCloud(uid, unlockedStageId, unlockedRewards, history, activityLogs);
+      saveToCloud(uid, unlockedStageId, unlockedRewards, history, activityLogs, placedFurniture);
     }, 500); // 500ms debounce to avoid rapid writes and resolve React synchronous setState-in-effect warning
 
     return () => clearTimeout(timer);
-  }, [unlockedStageId, unlockedRewards, history, themeId, activityLogs, user]);
+  }, [unlockedStageId, unlockedRewards, history, themeId, activityLogs, placedFurniture, user]);
 
   // うごきを少なくする設定保存
   useEffect(() => {
@@ -1415,6 +1637,7 @@ export default function App() {
       setUnlockedRewards([]);
       setHistory([]);
       setActivityLogs([]);
+      setPlacedFurniture({ spot1: null, spot2: null, spot3: null });
       speakText("はじめから やりなおすよ！", soundEnabled);
     }
   };
@@ -2032,7 +2255,7 @@ export default function App() {
       logActivity(`新しいなかま「${selectedStage.reward.name}」をはっけん！`);
     }
 
-    if (selectedStage.id === unlockedStageId && unlockedStageId < 6) {
+    if (selectedStage.id === unlockedStageId && unlockedStageId < STAGES.length) {
       setUnlockedStageId(prev => prev + 1);
     }
 
@@ -2041,7 +2264,7 @@ export default function App() {
 
   const handleFinishClearScreen = () => {
     playSoundEffect('tap');
-    if (selectedStage?.id === 6) {
+    if (selectedStage?.id === STAGES.length) {
       setScreen('all_clear');
       speakText("すごすぎる！さんすうキングダムをぜんぶすくってくれたよ！おめでとう！", soundEnabled);
     } else {
@@ -2126,6 +2349,12 @@ export default function App() {
             onSelectStageById={handleSelectStageById}
             reducedMotion={reducedMotion}
             onChangeReducedMotion={setReducedMotion}
+            placedFurniture={placedFurniture}
+            setPlacedFurniture={setPlacedFurniture}
+            isDecorating={isDecorating}
+            setIsDecorating={setIsDecorating}
+            selectedSpot={selectedSpot}
+            setSelectedSpot={setSelectedSpot}
           />
         )}
 
