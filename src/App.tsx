@@ -331,7 +331,7 @@ const playSoundEffect = (type: 'correct' | 'wrong' | 'tap' | 'whoosh' | 'pop' | 
 
 // 音声合成による読み上げ
 const speakText = (text: string, enabled: boolean) => {
-  if (!enabled) return;
+  if (!enabled || !globalSoundEnabled) return;
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -766,6 +766,8 @@ interface HomeScreenProps {
   currentSeason: Season;
   todayChoiceMade: boolean;
   onChooseActivity: (activity: 'walk' | 'math' | 'tracing' | 'later') => void;
+  todayCondition: 'energetic' | 'relaxed' | 'quiet' | null;
+  onChooseCondition: (condition: 'energetic' | 'relaxed' | 'quiet') => void;
 }
 
 const THEMES = [
@@ -848,7 +850,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onChangeSeason,
   currentSeason,
   todayChoiceMade,
-  onChooseActivity
+  onChooseActivity,
+  todayCondition,
+  onChooseCondition
 }) => {
   const [showGoodbye, setShowGoodbye] = React.useState(false);
   const [decorTrigger, setDecorTrigger] = React.useState<Record<number, boolean>>({});
@@ -894,8 +898,69 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div className="w-full max-w-2xl bg-white border-8 border-emerald-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 relative">
       
+      {/* きょうのきぶん選択モーダル (自己決定・自律性の支援) */}
+      {!todayCondition && !isDecorating && (
+        <div className="absolute inset-0 bg-slate-950/40 rounded-2xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
+          <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
+            <div className="space-y-1">
+              <h3 className="text-2xl md:text-3xl font-black text-emerald-700 flex items-center justify-center gap-1.5">
+                <span>🦁</span> きょうの きぶんは？ <span>🐨</span>
+              </h3>
+              <p className="text-xs font-bold text-slate-500">
+                じぶんの きぶんを えらんでね！
+              </p>
+            </div>
+
+            {/* 3つの選択カード */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* 選択 1: げんきいっぱい */}
+              <button
+                type="button"
+                onClick={() => onChooseCondition('energetic')}
+                aria-label="げんきいっぱい"
+                className={`bg-amber-50 hover:bg-amber-100/80 border-4 border-amber-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0s' }}
+              >
+                <span className="text-4xl">🦁</span>
+                <span className="text-xs font-black text-amber-800">げんきいっぱい</span>
+              </button>
+
+              {/* 選択 2: のんびり */}
+              <button
+                type="button"
+                onClick={() => onChooseCondition('relaxed')}
+                aria-label="のんびり"
+                className={`bg-emerald-50 hover:bg-emerald-100/80 border-4 border-emerald-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0.4s' }}
+              >
+                <span className="text-4xl">🐨</span>
+                <span className="text-xs font-black text-emerald-800">のんびり</span>
+              </button>
+
+              {/* 選択 3: しずかにやりたい */}
+              <button
+                type="button"
+                onClick={() => onChooseCondition('quiet')}
+                aria-label="しずかにやりたい"
+                className={`bg-sky-50 hover:bg-sky-100/80 border-4 border-sky-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                  reducedMotion ? '' : 'animate-float'
+                }`}
+                style={reducedMotion ? {} : { animationDelay: '0.8s' }}
+              >
+                <span className="text-4xl">🦉</span>
+                <span className="text-xs font-black text-sky-800">しずかにやりたい</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 今日の3択パネル (自己決定・自律性の支援) */}
-      {!todayChoiceMade && !isDecorating && (
+      {todayCondition && !todayChoiceMade && !isDecorating && (
         <div className="absolute inset-0 bg-slate-950/40 rounded-2xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
           <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
             <div className="space-y-1">
@@ -1592,6 +1657,15 @@ export default function App() {
     }
   });
 
+  const [todayCondition, setTodayCondition] = useState<'energetic' | 'relaxed' | 'quiet' | null>(() => {
+    try {
+      const saved = localStorage.getItem('sansu_quest_today_condition_' + getTodayDateString());
+      return (saved === 'energetic' || saved === 'relaxed' || saved === 'quiet') ? saved : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [todayChoiceMade, setTodayChoiceMade] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('sansu_quest_today_choice_made_' + getTodayDateString());
@@ -1612,6 +1686,9 @@ export default function App() {
       return false;
     }
   });
+
+  const effectiveSoundEnabled = soundEnabled && todayCondition !== 'quiet';
+  const effectiveReducedMotion = reducedMotion || todayCondition === 'relaxed' || todayCondition === 'quiet';
 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
     try {
@@ -1985,8 +2062,8 @@ export default function App() {
 
   // 効果音の有効状態をグローバル同期する
   useEffect(() => {
-    globalSoundEnabled = soundEnabled;
-  }, [soundEnabled]);
+    globalSoundEnabled = effectiveSoundEnabled;
+  }, [effectiveSoundEnabled]);
 
   // 音声読み上げスピードの同期
   useEffect(() => {
@@ -2000,7 +2077,7 @@ export default function App() {
 
   // BGM 音源管理の自動制御
   useEffect(() => {
-    if (!soundEnabled || !audioUnlocked) {
+    if (!effectiveSoundEnabled || !audioUnlocked) {
       stopBgm();
       return;
     }
@@ -2017,8 +2094,8 @@ export default function App() {
       return;
     }
 
-    startBgm(bgmType, soundEnabled && audioUnlocked);
-  }, [screen, soundEnabled, audioUnlocked]);
+    startBgm(bgmType, effectiveSoundEnabled && audioUnlocked);
+  }, [screen, effectiveSoundEnabled, audioUnlocked]);
 
   // クリーンアップ
   useEffect(() => {
@@ -2071,9 +2148,11 @@ export default function App() {
 
       // ３択選択状態の初期化
       localStorage.removeItem('sansu_quest_today_choice_made_' + getTodayDateString());
+      localStorage.removeItem('sansu_quest_today_condition_' + getTodayDateString());
       localStorage.removeItem('sansu_quest_today_hints_' + getTodayDateString());
       localStorage.removeItem('sansu_quest_today_clears_' + getTodayDateString());
       setTodayChoiceMade(false);
+      setTodayCondition(null);
 
       const initialLog: ActivityLog = {
         id: `${getNow()}-${Math.floor(getRandom() * 1000)}`,
@@ -2127,6 +2206,14 @@ export default function App() {
   const generateTodayPraiseMessage = () => {
     const todayStr = getTodayDateString();
     
+    // 0. 調子の自己選択 (自律性)
+    let chosenCondition: string | null = null;
+    try {
+      chosenCondition = localStorage.getItem('sansu_quest_today_condition_' + todayStr);
+    } catch (e) {
+      console.error(e);
+    }
+
     // 1. 自律性 (今日のアクティビティを自分で選んだ)
     let chosenActivity: string | null = null;
     try {
@@ -2155,6 +2242,20 @@ export default function App() {
     const { retryCount } = getProcessMetrics();
 
     const messages: string[] = [];
+
+    // ⓪ 調子の自己選択
+    if (chosenCondition) {
+      let condName = "";
+      if (chosenCondition === 'energetic') condName = "「げんきいっぱい」";
+      if (chosenCondition === 'relaxed') condName = "「のんびり」";
+      if (chosenCondition === 'quiet') condName = "「しずかにやりたい」";
+      
+      if (chosenCondition === 'relaxed' || chosenCondition === 'quiet') {
+        messages.push(`今日は自分で${condName}を選んで、少しだけ（または静かに）取り組めました。自分の調子に合わせて選べたことも、大切ながんばりです。`);
+      } else {
+        messages.push(`今日は自分で${condName}を選んで、意欲的に取り組めました。自分の調子を把握し、それに基づいて選択できたことは素晴らしい自己決定です。`);
+      }
+    }
 
     // ① 自律性
     if (chosenActivity && chosenActivity !== 'later') {
@@ -2310,6 +2411,31 @@ export default function App() {
     speakText("さんすうアドベンチャー！くだものキングダムへようこそ！", soundEnabled);
   };
 
+  const handleChooseCondition = (condition: 'energetic' | 'relaxed' | 'quiet') => {
+    const tempEffectiveSoundEnabled = soundEnabled && condition !== 'quiet';
+    if (tempEffectiveSoundEnabled) {
+      playSoundEffect('tap');
+    }
+    
+    // 選択状態を永続化
+    const todayStr = getTodayDateString();
+    try {
+      localStorage.setItem('sansu_quest_today_condition_' + todayStr, condition);
+    } catch (e) {
+      console.error('Failed to save today condition:', e);
+    }
+    setTodayCondition(condition);
+
+    // 気分に合わせた案内音声の再生
+    if (tempEffectiveSoundEnabled) {
+      if (condition === 'energetic') {
+        speakText("げんきいっぱい、がんばろう！", true);
+      } else if (condition === 'relaxed') {
+        speakText("のんびり、いこうね。", true);
+      }
+    }
+  };
+
   const handleChooseActivity = (activity: 'walk' | 'math' | 'tracing' | 'later') => {
     playSoundEffect('tap');
     
@@ -2378,6 +2504,11 @@ export default function App() {
     // 【改善点4解決】マップの選択時に難易度ロックを検証するガード句を設置
     if (stage.id > unlockedStageId) return;
 
+    // コンディションに合わせた問題数の設定
+    const isRelaxedOrQuiet = todayCondition === 'relaxed' || todayCondition === 'quiet';
+    const normalSteps = isRelaxedOrQuiet ? 3 : 5;
+    const bossSteps = isRelaxedOrQuiet ? 5 : 10;
+
     playSoundEffect('tap');
     setSelectedStage(stage);
     setCurrentStep(1);
@@ -2386,31 +2517,31 @@ export default function App() {
     logActivity(`「${stage.jpName}」のぼうけんを開始！`);
 
     if (stage.type === 'synthesis') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextSynthesis(1, stage.maxVal);
       setScreen('play_synthesis');
     } else if (stage.type === 'make10') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextMake10(1);
       setScreen('play_make10');
     } else if (stage.type === 'subtraction') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextSubtraction(1, stage.maxVal);
       setScreen('play_subtraction');
     } else if (stage.type === 'cat_split') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextCatSplit(1);
       setScreen('play_cat_split');
     } else if (stage.type === 'snack_split') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextSnackSplit(1);
       setScreen('play_snack_split');
     } else if (stage.type === 'friend_taiko') {
-      setTotalSteps(5);
+      setTotalSteps(normalSteps);
       setupNextFriendTaiko(1);
       setScreen('play_friend_taiko');
     } else if (stage.type === 'boss') {
-      setTotalSteps(10);
+      setTotalSteps(bossSteps);
       setBossHp(100);
       setupNextBossQuestion(1);
       setScreen('play_boss');
@@ -2825,6 +2956,8 @@ export default function App() {
     if (isTransitioning) return;
     setIsTransitioning(true);
 
+    const damage = Math.round(100 / totalSteps);
+
     if (bossQuestType === 'synthesis' && synQuestion) {
       const isCorrect = choice === synQuestion.answer;
       const record: AnswerRecord = {
@@ -2842,10 +2975,10 @@ export default function App() {
         setSynResult('correct');
         setBossDmgAnim(true);
         setTimeout(() => setBossDmgAnim(false), 600);
-        setBossHp(prev => Math.max(0, prev - 10));
+        setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
         
-        if (currentStep === 10) {
+        if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
           setTimeout(() => setupNextBossQuestion(currentStep + 1), 1200);
@@ -2880,10 +3013,10 @@ export default function App() {
         setM10Result('correct');
         setBossDmgAnim(true);
         setTimeout(() => setBossDmgAnim(false), 600);
-        setBossHp(prev => Math.max(0, prev - 10));
+        setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
         
-        if (currentStep === 10) {
+        if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
           setTimeout(() => setupNextBossQuestion(currentStep + 1), 1200);
@@ -2918,10 +3051,10 @@ export default function App() {
         setSubResult('correct');
         setBossDmgAnim(true);
         setTimeout(() => setBossDmgAnim(false), 600);
-        setBossHp(prev => Math.max(0, prev - 10));
+        setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
         
-        if (currentStep === 10) {
+        if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
           setTimeout(() => setupNextBossQuestion(currentStep + 1), 1200);
@@ -3063,7 +3196,7 @@ export default function App() {
       {/* 共通ヘッダー */}
       <AppHeader 
         screen={screen} 
-        soundEnabled={soundEnabled} 
+        soundEnabled={effectiveSoundEnabled} 
         onGoHome={handleGoMap} 
         onToggleSound={handleToggleSound} 
         onGoZukan={() => { playSoundEffect('tap'); setIsTransitioning(false); setScreen('zukan'); }} 
@@ -3087,7 +3220,7 @@ export default function App() {
             onChangeTheme={setThemeId}
             onGoPlayMap={handleGoPlayMap}
             onSelectStageById={handleSelectStageById}
-            reducedMotion={reducedMotion}
+            reducedMotion={effectiveReducedMotion}
             onChangeReducedMotion={setReducedMotion}
             placedFurniture={placedFurniture}
             setPlacedFurniture={setPlacedFurniture}
@@ -3101,6 +3234,8 @@ export default function App() {
             currentSeason={currentSeason}
             todayChoiceMade={todayChoiceMade}
             onChooseActivity={handleChooseActivity}
+            todayCondition={todayCondition}
+            onChooseCondition={handleChooseCondition}
           />
         )}
 
