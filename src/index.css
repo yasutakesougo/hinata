@@ -309,6 +309,34 @@
   animation: float 4s ease-in-out infinite;
 }
 
+@utility animate-stampPop {
+  animation: stamp-pop 0.3s ease-out forwards;
+}
+
+@utility animate-fadeOutZoom {
+  animation: fade-out-zoom 0.25s ease-in forwards;
+}
+
+@utility animate-fadeOutBackdrop {
+  animation: fade-out-backdrop 0.25s ease-in forwards;
+}
+
+@keyframes stamp-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1.03) rotate(0deg); }
+}
+
+@keyframes fade-out-zoom {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes fade-out-backdrop {
+  0% { opacity: 1; backdrop-filter: blur(4px); }
+  100% { opacity: 0; backdrop-filter: blur(0px); }
+}
+
 /* --- Reduced Motion 一括停止ルール --- */
 
 /* prefers-reduced-motion メディアクエリ対応 */
