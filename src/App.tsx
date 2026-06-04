@@ -11,6 +11,7 @@ import { HiraganaTracingScreen } from './components/HiraganaTracingScreen';
 import { SnackSplitScreen } from './components/SnackSplitScreen';
 import { FriendTaikoScreen } from './components/FriendTaikoScreen';
 import { HiraganaBoardScreen } from './components/HiraganaBoardScreen';
+import { WorldResearchLabScreen } from './components/WorldResearchLabScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -595,7 +596,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
   return (
     <header className="bg-white border-b-4 border-amber-200 p-4 shadow-sm flex justify-between items-center max-w-4xl mx-auto w-full rounded-b-3xl">
       <div className="flex gap-2">
-        {screen !== 'title' && screen !== 'home' && screen !== 'report' && (
+        {screen !== 'title' && screen !== 'home' && screen !== 'report' && screen !== 'world_research_lab' && (
           <button
             onClick={onGoHome}
             className="flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-black px-5 py-3 min-h-[48px] rounded-2xl border-b-4 border-amber-300 transition-all active:translate-y-[2px] active:border-b-2"
@@ -620,7 +621,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
       </h1>
 
       <div className="flex items-center gap-2">
-        {(screen === 'title' || screen === 'home' || screen === 'map' || screen === 'zukan') && (
+        {(screen === 'title' || screen === 'home' || screen === 'map' || screen === 'zukan' || screen === 'world_research_lab') && (
           <button
             onMouseDown={startHold}
             onMouseUp={endHold}
@@ -762,6 +763,7 @@ interface HomeScreenProps {
   selectedSpot: 'spot1' | 'spot2' | 'spot3' | null;
   setSelectedSpot: (spot: 'spot1' | 'spot2' | 'spot3' | null) => void;
   onGoPlayHiraganaBoard: () => void;
+  onGoWorldResearchLab: () => void;
   seasonMode: 'auto' | Season;
   onChangeSeason: (mode: 'auto' | Season) => void;
   currentSeason: Season;
@@ -847,6 +849,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   selectedSpot,
   setSelectedSpot,
   onGoPlayHiraganaBoard,
+  onGoWorldResearchLab,
   seasonMode,
   onChangeSeason,
   currentSeason,
@@ -1423,6 +1426,27 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </div>
 
+      {/* せかいけんきゅうじょ入口カード */}
+      {!isDecorating && (
+        <div
+          onClick={onGoWorldResearchLab}
+          className="w-full bg-violet-50 hover:bg-violet-100 border-4 border-violet-300 rounded-2xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all active:scale-[0.99] shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">🧪</span>
+            <div>
+              <span className="bg-violet-400 text-white font-black text-[10px] px-2 py-0.5 rounded-full">
+                せかいけんきゅうじょ
+              </span>
+              <p className="text-sm font-black text-violet-800 mt-1">
+                こころと からだを しらべる
+              </p>
+            </div>
+          </div>
+          <span className="text-violet-500 font-extrabold text-xl">➔</span>
+        </div>
+      )}
+
       {/* フッターアクション: おしまいボタン */}
       <div className="flex justify-center border-t border-slate-100 pt-4 mt-2">
         <button
@@ -1636,7 +1660,7 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'play_hiragana_board' | 'stage_clear' | 'all_clear' | 'zukan' | 'report' | 'world_research_lab'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -3233,6 +3257,7 @@ export default function App() {
             selectedSpot={selectedSpot}
             setSelectedSpot={setSelectedSpot}
             onGoPlayHiraganaBoard={() => setScreen('play_hiragana_board')}
+            onGoWorldResearchLab={() => { playSoundEffect('tap'); setScreen('world_research_lab'); }}
             seasonMode={seasonMode}
             onChangeSeason={setSeasonMode}
             currentSeason={currentSeason}
@@ -3251,6 +3276,13 @@ export default function App() {
         {/* 3. 図鑑画面 */}
         {screen === 'zukan' && (
           <ZukanScreen unlockedRewards={unlockedRewards} onGoBack={handleGoMap} />
+        )}
+
+        {/* 3.5. せかいけんきゅうじょ画面 */}
+        {screen === 'world_research_lab' && (
+          <WorldResearchLabScreen
+            onGoBack={() => { playSoundEffect('tap'); setScreen('home'); }}
+          />
         )}
 
         {/* 4. ステージクリア報酬画面 */}
