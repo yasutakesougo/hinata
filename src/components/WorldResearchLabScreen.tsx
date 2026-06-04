@@ -42,9 +42,17 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [copyResult, setCopyResult] = useState<'success' | 'fallback' | null>(null);
 
+  // --- Derived State ---
+  const isNoSign = Object.values(signs).every(v => !v);
+
   // --- Handlers ---
   const handleToggleSign = useCallback((key: SignKey) => {
     setSigns(prev => ({ ...prev, [key]: !prev[key] }));
+    setSaved(false);
+  }, []);
+
+  const handleSelectNoSign = useCallback(() => {
+    setSigns(createEmptySigns());
     setSaved(false);
   }, []);
 
@@ -111,10 +119,10 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
 
   // --- Active signs for log display ---
   const getActiveSignLabels = (logSigns: WorldResearchLabLog['signs']): string => {
-    return SIGN_KEYS
+    const active = SIGN_KEYS
       .filter(k => logSigns[k])
-      .map(k => SIGN_LABELS[k].label)
-      .join('、');
+      .map(k => SIGN_LABELS[k].label);
+    return active.length > 0 ? active.join('、') : 'なし（いまは だいじょうぶ）';
   };
 
   const getLogHpLabel = (logHp: number): string => {
@@ -194,11 +202,44 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
 
       {/* ─── SOSサイン ─── */}
       <div className="space-y-3">
-        <h3 className="text-lg font-black text-violet-700 flex items-center gap-1.5">
-          <span>📋</span> こころとからだのセンサー
-        </h3>
+        <div>
+          <h3 className="text-lg font-black text-violet-700 flex items-center gap-1.5">
+            <span>📋</span> こころとからだのセンサー
+          </h3>
+          <p className="text-xs font-bold text-slate-500 mt-1">
+            こまったサインが あったら えらぼう。ない日は、えらばなくても だいじょうぶ。
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {/* 🌱 いまは だいじょうぶ */}
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={isNoSign}
+            aria-label="いまは だいじょうぶ"
+            onClick={handleSelectNoSign}
+            className={`flex flex-col items-center justify-between p-4 rounded-2xl border-3 font-black text-xs text-center transition-all active:scale-95 cursor-pointer min-h-[120px] ${
+              isNoSign
+                ? 'bg-emerald-100/90 border-emerald-400 text-emerald-900 shadow-md'
+                : 'bg-white/80 border-slate-200 text-slate-600 hover:bg-slate-50/50 hover:border-slate-300'
+            }`}
+          >
+            <span className={`text-3xl my-1 block transition-transform ${isNoSign ? 'scale-110' : ''}`}>
+              🌱
+            </span>
+            <span className="flex-1 flex items-center justify-center leading-tight px-1 mb-1">
+              いまは だいじょうぶ
+            </span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold mt-1 ${
+              isNoSign 
+                ? 'bg-emerald-200 text-emerald-800' 
+                : 'bg-slate-100 text-slate-400'
+            }`}>
+              {isNoSign ? 'えらび中' : 'えらぶ'}
+            </span>
+          </button>
+
           {SIGN_KEYS.map(key => {
             const info = SIGN_LABELS[key];
             const isChecked = signs[key];
@@ -302,11 +343,9 @@ export const WorldResearchLabScreen: React.FC<WorldResearchLabScreenProps> = ({
                           HP {log.hp} / 10
                         </span>
                       </div>
-                      {activeSignsText && (
-                        <p className="text-slate-500 font-bold mt-1">
-                          サイン：{activeSignsText}
-                        </p>
-                      )}
+                      <p className="text-slate-500 font-bold mt-1">
+                        サイン：{activeSignsText}
+                      </p>
                       <p className="font-black text-slate-600 mt-0.5">{hpLabel}</p>
                     </div>
                   );
