@@ -115,7 +115,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   const handleCatTap = (cat: CatState) => {
     if (result === 'correct' || isProcessing) return;
     onPlaySound('tap');
-    
+
     if (cat.position === 'wait') {
       // 待機エリアのネコは選択状態にする
       setSelectedCatId(selectedCatId === cat.id ? null : cat.id);
@@ -132,7 +132,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   const handleRoomTap = (room: 'left' | 'right') => {
     if (selectedCatId === null || result === 'correct' || isProcessing) return;
     onPlaySound('tap');
-    
+
     setCats(prev =>
       prev.map(c => (c.id === selectedCatId ? { ...c, position: room } : c))
     );
@@ -176,7 +176,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
       onPlaySound('correct');
       setResult('correct');
       setShowSuccessAnim(true);
-      
+
       // アニメーションと音声が被らないよう、0.4秒ずらして読み上げる
       speakTimerRef.current = setTimeout(() => {
         speakText(
@@ -218,14 +218,14 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
+    <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
       {/* 上部ナビゲーションと進捗 */}
       <div className="w-full max-w-2xl flex items-center justify-between gap-4">
         <button
           onClick={onGoBack}
-          className="bg-white hover:bg-slate-50 border-4 border-slate-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
+          className="hinata-btn-secondary p-2.5"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <StarProgress
           currentStep={currentStep}
@@ -237,8 +237,8 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
       </div>
 
       {/* メインゲームボード */}
-      <div className="w-full max-w-2xl bg-white border-8 border-emerald-300 rounded-3xl p-5 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
-        
+      <div className="hinata-activity-frame">
+
         {/* 正解時キラキラエフェクト */}
         {showSuccessAnim && (
           <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
@@ -250,15 +250,15 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
         )}
 
         {/* 問題指示テキスト */}
-        <div className="bg-emerald-50/50 border-4 border-emerald-100 rounded-2xl p-4 text-center">
-          <span className="bg-emerald-400 text-emerald-950 font-black text-xs px-2.5 py-0.5 rounded-full inline-block mb-1">
+        <div className="bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 text-center">
+          <span className="bg-hinata-accent text-white font-black text-xs px-2.5 py-0.5 rounded-full inline-block mb-1">
             もんだい
           </span>
-          <h2 className="text-lg md:text-xl font-black text-emerald-800 leading-relaxed mt-1">
+          <h2 className="text-lg md:text-xl font-black text-hinata-text leading-relaxed mt-1">
             {question.total}ひきの ネコちゃんを ２つの おへやに わけてみよう！
           </h2>
           <p className="text-xs font-bold text-slate-500 mt-1">
-            ひだりの おへやに <span className="text-emerald-600 text-sm font-black">{question.leftTarget}ひき</span> いれると、みぎは なんびきかな？
+            ひだりの おへやに <span className="text-hinata-accent text-sm font-black">{question.leftTarget}ひき</span> いれると、みぎは なんびきかな？
           </p>
         </div>
 
@@ -272,7 +272,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
               </span>
             )}
           </div>
-          <div className="w-full bg-slate-50 border-4 border-slate-200 border-dashed rounded-2xl p-4 min-h-[84px] flex flex-wrap gap-2.5 items-center justify-center relative shadow-inner">
+          <div className="w-full bg-hinata-active-bg/40 border-4 border-hinata-border border-dashed rounded-2xl p-4 min-h-[84px] flex flex-wrap gap-2.5 items-center justify-center relative shadow-inner">
             {cats.filter(c => c.position === 'wait').length === 0 ? (
               <span className="text-xs font-bold text-slate-400">全員お部屋に入ったよ！🐾</span>
             ) : (
@@ -287,7 +287,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
                       className={`text-4xl filter drop-shadow-sm select-none cursor-pointer transition-all duration-150 hover:scale-110 active:scale-95 p-1 rounded-full ${
                         isSelected
                           ? 'ring-4 ring-yellow-400 bg-yellow-50 animate-pulse scale-110'
-                          : 'hover:bg-slate-100'
+                          : 'hover:bg-slate-100/50'
                       }`}
                     >
                       {cat.emoji}
@@ -300,7 +300,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
         {/* お部屋エリア */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          
+
           {/* 左のお部屋 */}
           <div
             onClick={() => handleRoomTap('left')}
@@ -341,14 +341,14 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
               <button
                 onClick={() => adjustCats('left', -1)}
                 disabled={currentLeft === 0}
-                className="bg-white border-2 border-sky-300 hover:bg-sky-50 disabled:opacity-40 disabled:cursor-not-allowed text-sky-700 font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs active:translate-y-[1px]"
+                className="hinata-btn-secondary w-12 h-12 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Minus className="w-5 h-5" />
               </button>
               <button
                 onClick={() => adjustCats('left', 1)}
                 disabled={currentWait === 0}
-                className="bg-sky-600 hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs border-b-4 border-sky-800 active:translate-y-[1px]"
+                className="hinata-btn-base bg-sky-600 border-sky-700 border-b-sky-800 text-white w-12 h-12 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-sky-500"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -395,14 +395,14 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
               <button
                 onClick={() => adjustCats('right', -1)}
                 disabled={currentRight === 0}
-                className="bg-white border-2 border-pink-300 hover:bg-pink-50 disabled:opacity-40 disabled:cursor-not-allowed text-pink-700 font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs active:translate-y-[1px]"
+                className="hinata-btn-secondary w-12 h-12 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Minus className="w-5 h-5" />
               </button>
               <button
                 onClick={() => adjustCats('right', 1)}
                 disabled={currentWait === 0}
-                className="bg-pink-600 hover:bg-pink-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-full w-12 h-12 flex items-center justify-center shadow-xs border-b-4 border-pink-800 active:translate-y-[1px]"
+                className="hinata-btn-base bg-pink-600 border-pink-700 border-b-pink-800 text-white w-12 h-12 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-pink-500"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -412,21 +412,21 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
         </div>
 
         {/* 分解表示数式 */}
-        <div className="w-full bg-amber-50 border-4 border-amber-200 rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-1">今のわかれかた</span>
-          <div className="flex items-baseline gap-2 font-black text-amber-900 select-none">
+        <div className="w-full bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 flex flex-col items-center justify-center shadow-xs">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">今のわかれかた</span>
+          <div className="flex items-baseline gap-2 font-black text-hinata-text select-none">
             <span className="text-3xl md:text-4xl">{question.total}</span>
             <span className="text-lg md:text-xl">は</span>
             <span className={`text-3xl md:text-4xl px-2 py-0.5 rounded-xl transition-all ${
-              currentLeft === question.leftTarget 
-                ? 'bg-emerald-100 text-emerald-700' 
-                : 'bg-amber-100/50'
+              currentLeft === question.leftTarget
+                ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200'
+                : 'bg-hinata-active-bg/50 border-2 border-transparent'
             }`}>{currentLeft}</span>
             <span className="text-lg md:text-xl">と</span>
             <span className={`text-3xl md:text-4xl px-2 py-0.5 rounded-xl transition-all ${
-              currentRight === question.rightTarget 
-                ? 'bg-emerald-100 text-emerald-700' 
-                : 'bg-amber-100/50'
+              currentRight === question.rightTarget
+                ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200'
+                : 'bg-hinata-active-bg/50 border-2 border-transparent'
             }`}>{currentRight}</span>
           </div>
 
@@ -442,10 +442,10 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
             <button
               onClick={handleCheckAnswer}
               disabled={currentWait !== 0 || isProcessing}
-              className={`font-black text-md px-14 py-3 rounded-2xl transition-all shadow-md active:translate-y-[2px] active:border-b-2 border-b-4 ${
+              className={`px-14 py-3 min-h-[48px] ${
                 currentWait === 0 && !isProcessing
-                  ? 'bg-amber-400 hover:bg-amber-500 border-amber-600 text-amber-950 scale-105 animate-pulse'
-                  : 'bg-slate-200 border-slate-400 text-slate-400 cursor-not-allowed'
+                  ? 'hinata-btn-primary scale-105 animate-pulse'
+                  : 'hinata-btn-secondary opacity-50 cursor-not-allowed'
               }`}
             >
               {currentWait > 0 ? `のこり ${currentWait}匹 をお部屋にいれてね` : isProcessing ? 'かくにんちゅう...' : 'できた！'}
@@ -460,7 +460,7 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
                   onNextStep();
                 }}
                 disabled={isProcessing}
-                className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-14 py-2.5 rounded-xl shadow-md disabled:opacity-50"
+                className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-14 py-3 min-h-[48px] disabled:opacity-50"
               >
                 つぎへすすむ ➔
               </button>
@@ -469,8 +469,8 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
 
           {result === 'wrong' && (
             <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-              {attempt === 1 
-                ? "🐱 もういちど、よくかぞえて みよう！" 
+              {attempt === 1
+                ? "🐱 もういちど、よくかぞえて みよう！"
                 : `💡 ヒント：ひだりに ${question.leftTarget}ひき いれると、みぎは ${question.rightTarget}ひき になるよ！`}
             </div>
           )}

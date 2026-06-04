@@ -168,14 +168,14 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
+    <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
       {/* 上部ナビゲーションと進捗 */}
       <div className="w-full max-w-2xl flex items-center justify-between gap-4">
         <button
           onClick={onGoBack}
-          className="bg-white hover:bg-slate-50 border-4 border-slate-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
+          className="hinata-btn-secondary p-2.5"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <StarProgress
           currentStep={currentStep}
@@ -187,28 +187,28 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
       </div>
 
       {/* メインゲームボード */}
-      <div className="w-full max-w-2xl bg-white border-8 border-violet-300 rounded-3xl p-5 shadow-2xl flex flex-col gap-6 relative overflow-hidden">
+      <div className="hinata-activity-frame">
         {/* 正解時キラキラエフェクト */}
         {showSuccessAnim && (
           <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
             <div className="flex gap-4">
-              <Sparkles className={`w-16 h-16 text-yellow-400 ${reducedMotion ? '' : 'animate-spin'}`} />
-              <Sparkles className={`w-16 h-16 text-yellow-400 ${reducedMotion ? '' : 'animate-bounce'}`} />
+              <Sparkles className="w-16 h-16 text-yellow-400 animate-spin" />
+              <Sparkles className="w-16 h-16 text-yellow-400 animate-bounce" />
             </div>
           </div>
         )}
 
         {/* コール＆レスポンス どうぶつ吹き出しエリア */}
-        <div className="flex items-start gap-3 bg-violet-50/50 border-4 border-violet-100 rounded-2xl p-4 min-h-[100px] relative">
+        <div className="flex items-start gap-3 bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 min-h-[100px] relative">
           <div className="text-5xl select-none flex-shrink-0 animate-fadeIn">
             {animal.emoji}
           </div>
-          
+
           <div className="flex-1 flex flex-col justify-center">
-            <span className="text-[10px] font-black text-violet-600 block mb-1">
+            <span className="text-[10px] font-black text-hinata-accent block mb-1">
               {animal.name}
             </span>
-            <h2 className="text-base md:text-lg font-black text-slate-800 leading-relaxed">
+            <h2 className="text-base md:text-lg font-black text-hinata-text leading-relaxed">
               {result === 'correct' ? (
                 <span>
                   <span className="text-2xl text-emerald-600 font-extrabold">{neededCount}！</span>
@@ -216,12 +216,12 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
                   {initialCount} と {neededCount} で 10！
                 </span>
               ) : result === 'wrong' ? (
-                <span className="text-rose-500 font-black">
+                <span className="text-[#DC2626] font-black">
                   おっと！たたきすぎちゃった。もういちど 10にしてみよう！
                 </span>
               ) : (
                 <span>
-                  <span className="text-xl text-violet-700 font-extrabold">{initialCount}</span> の おともだちは なーんだ？
+                  <span className="text-xl text-hinata-accent font-extrabold">{initialCount}</span> の おともだちは なーんだ？
                   たいこを トントン たたいてみよう！
                 </span>
               )}
@@ -237,7 +237,7 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
             </span>
           </div>
 
-          <div className="bg-[#F8F6FC] border-4 border-violet-200 rounded-2xl p-4 flex flex-col gap-2 shadow-inner">
+          <div className="bg-hinata-active-bg/40 border-4 border-hinata-border rounded-2xl p-4 flex flex-col gap-2 shadow-inner">
             {/* 上段5マス */}
             <div className="grid grid-cols-5 gap-2.5">
               {Array.from({ length: 5 }).map((_, idx) => {
@@ -307,23 +307,23 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
         <div className="flex flex-col items-center justify-center py-4 relative">
           {/* 太鼓の台座と太鼓本体 */}
           <div className="relative w-48 h-48 md:w-56 md:h-56 flex items-center justify-center">
-            
+
             {/* 太鼓のバウンスアニメーション */}
             <button
               onClick={handleDrumTap}
               disabled={result === 'correct' || result === 'wrong' || isProcessing}
-              className={`w-40 h-40 md:w-48 md:h-48 rounded-full bg-radial from-[#FEE2E2] to-[#EF4444] border-8 border-[#B91C1C] shadow-xl flex items-center justify-center active:scale-95 transition-all outline-none select-none cursor-pointer relative z-10 ${
+              className={`w-40 h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-b from-[#EF4444] to-[#B91C1C] border-8 border-[#991B1B] shadow-[0_8px_0_#7F1D1D] active:translate-y-[4px] active:shadow-[0_2px_0_#7F1D1D] transition-all outline-none select-none cursor-pointer relative z-10 ${
                 isDrumActive && !reducedMotion ? 'scale-90 duration-75' : 'hover:scale-[1.02] duration-150'
               } disabled:opacity-90 disabled:cursor-not-allowed`}
             >
               {/* 太鼓の皮・打面 */}
               <div className="w-[82%] h-[82%] rounded-full bg-[#FCF8F2] border-4 border-dashed border-[#DC2626]/40 flex flex-col items-center justify-center shadow-inner relative">
-                
+
                 {/* 伝統的な三つ巴マークの簡略的な表示 */}
                 <div className="text-[#B91C1C]/15 text-5xl font-serif select-none absolute">
                   🥁
                 </div>
-                
+
                 {/* テキストガイド */}
                 <span className="text-[#DC2626] font-black text-base md:text-lg tracking-wider relative z-20">
                   たたこう！
@@ -356,10 +356,10 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
           {result === 'correct' ? (
             <div className="text-center w-full animate-fadeIn flex flex-col items-center gap-4">
               {/* ピカピカ数式表示 */}
-              <div className="w-full bg-emerald-50 border-4 border-emerald-100 rounded-2xl py-3 px-6 flex items-center justify-center gap-3 font-black text-emerald-800 select-none shadow-xs">
+              <div className="w-full bg-hinata-active-bg border-4 border-hinata-border rounded-2xl py-3 px-6 flex items-center justify-center gap-3 font-black text-hinata-text select-none shadow-xs">
                 <span className="text-3xl md:text-4xl">{initialCount}</span>
                 <span className="text-xl">と</span>
-                <span className="text-3xl md:text-4xl text-emerald-600 animate-pulse">{neededCount}</span>
+                <span className="text-3xl md:text-4xl text-hinata-accent animate-pulse">{neededCount}</span>
                 <span className="text-xl">で</span>
                 <span className="text-3xl md:text-4xl">10</span>
               </div>
@@ -371,7 +371,7 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
                   onNextStep();
                 }}
                 disabled={isProcessing}
-                className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-14 py-2.5 rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-14 py-3 min-h-[48px] disabled:opacity-50"
               >
                 つぎへすすむ ➔
               </button>
@@ -382,7 +382,7 @@ export const FriendTaikoScreen: React.FC<FriendTaikoScreenProps> = ({
             </span>
           ) : (
             <span className="text-xs font-bold text-slate-400">
-              あと <span className="text-violet-600 font-black text-sm">{neededCount - tappedCount}回</span> たたこう！
+              あと <span className="text-hinata-accent font-black text-sm">{neededCount - tappedCount}回</span> たたこう！
             </span>
           )}
         </div>

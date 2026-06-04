@@ -61,6 +61,7 @@ export const CompanionWalker: React.FC<CompanionWalkerProps> = ({
     .filter(item => Boolean(item.emoji));
 
   if (unlockedAnimals.length === 0) {
+    if (isDecorating) return null; // かざりつけ中はスポットを見やすくするため案内表示を消す
     // 初期状態で解放済み動物がいない場合は、既存 of 案内役リス表示を維持する
     return (
       <div className="flex items-center gap-3 bg-white/80 border border-emerald-100 rounded-2xl px-4 py-2.5 shadow-sm text-center mb-2 mx-auto animate-pulse">

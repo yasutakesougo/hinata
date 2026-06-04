@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Volume2, VolumeX, Star, Trophy, Sparkles, Plus, Minus, Check, Map, Compass, BookOpen, Home } from 'lucide-react';
+import { Volume2, VolumeX, Star, Trophy, Sparkles, Plus, Minus, Check, Map, Compass, BookOpen, Home, ArrowLeft } from 'lucide-react';
 import { auth, db } from './firebase';
 import { signInAnonymously, onAuthStateChanged, linkWithCredential, EmailAuthProvider, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
@@ -41,7 +41,7 @@ interface Stage {
   jpName: string;
   desc: string;
   type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko' | 'cherry_combine';
-  maxVal: number; 
+  maxVal: number;
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
 }
@@ -208,16 +208,16 @@ const getAudioContext = (forceCreate = false): AudioContext | null => {
   if (typeof window === 'undefined') return null;
   const AudioContextClass = window.AudioContext || (window as Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AudioContextClass) return null;
-  
+
   if (!globalAudioContext) {
     if (!forceCreate) return null;
     globalAudioContext = new AudioContextClass();
   }
-  
+
   if (globalAudioContext.state === 'suspended' && forceCreate) {
     globalAudioContext.resume();
   }
-  
+
   return globalAudioContext;
 };
 
@@ -322,8 +322,8 @@ const playSoundEffect = (type: 'correct' | 'wrong' | 'tap' | 'whoosh' | 'pop' | 
 
     case 'clear':
     case 'victory': {
-      const notes = type === 'victory' 
-        ? [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00] 
+      const notes = type === 'victory'
+        ? [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]
         : [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const o = ctx.createOscillator();
@@ -435,7 +435,7 @@ const startBgm = (type: 'title' | 'play' | 'boss', enabled: boolean) => {
       const freq = melody.notes[bgmNoteIndex];
       const noteGainVal = melody.gains[bgmNoteIndex];
       const beatDuration = melody.durations[bgmNoteIndex];
-      
+
       const secondsPerBeat = 60.0 / melody.tempo;
       const durationSeconds = beatDuration * secondsPerBeat;
 
@@ -454,7 +454,7 @@ const startBgm = (type: 'title' | 'play' | 'boss', enabled: boolean) => {
         }
 
         osc.frequency.setValueAtTime(freq, bgmNextNoteTime);
-        
+
         gain.gain.setValueAtTime(0, bgmNextNoteTime);
         gain.gain.linearRampToValueAtTime(noteGainVal, bgmNextNoteTime + 0.03);
         gain.gain.setValueAtTime(noteGainVal, bgmNextNoteTime + durationSeconds - 0.05);
@@ -605,12 +605,12 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
   }, []);
 
   return (
-    <header className="bg-white border-b-4 border-amber-200 p-4 shadow-sm flex justify-between items-center max-w-4xl mx-auto w-full rounded-b-3xl">
+    <header className="bg-hinata-card border-b-4 border-hinata-border p-4 shadow-[0_4px_0_var(--hinata-border)] flex justify-between items-center max-w-4xl mx-auto w-full rounded-b-3xl text-hinata-text">
       <div className="flex gap-2">
         {screen !== 'title' && screen !== 'home' && screen !== 'report' && screen !== 'world_research_lab' && (
           <button
             onClick={onGoHome}
-            className="flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-black px-5 py-3 min-h-[48px] rounded-2xl border-b-4 border-amber-300 transition-all active:translate-y-[2px] active:border-b-2"
+            className="hinata-btn-secondary px-5 py-3 min-h-[48px]"
           >
             <Home className="w-5 h-5" />
             <span className="text-sm md:text-base">ひろば</span>
@@ -619,15 +619,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
         {(screen === 'home' || screen === 'map' || screen === 'report') && (
           <button
             onClick={onGoZukan}
-            className="flex items-center gap-1 bg-pink-100 hover:bg-pink-200 text-pink-700 font-black px-5 py-3 min-h-[48px] rounded-2xl border-b-4 border-pink-300 transition-all active:translate-y-[2px] active:border-b-2"
+            className="hinata-btn-secondary px-5 py-3 min-h-[48px]"
           >
             <BookOpen className="w-5 h-5" />
             <span className="text-sm md:text-base">ずかん</span>
           </button>
         )}
       </div>
-      
-      <h1 className="text-lg md:text-2xl font-black text-amber-600 tracking-wider flex items-center gap-1.5 cursor-pointer select-none" onClick={onGoHome}>
+
+      <h1 className="text-lg md:text-2xl font-black text-hinata-accent tracking-wider flex items-center gap-1.5 cursor-pointer select-none" onClick={onGoHome}>
         <span>🍎</span> さんすうアドベンチャー <span>⚔️</span>
       </h1>
 
@@ -639,7 +639,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
             onMouseLeave={endHold}
             onTouchStart={startHold}
             onTouchEnd={endHold}
-            className={`relative flex items-center gap-1 bg-violet-100 hover:bg-violet-200 text-violet-700 font-black px-5 py-3 md:py-3 md:px-5 min-h-[48px] rounded-2xl border-b-4 border-violet-300 transition-all active:translate-y-[2px] active:border-b-2 text-xs md:text-sm select-none ${
+            className={`relative hinata-btn-secondary min-h-[48px] px-5 py-3 text-xs md:text-sm select-none ${
               isHolding ? 'scale-95' : ''
             }`}
           >
@@ -665,13 +665,13 @@ const AppHeader: React.FC<AppHeaderProps> = ({ screen, soundEnabled, onGoHome, o
         )}
         <button
           onClick={onToggleSound}
-          className={`p-3.5 rounded-2xl border-4 transition-all active:scale-95 shadow-sm ${
-            soundEnabled 
-              ? 'bg-amber-400 border-amber-500 text-amber-950' 
-              : 'bg-slate-300 border-slate-400 text-slate-600'
+          className={`hinata-btn-base p-3 rounded-2xl shadow-xs ${
+            soundEnabled
+              ? 'bg-amber-400 border-amber-500 text-amber-950 hover:bg-amber-300'
+              : 'bg-slate-300 border-slate-400 text-slate-600 hover:bg-slate-200'
           }`}
         >
-          {soundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+          {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
         </button>
       </div>
     </header>
@@ -688,29 +688,41 @@ export interface StarProgressProps {
 
 export const StarProgress: React.FC<StarProgressProps> = ({ currentStep, totalSteps, title, starResults }) => {
   return (
-    <div className="w-full max-w-md bg-white border-4 border-amber-100 rounded-2xl px-4 py-2 shadow-sm flex justify-between items-center">
-      <span className="font-extrabold text-amber-700 text-xs md:text-sm">
-        ⛳ {title} ({currentStep} / {totalSteps})
+    <div className="w-full max-w-md bg-hinata-card border-4 border-hinata-border rounded-2xl px-4 py-2 shadow-[0_4px_0_var(--hinata-border)] flex justify-between items-center text-hinata-text">
+      <span className="font-extrabold text-xs md:text-sm flex items-center gap-1 select-none">
+        <span>⛳</span> {title} ({currentStep} / {totalSteps})
       </span>
       <div className="flex gap-1">
         {Array.from({ length: totalSteps }).map((_, idx) => {
           const isPast = idx < currentStep - 1;
           const isCurrent = idx === currentStep - 1;
           const isFirstTryCorrect = starResults && starResults[idx] === true;
-          
+
           return (
-            <Star
+            <div
               key={idx}
-              className={`w-5 h-5 transition-all ${
-                isPast 
-                  ? isFirstTryCorrect 
-                    ? 'text-yellow-400 fill-yellow-400' 
-                    : 'text-slate-400 fill-slate-300' 
-                  : isCurrent 
-                    ? 'text-amber-500 fill-yellow-200 animate-pulse scale-110' 
-                    : 'text-slate-200'
+              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                isPast
+                  ? isFirstTryCorrect
+                    ? 'bg-amber-100 border-2 border-amber-400 text-amber-500 scale-105 shadow-xs'
+                    : 'bg-slate-100 border-2 border-slate-300 text-slate-400'
+                  : isCurrent
+                    ? 'bg-yellow-50 border-2 border-yellow-400 text-yellow-600 animate-pulse scale-110 shadow-xs'
+                    : 'bg-slate-50 border border-slate-200 text-slate-300'
               }`}
-            />
+            >
+              <Star
+                className={`w-3.5 h-3.5 ${
+                  isPast
+                    ? isFirstTryCorrect
+                      ? 'fill-amber-400 text-amber-400'
+                      : 'fill-slate-300 text-slate-300'
+                    : isCurrent
+                      ? 'fill-yellow-300 text-yellow-500 animate-bounce-once'
+                      : 'text-slate-200'
+                }`}
+              />
+            </div>
           );
         })}
       </div>
@@ -733,7 +745,7 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart }) => {
     <div className="flex flex-col items-center text-center gap-8 max-w-md w-full bg-white border-8 border-amber-300 p-8 rounded-3xl shadow-2xl relative overflow-hidden my-4">
       <div className="absolute top-2 right-2 animate-spin text-5xl">🍉</div>
       <div className="absolute bottom-2 left-2 animate-bounce text-5xl">🍒</div>
-      
+
       <div className="space-y-3">
         <span className="text-8xl block animate-pulse">👑</span>
         <h2 className="text-3xl md:text-4xl font-extrabold text-amber-600 leading-tight select-none">
@@ -911,17 +923,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const seasonConfig = SEASON_CONFIGS[currentSeason];
 
   return (
-    <div className="w-full max-w-2xl bg-white border-8 border-emerald-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 my-4 relative">
-      
+    <div className="w-full max-w-2xl bg-hinata-card border-8 border-hinata-border-dark rounded-3xl p-6 shadow-[0_12px_0_var(--hinata-border)] flex flex-col gap-6 my-4 relative">
+
       {/* きょうのきぶん選択モーダル (自己決定・自律性の支援) */}
       {!todayCondition && !isDecorating && (
-        <div className="absolute inset-0 bg-slate-950/40 rounded-2xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
-          <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
+        <div className="absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
+          <div className="hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative animate-scaleUp">
             <div className="space-y-1">
-              <h3 className="text-2xl md:text-3xl font-black text-emerald-700 flex items-center justify-center gap-1.5">
+              <h3 className="text-2xl md:text-3xl font-black text-[#5E431E] flex items-center justify-center gap-1.5 select-none">
                 <span>🦁</span> きょうの きぶんは？ <span>🐨</span>
               </h3>
-              <p className="text-xs font-bold text-slate-500">
+              <p className="text-xs font-bold text-[#8C6A3C] select-none">
                 じぶんの きぶんを えらんでね！
               </p>
             </div>
@@ -933,13 +945,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseCondition('energetic')}
                 aria-label="げんきいっぱい"
-                className={`bg-amber-50 hover:bg-amber-100/80 border-4 border-amber-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0s' }}
               >
                 <span className="text-4xl">🦁</span>
-                <span className="text-xs font-black text-amber-800">げんきいっぱい</span>
+                <span className="text-xs font-black text-hinata-text">げんきいっぱい</span>
               </button>
 
               {/* 選択 2: のんびり */}
@@ -947,13 +959,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseCondition('relaxed')}
                 aria-label="のんびり"
-                className={`bg-emerald-50 hover:bg-emerald-100/80 border-4 border-emerald-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.4s' }}
               >
                 <span className="text-4xl">🐨</span>
-                <span className="text-xs font-black text-emerald-800">のんびり</span>
+                <span className="text-xs font-black text-hinata-text">のんびり</span>
               </button>
 
               {/* 選択 3: しずかにやりたい */}
@@ -961,13 +973,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseCondition('quiet')}
                 aria-label="しずかにやりたい"
-                className={`bg-sky-50 hover:bg-sky-100/80 border-4 border-sky-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.8s' }}
               >
                 <span className="text-4xl">🦉</span>
-                <span className="text-xs font-black text-sky-800">しずかにやりたい</span>
+                <span className="text-xs font-black text-hinata-text">しずかにやりたい</span>
               </button>
             </div>
           </div>
@@ -976,13 +988,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* 今日の3択パネル (自己決定・自律性の支援) */}
       {todayCondition && !todayChoiceMade && !isDecorating && (
-        <div className="absolute inset-0 bg-slate-950/40 rounded-2xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
-          <div className="bg-white/95 border-8 border-emerald-300 p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md shadow-2xl animate-scaleUp">
+        <div className="absolute inset-0 bg-slate-950/40 rounded-3xl flex items-center justify-center z-40 animate-fadeIn backdrop-blur-xs px-4">
+          <div className="hinata-card-wood wood-board-hanger p-6 md:p-8 rounded-3xl text-center space-y-6 w-full max-w-md relative animate-scaleUp">
             <div className="space-y-1">
-              <h3 className="text-2xl md:text-3xl font-black text-emerald-700 flex items-center justify-center gap-1.5">
+              <h3 className="text-2xl md:text-3xl font-black text-[#5E431E] flex items-center justify-center gap-1.5 select-none">
                 <span>🌟</span> きょうの もりを えらぼう <span>🌟</span>
               </h3>
-              <p className="text-xs font-bold text-slate-500">
+              <p className="text-xs font-bold text-[#8C6A3C] select-none">
                 すきな もりから ぼうけんをはじめよう！
               </p>
             </div>
@@ -994,13 +1006,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseActivity('walk')}
                 aria-label="もりの さんぽ"
-                className={`bg-emerald-50 hover:bg-emerald-100/80 border-4 border-emerald-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0s' }}
               >
                 <span className="text-4xl">🌲</span>
-                <span className="text-xs font-black text-emerald-800">もりの さんぽ</span>
+                <span className="text-xs font-black text-hinata-text">もりの さんぽ</span>
               </button>
 
               {/* 選択 2: さんすうの ぼうけん */}
@@ -1008,13 +1020,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseActivity('math')}
                 aria-label="さんすうの ぼうけん"
-                className={`bg-amber-50 hover:bg-amber-100/80 border-4 border-amber-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.4s' }}
               >
                 <span className="text-4xl">🍪</span>
-                <span className="text-xs font-black text-amber-800">さんすうの ぼうけん<br/>(1もんだけ)</span>
+                <span className="text-xs font-black text-hinata-text">さんすうの ぼうけん<br/>(1もんだけ)</span>
               </button>
 
               {/* 選択 3: あいう おんどくの もり */}
@@ -1022,13 +1034,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseActivity('hiragana_board')}
                 aria-label="あいう おんどくの もり"
-                className={`bg-sky-50 hover:bg-sky-100/80 border-4 border-sky-300 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-sm min-h-[110px] ${
+                className={`hinata-card bg-hinata-card border-hinata-border-dark p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-[2px] active:shadow-[0_2px_0_var(--hinata-border)] min-h-[110px] ${
                   reducedMotion ? '' : 'animate-float'
                 }`}
                 style={reducedMotion ? {} : { animationDelay: '0.8s' }}
               >
                 <span className="text-4xl">🗣️</span>
-                <span className="text-xs font-black text-sky-800">あいう おんどくの もり</span>
+                <span className="text-xs font-black text-hinata-text">あいう おんどくの もり</span>
               </button>
             </div>
 
@@ -1038,7 +1050,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 type="button"
                 onClick={() => onChooseActivity('later')}
                 aria-label="あとで えらぶ"
-                className="text-sm font-bold text-slate-400 hover:text-slate-600 underline cursor-pointer transition-colors active:scale-95 py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300"
+                className="text-sm font-bold text-[#8C6A3C] hover:text-[#5E431E] underline cursor-pointer transition-colors active:scale-95 py-2 px-4 rounded-xl focus:outline-none"
               >
                 あとで えらぶ (もりにはいる)
               </button>
@@ -1069,8 +1081,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* ヘッダーエリア: タイトルとテーマ変更 */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-emerald-100 pb-4">
         <div className="text-center sm:text-left">
-          <h2 className="text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1 justify-center sm:justify-start">
-            <span>🌲</span> もりの ひろば <span>🏡</span>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-600 flex items-center gap-1 justify-center sm:justify-start" style={{ whiteSpace: 'nowrap' }}>
+            <span>🌲</span> もりのひろば <span>🏡</span>
           </h2>
           <p className="text-xs text-slate-400 font-bold mt-1">
             もりのひろばへようこそ！あそぶクエストをえらんでね。
@@ -1164,7 +1176,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           ];
           const isTriggered = decorTrigger[i];
           const wiggleClass = isTriggered ? 'animate-wiggle' : '';
-          
+
           return (
             <button
               key={`decor-${i}`}
@@ -1219,7 +1231,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot1)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
+            isDecorating && <span className="text-emerald-700 font-black text-xl select-none">＋</span>
           )}
         </button>
 
@@ -1242,7 +1254,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot2)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
+            isDecorating && <span className="text-emerald-700 font-black text-xl select-none">＋</span>
           )}
         </button>
 
@@ -1265,7 +1277,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               {FURNITURE_LIST.find(f => f.id === placedFurniture.spot3)?.emoji}
             </span>
           ) : (
-            isDecorating && <span className="text-emerald-700 font-black text-[9px] leading-tight text-center select-none">✨ここに<br/>おく</span>
+            isDecorating && <span className="text-emerald-700 font-black text-xl select-none">＋</span>
           )}
         </button>
 
@@ -1358,7 +1370,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               );
             })}
           </div>
-          
+
           {!selectedSpot && (
             <p className="text-[10px] font-extrabold text-rose-500 text-center animate-pulse">
               ⚠️ 広場の「かざりつけしたい スポット（点線）」を タップして選んでね！
@@ -1498,17 +1510,17 @@ const MapScreen: React.FC<MapScreenProps> = ({ unlockedStageId, onSelectStage, o
         {STAGES.map((stage, idx) => {
           const isUnlocked = stage.id <= unlockedStageId;
           const isCurrent = stage.id === unlockedStageId;
-          
+
           return (
             <div key={stage.id} className="flex flex-col items-center relative z-10 w-full md:w-[86px] lg:w-[96px] flex-shrink-0">
               <button
                 onClick={() => onSelectStage(stage)}
                 disabled={!isUnlocked}
                 className={`w-16 h-16 md:w-16 md:h-16 lg:w-18 lg:h-18 rounded-full border-4 shadow-lg transition-all flex flex-col items-center justify-center relative ${
-                  isCurrent 
-                    ? 'bg-amber-400 border-amber-500 scale-110 animate-bounce' 
-                    : isUnlocked 
-                      ? 'bg-white border-emerald-600 hover:bg-emerald-50' 
+                  isCurrent
+                    ? 'bg-amber-400 border-amber-500 scale-110 animate-bounce'
+                    : isUnlocked
+                      ? 'bg-white border-emerald-600 hover:bg-emerald-50'
                       : 'bg-slate-300 border-slate-400 cursor-not-allowed'
                 }`}
               >
@@ -1580,8 +1592,8 @@ const ZukanScreen: React.FC<ZukanScreenProps> = ({ unlockedRewards, onGoBack }) 
         {STAGES.map((stage) => {
           const isUnlocked = unlockedRewards.includes(stage.reward.name);
           return (
-            <div 
-              key={stage.id} 
+            <div
+              key={stage.id}
               className={`border-4 rounded-2xl p-3 flex flex-col items-center text-center gap-1 relative ${
                 isUnlocked ? 'border-pink-200 bg-pink-50/50' : 'border-dashed border-slate-200 bg-slate-50'
               }`}
@@ -1862,7 +1874,7 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [totalSteps, setTotalSteps] = useState<number>(5);
   const [starResults, setStarResults] = useState<boolean[]>([]);
-  
+
   // モード1 (合成) 状態
   const [synQuestion, setSynQuestion] = useState<SynthesisQuestion | null>(null);
   const [isMerged, setIsMerged] = useState<boolean>(false);
@@ -2171,13 +2183,13 @@ export default function App() {
       setHistory([]);
       setPlacedFurniture({ spot1: null, spot2: null, spot3: null });
       setCompletedHiragana([]);
-      
+
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
       const dateStr = `${yyyy}-${mm}-${dd}`;
-      
+
       // がんばり時間の初期化
       localStorage.removeItem(`sansu_quest_active_time_${dateStr}`);
       setActiveTimeToday(0);
@@ -2208,13 +2220,13 @@ export default function App() {
     }
 
     const chronoHistory = [...history].reverse();
-    
+
     // 1. 各問題ごとの試行回数を集計
     const attemptsMap: Record<string, number> = {};
     chronoHistory.forEach(record => {
       attemptsMap[record.questionText] = (attemptsMap[record.questionText] || 0) + 1;
     });
-    
+
     const attemptsValues = Object.values(attemptsMap);
     const maxAttempts = attemptsValues.length > 0 ? Math.max(...attemptsValues) : 0;
 
@@ -2241,7 +2253,7 @@ export default function App() {
 
   const generateTodayPraiseMessage = () => {
     const todayStr = getTodayDateString();
-    
+
     // 0. 調子の自己選択 (自律性)
     let chosenCondition: string | null = null;
     try {
@@ -2257,7 +2269,7 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    
+
     // 2. ヘルプシーキング (ヒントを使用)
     let hintsCount = 0;
     try {
@@ -2285,7 +2297,7 @@ export default function App() {
       if (chosenCondition === 'energetic') condName = "「げんきいっぱい」";
       if (chosenCondition === 'relaxed') condName = "「のんびり」";
       if (chosenCondition === 'quiet') condName = "「しずかにやりたい」";
-      
+
       if (chosenCondition === 'relaxed' || chosenCondition === 'quiet') {
         messages.push(`今日は自分で${condName}を選んで、少しだけ（または静かに）取り組めました。自分の調子に合わせて選べたことも、大切ながんばりです。`);
       } else {
@@ -2452,7 +2464,7 @@ export default function App() {
     if (tempEffectiveSoundEnabled) {
       playSoundEffect('tap');
     }
-    
+
     // 選択状態を永続化
     const todayStr = getTodayDateString();
     try {
@@ -2474,7 +2486,7 @@ export default function App() {
 
   const handleChooseActivity = (activity: 'walk' | 'math' | 'hiragana_board' | 'later') => {
     playSoundEffect('tap');
-    
+
     // 選択状態を永続化
     const todayStr = getTodayDateString();
     try {
@@ -2524,7 +2536,7 @@ export default function App() {
   const handleToggleSound = async () => {
     const nextVal = !soundEnabled;
     setSoundEnabled(nextVal);
-    
+
     if (nextVal) {
       await unlockAudio();
       playSoundEffect('tap');
@@ -2699,7 +2711,7 @@ export default function App() {
     if (questType === 'synthesis') {
       const q = generateSynthesisQuestion(10);
       setSynQuestion(q);
-      setIsMerged(true); 
+      setIsMerged(true);
       setCountedCount(0);
       setIsCounting(false);
       setTimeout(() => {
@@ -2858,7 +2870,7 @@ export default function App() {
       } else {
         setStarResults(prev => [...prev, false]);
       }
-      
+
       let praise = "せいかい！ よく かんがえたね！🌟";
       if (synAttempt === 1) {
         praise = "せいかい！ あきらめずに チャレンジできたね！👏";
@@ -2988,7 +3000,7 @@ export default function App() {
       } else {
         setStarResults(prev => [...prev, false]);
       }
-      
+
       let praise = `せいかい！ のこりは ${subQuestion.answer}こ だね！よく かんがえたね！🌟`;
       if (subAttempt === 1) {
         praise = "せいかい！ あきらめずに チャレンジできたね！👏";
@@ -3043,7 +3055,7 @@ export default function App() {
         setTimeout(() => setBossDmgAnim(false), 600);
         setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
-        
+
         if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
@@ -3081,7 +3093,7 @@ export default function App() {
         setTimeout(() => setBossDmgAnim(false), 600);
         setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
-        
+
         if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
@@ -3119,7 +3131,7 @@ export default function App() {
         setTimeout(() => setBossDmgAnim(false), 600);
         setBossHp(prev => Math.max(0, prev - damage));
         speakText("せいかい！アタック！", soundEnabled);
-        
+
         if (currentStep === totalSteps) {
           setTimeout(() => triggerStageClear(), 1000);
         } else {
@@ -3252,28 +3264,30 @@ export default function App() {
     };
   }, [synQuestion]);
 
-  const currentTheme = THEMES.find(t => t.id === themeId) || THEMES[0];
   const currentSeason = seasonMode === 'auto' ? getSeason(new Date().getMonth()) : seasonMode;
-  
+
   // がんばりレポート用プロセスメトリクス計算の実行
   const { retryCount, maxAttempts } = getProcessMetrics();
 
   return (
-    <div className={`min-h-screen ${currentTheme.bg} flex flex-col justify-between select-none font-sans text-slate-800 pb-4`}>
-      
+    <div
+      className={`min-h-screen theme-${themeId} bg-hinata-bg hinata-pattern-dots flex flex-col justify-between select-none font-sans text-hinata-text pb-4`}
+      data-reduced-motion={effectiveReducedMotion ? "true" : "false"}
+    >
+
       {/* 共通ヘッダー */}
-      <AppHeader 
-        screen={screen} 
-        soundEnabled={effectiveSoundEnabled} 
-        onGoHome={handleGoMap} 
-        onToggleSound={handleToggleSound} 
-        onGoZukan={() => { playSoundEffect('tap'); setIsTransitioning(false); setScreen('zukan'); }} 
+      <AppHeader
+        screen={screen}
+        soundEnabled={effectiveSoundEnabled}
+        onGoHome={handleGoMap}
+        onToggleSound={handleToggleSound}
+        onGoZukan={() => { playSoundEffect('tap'); setIsTransitioning(false); setScreen('zukan'); }}
         onGoReport={handleGoReport}
       />
 
       {/* メインビューポート */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 flex flex-col items-center justify-center py-4">
-        
+
         {/* 1. タイトル画面 */}
         {screen === 'title' && (
           <TitleScreen onStart={handleStartGame} />
@@ -3332,521 +3346,607 @@ export default function App() {
 
         {/* 5. 合成・がったいたしざんプレイ画面 */}
         {screen === 'play_synthesis' && synQuestion && selectedStage && (
-          <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
-            <StarProgress currentStep={currentStep} totalSteps={totalSteps} title={selectedStage.jpName} starResults={starResults} />
-
-            {/* おはなし（文章題）吹き出し */}
-            {synQuestion.isWordProblem && synQuestion.storyText && (
-              <div className="w-full max-w-2xl bg-amber-50/90 border-4 border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn relative flex items-start gap-3">
-                <span className="text-3xl select-none">💬</span>
-                <div className="flex-1 space-y-1">
-                  <span className="text-xs font-black text-amber-600 block">きょうの おはなし</span>
-                  <p className="text-lg md:text-xl font-black text-slate-700 leading-relaxed text-left">
-                    {synQuestion.storyText}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* ボード(テンフレーム) */}
-            <div className="relative w-full max-w-2xl bg-orange-50/70 rounded-3xl border-4 border-orange-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
-              {/* 左皿 */}
-              <div className={`absolute left-[20%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-all duration-1000 ${isMerged ? 'opacity-20 scale-75' : 'opacity-100'}`}>
-                <span className="text-amber-800 font-black text-xs mb-1">ひだり ({synQuestion.left})</span>
-                <div className="w-28 h-28 md:w-32 md:h-32 bg-white/95 border-4 border-orange-100 rounded-full shadow-md"></div>
-              </div>
-
-              {/* プラス記号 */}
-              <div className={`absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 text-3xl font-black text-orange-300 transition-all duration-500 ${isMerged ? 'scale-0 opacity-0' : 'opacity-100'}`}>
-                ＋
-              </div>
-
-              {/* 右皿 */}
-              <div className={`absolute left-[80%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-all duration-1000 ${isMerged ? 'opacity-20 scale-75' : 'opacity-100'}`}>
-                <span className="text-amber-800 font-black text-xs mb-1">みぎ ({synQuestion.right})</span>
-                <div className="w-28 h-28 md:w-32 md:h-32 bg-white/95 border-4 border-orange-100 rounded-full shadow-md"></div>
-              </div>
-
-              {/* テンフレーム */}
-              <div className={`absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-[48%] h-[55%] border-4 border-dashed border-orange-400 bg-orange-100/40 rounded-2xl p-2 transition-all duration-700 flex flex-col justify-between ${isMerged ? 'scale-100 opacity-100' : 'scale-75 opacity-0 pointer-events-none'}`}>
-                <div className="grid grid-cols-5 gap-1.5 h-full w-full">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={`frame-cell-${i}`} className="border-2 border-orange-200/60 bg-white/40 rounded-xl" />
-                  ))}
-                </div>
-              </div>
-
-              {/* 移動するくだもの（左から） */}
-              {fruitPositions.left.map((item, idx) => {
-                const coord = isMerged ? item.post : item.pre;
-                const countNum = idx + 1;
-                const isCounted = countedCount >= countNum;
-
-                return (
-                  <div
-                    key={`fruit-left-${idx}`}
-                    style={{ position: 'absolute', left: `${coord.x}%`, top: `${coord.y}%`, transform: 'translate(-50%, -50%)' }}
-                    className={`text-3xl md:text-4xl transition-all duration-1000 ease-out select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
-                  >
-                    <span>{synQuestion.fruit}</span>
-                    {isMerged && isCounted && (
-                      <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
-                        {countNum}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* 移動するくだもの（右から） */}
-              {fruitPositions.right.map((item, idx) => {
-                const coord = isMerged ? item.post : item.pre;
-                const countNum = synQuestion.left + idx + 1;
-                const isCounted = countedCount >= countNum;
-
-                return (
-                  <div
-                    key={`fruit-right-${idx}`}
-                    style={{ position: 'absolute', left: `${coord.x}%`, top: `${coord.y}%`, transform: 'translate(-50%, -50%)' }}
-                    className={`text-3xl md:text-4xl transition-all duration-1000 ease-out select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
-                  >
-                    <span>{synQuestion.fruit}</span>
-                    {isMerged && isCounted && (
-                      <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
-                        {countNum}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+          <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
+            {/* 上部ナビゲーションと進捗 */}
+            <div className="w-full max-w-2xl flex items-center justify-between gap-4">
+              <button
+                onClick={handleGoMap}
+                className="hinata-btn-secondary p-2.5"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <StarProgress
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                title={selectedStage.jpName}
+                starResults={starResults}
+              />
+              <div className="w-12 h-12" />
             </div>
 
-            {/* アクションボタン */}
-            <div className="flex flex-col items-center gap-3 w-full">
-              {!isMerged ? (
-                <button
-                  onClick={handleMerge}
-                  className="bg-orange-500 hover:bg-orange-600 border-b-4 border-orange-700 text-white font-black text-xl md:text-2xl px-12 py-3.5 rounded-2xl shadow-lg transition-all transform active:translate-y-1 active:border-b-0 flex items-center gap-2"
-                >
-                  がったい する！ ✨
-                </button>
-              ) : (
-                <button
-                  onClick={handleStartCounting}
-                  disabled={isCounting}
-                  className={`border-b-4 font-black text-lg px-8 py-3 rounded-2xl shadow transition-all ${isCounting ? 'bg-slate-300 border-slate-400 text-slate-500' : 'bg-yellow-400 hover:bg-yellow-500 border-yellow-600 text-yellow-950'}`}
-                >
-                  1つずつ かぞえる ➔
-                </button>
-              )}
-            </div>
-
-            {/* 式 */}
-            <div className="bg-white border-4 border-orange-200 rounded-3xl p-4 w-full max-w-md text-center shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-slate-700 tracking-wide flex justify-center items-center gap-2">
-                <span>{synQuestion.left}</span>
-                <span className="text-orange-400 text-xl">＋</span>
-                <span>{synQuestion.right}</span>
-                <span className="text-orange-400 text-xl">＝</span>
-                <span className="bg-orange-50 px-5 py-0.5 border-4 border-dashed border-orange-300 rounded-xl text-orange-600 min-w-[70px]">
-                  {synResult === 'correct' ? synQuestion.answer : '？'}
-                </span>
-              </div>
-            </div>
-
-            {/* 三択 */}
-            {isMerged && (
-              <div className="w-full max-w-md px-2 flex flex-col gap-2">
-                <div className="grid grid-cols-3 gap-3">
-                  {synQuestion.choices.map((choice) => {
-                    const isSelected = synAnswer === choice;
-                    let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50";
-                    if (isSelected) {
-                      btnStyle = synResult === 'correct' 
-                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
-                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
-                    } else if (synResult === 'correct') {
-                      btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
-                    }
-
-                    return (
-                      <button
-                        key={choice}
-                        onClick={() => handleSelectSynAnswer(choice)}
-                        disabled={synResult === 'correct'}
-                        className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
-                      >
-                        {choice}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* フィードバック */}
-            <div className="min-h-[100px] flex flex-col items-center justify-center">
+            {/* メインゲームボード */}
+            <div className="hinata-activity-frame">
+              {/* 正解時キラキラエフェクト */}
               {synResult === 'correct' && (
-                <div className="text-center animate-bounce">
-                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{synPraiseText}</span>
+                <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
+                  <div className="flex gap-4">
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-spin" />
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-bounce" />
+                  </div>
+                </div>
+              )}
+
+              {/* おはなし（文章題）吹き出し */}
+              {synQuestion.isWordProblem && synQuestion.storyText && (
+                <div className="w-full bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 shadow-inner animate-fadeIn relative flex items-start gap-3">
+                  <span className="text-3xl select-none">💬</span>
+                  <div className="flex-1 space-y-1">
+                    <span className="text-xs font-black text-hinata-accent block text-left">きょうの おはなし</span>
+                    <p className="text-lg md:text-xl font-black text-hinata-text leading-relaxed text-left">
+                      {synQuestion.storyText}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* ボード(テンフレーム) */}
+              <div className="relative w-full bg-orange-50/40 rounded-3xl border-4 border-orange-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
+                {/* 左皿 */}
+                <div className={`absolute left-[20%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-all duration-1000 ${isMerged ? 'opacity-20 scale-75' : 'opacity-100'}`}>
+                  <span className="text-amber-800 font-black text-xs mb-1">ひだり ({synQuestion.left})</span>
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-white/95 border-4 border-orange-100 rounded-full shadow-md"></div>
+                </div>
+
+                {/* プラス記号 */}
+                <div className={`absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 text-3xl font-black text-orange-300 transition-all duration-500 ${isMerged ? 'scale-0 opacity-0' : 'opacity-100'}`}>
+                  ＋
+                </div>
+
+                {/* 右皿 */}
+                <div className={`absolute left-[80%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center transition-all duration-1000 ${isMerged ? 'opacity-20 scale-75' : 'opacity-100'}`}>
+                  <span className="text-amber-800 font-black text-xs mb-1">みぎ ({synQuestion.right})</span>
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-white/95 border-4 border-orange-100 rounded-full shadow-md"></div>
+                </div>
+
+                {/* テンフレーム */}
+                <div className={`absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-[48%] h-[55%] border-4 border-dashed border-orange-400 bg-orange-100/40 rounded-2xl p-2 transition-all duration-700 flex flex-col justify-between ${isMerged ? 'scale-100 opacity-100' : 'scale-75 opacity-0 pointer-events-none'}`}>
+                  <div className="grid grid-cols-5 gap-1.5 h-full w-full">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <div key={`frame-cell-${i}`} className="border-2 border-orange-200/60 bg-white/40 rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 移動するくだもの（左から） */}
+                {fruitPositions.left.map((item, idx) => {
+                  const coord = isMerged ? item.post : item.pre;
+                  const countNum = idx + 1;
+                  const isCounted = countedCount >= countNum;
+
+                  return (
+                    <div
+                      key={`fruit-left-${idx}`}
+                      style={{ position: 'absolute', left: `${coord.x}%`, top: `${coord.y}%`, transform: 'translate(-50%, -50%)' }}
+                      className={`text-3xl md:text-4xl transition-all duration-1000 ease-out select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
+                    >
+                      <span>{synQuestion.fruit}</span>
+                      {isMerged && isCounted && (
+                        <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                          {countNum}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* 移動するくだもの（右から） */}
+                {fruitPositions.right.map((item, idx) => {
+                  const coord = isMerged ? item.post : item.pre;
+                  const countNum = synQuestion.left + idx + 1;
+                  const isCounted = countedCount >= countNum;
+
+                  return (
+                    <div
+                      key={`fruit-right-${idx}`}
+                      style={{ position: 'absolute', left: `${coord.x}%`, top: `${coord.y}%`, transform: 'translate(-50%, -50%)' }}
+                      className={`text-3xl md:text-4xl transition-all duration-1000 ease-out select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
+                    >
+                      <span>{synQuestion.fruit}</span>
+                      {isMerged && isCounted && (
+                        <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                          {countNum}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* アクションボタン */}
+              <div className="flex flex-col items-center gap-3 w-full">
+                {!isMerged ? (
                   <button
-                    onClick={handleNextStep}
-                    className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-10 py-2 rounded-xl"
+                    onClick={handleMerge}
+                    className="hinata-btn-base bg-orange-500 border-orange-600 border-b-orange-700 text-white text-xl md:text-2xl px-12 py-3.5"
                   >
-                    つぎへすすむ ➔
+                    がったい する！ ✨
                   </button>
+                ) : (
+                  <button
+                    onClick={handleStartCounting}
+                    disabled={isCounting}
+                    className={`px-8 py-3 text-lg ${isCounting ? 'hinata-btn-secondary opacity-50 cursor-not-allowed' : 'hinata-btn-primary'}`}
+                  >
+                    1つずつ かぞえる ➔
+                  </button>
+                )}
+              </div>
+
+              {/* 式 */}
+              <div className="bg-white border-4 border-orange-200 rounded-3xl p-4 w-full text-center shadow-xs">
+                <div className="text-3xl md:text-4xl font-black text-slate-700 tracking-wide flex justify-center items-center gap-2">
+                  <span>{synQuestion.left}</span>
+                  <span className="text-orange-400 text-xl">＋</span>
+                  <span>{synQuestion.right}</span>
+                  <span className="text-orange-400 text-xl">＝</span>
+                  <span className="bg-orange-50 px-5 py-0.5 border-4 border-dashed border-orange-300 rounded-xl text-orange-600 min-w-[70px]">
+                    {synResult === 'correct' ? synQuestion.answer : '？'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 三択 */}
+              {isMerged && (
+                <div className="w-full px-2 flex flex-col gap-2">
+                  <div className="grid grid-cols-3 gap-3">
+                    {synQuestion.choices.map((choice) => {
+                      const isSelected = synAnswer === choice;
+                      let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50 active:translate-y-[2px] active:border-b-2";
+                      if (isSelected) {
+                        btnStyle = synResult === 'correct'
+                          ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px] pointer-events-none"
+                          : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
+                      } else if (synResult === 'correct') {
+                        btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
+                      }
+
+                      return (
+                        <button
+                          key={choice}
+                          onClick={() => handleSelectSynAnswer(choice)}
+                          disabled={synResult === 'correct'}
+                          className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
+                        >
+                          {choice}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              {synResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {synAttempt === 1 
-                    ? "ひだりと みぎの くだものを ひとつずつ かぞえてみよう！" 
-                    : `💡 ヒント：ひだりの ${synQuestion.left}こ から つづけて みぎの ${synQuestion.right}こ を かぞえてみよう！`}
-                </div>
-              )}
+
+              {/* フィードバック */}
+              <div className="min-h-[90px] flex flex-col items-center justify-center">
+                {synResult === 'correct' && (
+                  <div className="text-center animate-bounce">
+                    <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{synPraiseText}</span>
+                    <button
+                      onClick={handleNextStep}
+                      className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-10 py-2.5"
+                    >
+                      つぎへすすむ ➔
+                    </button>
+                  </div>
+                )}
+                {synResult === 'wrong' && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {synAttempt === 1
+                      ? "ひだりと みぎの くだものを ひとつずつ かぞえてみよう！"
+                      : `💡 ヒント：ひだりの ${synQuestion.left}こ から つづけて みぎの ${synQuestion.right}こ を かぞえてみよう！`}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* 5. ひきざんプレイ画面 */}
         {screen === 'play_subtraction' && subQuestion && selectedStage && (
-          <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
-            <StarProgress currentStep={currentStep} totalSteps={totalSteps} title={selectedStage.jpName} starResults={starResults} />
+          <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
+            {/* 上部ナビゲーションと進捗 */}
+            <div className="w-full max-w-2xl flex items-center justify-between gap-4">
+              <button
+                onClick={handleGoMap}
+                className="hinata-btn-secondary p-2.5"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <StarProgress
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                title={selectedStage.jpName}
+                starResults={starResults}
+              />
+              <div className="w-12 h-12" />
+            </div>
 
-            {/* おはなし（文章題）吹き出し */}
-            {subQuestion.isWordProblem && subQuestion.storyText && (
-              <div className="w-full max-w-2xl bg-amber-50/90 border-4 border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn relative flex items-start gap-3">
-                <span className="text-3xl select-none">💬</span>
-                <div className="flex-1 space-y-1">
-                  <span className="text-xs font-black text-amber-600 block">きょうの おはなし</span>
-                  <p className="text-lg md:text-xl font-black text-slate-700 leading-relaxed text-left">
-                    {subQuestion.storyText}
-                  </p>
+            {/* メインゲームボード */}
+            <div className="hinata-activity-frame">
+              {/* 正解時キラキラエフェクト */}
+              {subResult === 'correct' && (
+                <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
+                  <div className="flex gap-4">
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-spin" />
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-bounce" />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* ボード(川と芝生の対比) */}
-            <div className="relative w-full max-w-2xl bg-[#E6F4F8] rounded-3xl border-4 border-sky-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
-              {/* 川の流れ (右側 35%) */}
-              <div className="absolute right-0 top-0 bottom-0 w-[35%] bg-sky-100/70 border-l-4 border-sky-200/50 flex flex-col justify-around py-4 select-none pointer-events-none">
-                <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse">〰️</div>
-                <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse delay-75">〰️</div>
-                <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse delay-150">〰️</div>
-              </div>
+              {/* おはなし（文章題）吹き出し */}
+              {subQuestion.isWordProblem && subQuestion.storyText && (
+                <div className="w-full bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 shadow-inner animate-fadeIn relative flex items-start gap-3">
+                  <span className="text-3xl select-none">💬</span>
+                  <div className="flex-1 space-y-1">
+                    <span className="text-xs font-black text-hinata-accent block text-left">きょうの おはなし</span>
+                    <p className="text-lg md:text-xl font-black text-hinata-text leading-relaxed text-left">
+                      {subQuestion.storyText}
+                    </p>
+                  </div>
+                </div>
+              )}
 
-              {/* 芝生のひろば (左側 65%) */}
-              <div className="absolute left-0 top-0 bottom-0 w-[65%] bg-emerald-50/60 p-4 flex flex-col justify-between">
-                <span className="text-emerald-800/60 font-black text-xs">
-                  {subQuestion.isWordProblem 
-                    ? `ぜんぶで (${subQuestion.left}こ)` 
-                    : `のこる くだもの (${subQuestion.left - subQuestion.minus}こ)`
-                  }
-                </span>
-                
-                {/* のこるくだもののコンテナ */}
-                <div className="flex-1 flex items-center justify-center gap-3 flex-wrap p-2">
-                  {subQuestion.isWordProblem ? (
-                    Array.from({ length: isSubtracted ? (subQuestion.left - subQuestion.minus) : subQuestion.left }).map((_, idx) => {
-                      const remainCount = subQuestion.left - subQuestion.minus;
-                      const isMinusTarget = idx >= remainCount;
-                      const countNum = idx + 1;
-                      const isCounted = countedCount >= countNum;
+              {/* ボード(川と芝生の対比) */}
+              <div className="relative w-full bg-[#E6F4F8] rounded-3xl border-4 border-sky-200 shadow-inner overflow-hidden h-[240px] md:h-[280px]">
+                {/* 川の流れ (右側 35%) */}
+                <div className="absolute right-0 top-0 bottom-0 w-[35%] bg-sky-100/70 border-l-4 border-sky-200/50 flex flex-col justify-around py-4 select-none pointer-events-none">
+                  <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse">〰️</div>
+                  <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse delay-75">〰️</div>
+                  <div className="text-sky-300/30 text-4xl font-black text-center animate-pulse delay-150">〰️</div>
+                </div>
 
-                      return (
-                        <div
-                          key={`sub-remain-wp-${idx}`}
-                          className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${
-                            isMinusTarget ? 'opacity-30' : ''
-                          } ${isCounted ? 'scale-125' : ''}`}
-                        >
-                          <span>{subQuestion.fruit}</span>
-                          {isMinusTarget && (
-                            <span className="absolute inset-0 flex items-center justify-center text-red-500 font-bold text-3xl select-none">
-                              ❌
-                            </span>
-                          )}
-                          {isCounted && !isMinusTarget && (
-                            <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
-                              {countNum}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, idx) => {
-                      const countNum = idx + 1;
-                      const isCounted = countedCount >= countNum;
-                      return (
-                        <div
-                          key={`sub-remain-${idx}`}
-                          className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
-                        >
-                          <span>{subQuestion.fruit}</span>
-                          {isCounted && (
-                            <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
-                              {countNum}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })
+                {/* 芝生のひろば (左側 65%) */}
+                <div className="absolute left-0 top-0 bottom-0 w-[65%] bg-emerald-50/60 p-4 flex flex-col justify-between">
+                  <span className="text-emerald-800/60 font-black text-xs">
+                    {subQuestion.isWordProblem
+                      ? `ぜんぶで (${subQuestion.left}こ)`
+                      : `のこる くだもの (${subQuestion.left - subQuestion.minus}こ)`
+                    }
+                  </span>
+
+                  {/* のこるくだもののコンテナ */}
+                  <div className="flex-1 flex items-center justify-center gap-3 flex-wrap p-2">
+                    {subQuestion.isWordProblem ? (
+                      Array.from({ length: isSubtracted ? (subQuestion.left - subQuestion.minus) : subQuestion.left }).map((_, idx) => {
+                        const remainCount = subQuestion.left - subQuestion.minus;
+                        const isMinusTarget = idx >= remainCount;
+                        const countNum = idx + 1;
+                        const isCounted = countedCount >= countNum;
+
+                        return (
+                          <div
+                            key={`sub-remain-wp-${idx}`}
+                            className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${
+                              isMinusTarget ? 'opacity-30' : ''
+                            } ${isCounted ? 'scale-125' : ''}`}
+                          >
+                            <span>{subQuestion.fruit}</span>
+                            {isMinusTarget && (
+                              <span className="absolute inset-0 flex items-center justify-center text-red-500 font-bold text-3xl select-none">
+                                ❌
+                              </span>
+                            )}
+                            {isCounted && !isMinusTarget && (
+                              <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                                {countNum}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, idx) => {
+                        const countNum = idx + 1;
+                        const isCounted = countedCount >= countNum;
+                        return (
+                          <div
+                            key={`sub-remain-${idx}`}
+                            className={`relative text-4xl md:text-5xl transition-all duration-300 select-none flex items-center justify-center ${isCounted ? 'scale-125' : ''}`}
+                          >
+                            <span>{subQuestion.fruit}</span>
+                            {isCounted && (
+                              <span className="absolute -top-3 bg-yellow-400 text-amber-950 font-black text-xs rounded-full w-6 h-6 border-2 border-white flex items-center justify-center shadow animate-bounce">
+                                {countNum}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* くいしんぼうゾーン (オウム 🦜 または ハムスター 🐹 ＆ 食べられるくだもの) */}
+                <div
+                  className={`absolute right-[8%] top-[25%] flex flex-col items-center gap-1.5 transition-all duration-[1200ms] ease-in-out ${
+                    isSubtracted
+                      ? 'translate-x-48 -translate-y-64 scale-50 opacity-0 pointer-events-none'
+                      : 'translate-x-0 translate-y-0 scale-100 opacity-100'
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="text-sky-800/60 font-black text-[10px] mb-1">
+                      {subQuestion.isWordProblem ? 'たべるよ' : `たべる (${subQuestion.minus}こ)`}
+                    </span>
+                    <span className="text-5xl animate-bounce">
+                      {selectedStage.id === 2 ? '🦜' : '🐹'}
+                    </span>
+                  </div>
+
+                  {!subQuestion.isWordProblem && (
+                    <div className="bg-white/80 border-2 border-sky-200 rounded-2xl p-2.5 flex gap-1.5 flex-wrap justify-center max-w-[120px] shadow-sm relative">
+                      {Array.from({ length: subQuestion.minus }).map((_, idx) => (
+                        <span key={`sub-minus-${idx}`} className="text-3xl select-none relative">
+                          {subQuestion.fruit}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* くいしんぼうゾーン (オウム 🦜 または ハムスター 🐹 ＆ 食べられるくだもの) */}
-              <div 
-                className={`absolute right-[8%] top-[25%] flex flex-col items-center gap-1.5 transition-all duration-[1200ms] ease-in-out ${
-                  isSubtracted 
-                    ? 'translate-x-48 -translate-y-64 scale-50 opacity-0 pointer-events-none' 
-                    : 'translate-x-0 translate-y-0 scale-100 opacity-100'
-                }`}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-sky-800/60 font-black text-[10px] mb-1">
-                    {subQuestion.isWordProblem ? 'たべるよ' : `たべる (${subQuestion.minus}こ)`}
-                  </span>
-                  <span className="text-5xl animate-bounce">
-                    {selectedStage.id === 2 ? '🦜' : '🐹'}
-                  </span>
-                </div>
-                
-                {!subQuestion.isWordProblem && (
-                  <div className="bg-white/80 border-2 border-sky-200 rounded-2xl p-2.5 flex gap-1.5 flex-wrap justify-center max-w-[120px] shadow-sm relative">
-                    {Array.from({ length: subQuestion.minus }).map((_, idx) => (
-                      <span key={`sub-minus-${idx}`} className="text-3xl select-none relative">
-                        {subQuestion.fruit}
-                      </span>
-                    ))}
+                {/* オバケ 👻 演出 */}
+                {isSubtracted && (
+                  <div className="absolute right-[5%] top-[10%] flex flex-col items-center gap-1 pointer-events-none animate-fadeIn select-none opacity-40">
+                    <span className="text-amber-800/50 font-black text-[9px]">たべちゃった！</span>
+                    <div className="flex gap-1.5 p-2 bg-slate-100/30 rounded-xl border border-slate-200/20">
+                      {Array.from({ length: subQuestion.minus }).map((_, idx) => (
+                        <div key={`ghost-${idx}`} className="relative text-3xl animate-bounce" style={{ animationDelay: `${idx * 150}ms` }}>
+                          <span>👻</span>
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] opacity-70">
+                            {subQuestion.fruit}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* オバケ 👻 演出 */}
+              {/* アクションボタン */}
+              <div className="flex flex-col items-center gap-3 w-full">
+                {!isSubtracted ? (
+                  <button
+                    onClick={handleSubtract}
+                    className="hinata-btn-base bg-rose-500 border-rose-600 border-b-rose-700 text-white text-xl md:text-2xl px-12 py-3.5"
+                  >
+                    たべる！ もぐもぐ 🐹🦜
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStartSubCounting}
+                    disabled={isCounting}
+                    className={`px-8 py-3 text-lg ${isCounting ? 'hinata-btn-secondary opacity-50 cursor-not-allowed' : 'hinata-btn-primary'}`}
+                  >
+                    1つずつ かぞえる ➔
+                  </button>
+                )}
+              </div>
+
+              {/* 式 */}
+              <div className="bg-white border-4 border-sky-200 rounded-3xl p-4 w-full text-center shadow-xs">
+                <div className="text-3xl md:text-4xl font-black text-slate-700 tracking-wide flex justify-center items-center gap-2">
+                  <span>{subQuestion.left}</span>
+                  <span className="text-sky-400 text-xl">－</span>
+                  <span>{subQuestion.minus}</span>
+                  <span className="text-sky-400 text-xl">＝</span>
+                  <span className="bg-sky-50 px-5 py-0.5 border-4 border-dashed border-sky-300 rounded-xl text-sky-600 min-w-[70px]">
+                    {subResult === 'correct' ? subQuestion.answer : '？'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 三択 */}
               {isSubtracted && (
-                <div className="absolute right-[5%] top-[10%] flex flex-col items-center gap-1 pointer-events-none animate-fadeIn select-none opacity-40">
-                  <span className="text-amber-800/50 font-black text-[9px]">たべちゃった！</span>
-                  <div className="flex gap-1.5 p-2 bg-slate-100/30 rounded-xl border border-slate-200/20">
-                    {Array.from({ length: subQuestion.minus }).map((_, idx) => (
-                      <div key={`ghost-${idx}`} className="relative text-3xl animate-bounce" style={{ animationDelay: `${idx * 150}ms` }}>
-                        <span>👻</span>
-                        <span className="absolute inset-0 flex items-center justify-center text-[11px] opacity-70">
-                          {subQuestion.fruit}
-                        </span>
-                      </div>
-                    ))}
+                <div className="w-full px-2 flex flex-col gap-2">
+                  <div className="grid grid-cols-3 gap-3">
+                    {subQuestion.choices.map((choice) => {
+                      const isSelected = subAnswer === choice;
+                      let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50 active:translate-y-[2px] active:border-b-2";
+                      if (isSelected) {
+                        btnStyle = subResult === 'correct'
+                          ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px] pointer-events-none"
+                          : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
+                      } else if (subResult === 'correct') {
+                        btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
+                      }
+
+                      return (
+                        <button
+                          key={choice}
+                          onClick={() => handleSelectSubAnswer(choice)}
+                          disabled={subResult === 'correct'}
+                          className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
+                        >
+                          {choice}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* アクションボタン */}
-            <div className="flex flex-col items-center gap-3 w-full">
-              {!isSubtracted ? (
-                <button
-                  onClick={handleSubtract}
-                  className="bg-rose-500 hover:bg-rose-600 border-b-4 border-rose-700 text-white font-black text-xl md:text-2xl px-12 py-3.5 rounded-2xl shadow-lg transition-all transform active:translate-y-1 active:border-b-0 flex items-center gap-2"
-                >
-                  たべる！ もぐもぐ 🐹🦜
-                </button>
-              ) : (
-                <button
-                  onClick={handleStartSubCounting}
-                  disabled={isCounting}
-                  className={`border-b-4 font-black text-lg px-8 py-3 rounded-2xl shadow transition-all ${
-                    isCounting 
-                      ? 'bg-slate-300 border-slate-400 text-slate-500' 
-                      : 'bg-yellow-400 hover:bg-yellow-500 border-yellow-600 text-yellow-950'
-                  }`}
-                >
-                  1つずつ かぞえる ➔
-                </button>
-              )}
-            </div>
-
-            {/* 式 */}
-            <div className="bg-white border-4 border-sky-200 rounded-3xl p-4 w-full max-w-md text-center shadow-sm">
-              <div className="text-3xl md:text-4xl font-black text-slate-700 tracking-wide flex justify-center items-center gap-2">
-                <span>{subQuestion.left}</span>
-                <span className="text-sky-400 text-xl">－</span>
-                <span>{subQuestion.minus}</span>
-                <span className="text-sky-400 text-xl">＝</span>
-                <span className="bg-sky-50 px-5 py-0.5 border-4 border-dashed border-sky-300 rounded-xl text-sky-600 min-w-[70px]">
-                  {subResult === 'correct' ? subQuestion.answer : '？'}
-                </span>
+              {/* フィードバック */}
+              <div className="min-h-[90px] flex flex-col items-center justify-center">
+                {subResult === 'correct' && (
+                  <div className="text-center animate-bounce">
+                    <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{subPraiseText}</span>
+                    <button
+                      onClick={handleNextStep}
+                      className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-10 py-2.5"
+                    >
+                      つぎへすすむ ➔
+                    </button>
+                  </div>
+                )}
+                {subResult === 'wrong' && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {subAttempt === 1
+                      ? "のこった くだものを ひとつずつ ていねいに かぞえてみよう！"
+                      : `💡 ヒント：ばつじるし（❌）の ついていない くだものの かずを かぞえてみよう！`}
+                  </div>
+                )}
               </div>
-            </div>
-
-            {/* 三択 */}
-            {isSubtracted && (
-              <div className="w-full max-w-md px-2 flex flex-col gap-2">
-                <div className="grid grid-cols-3 gap-3">
-                  {subQuestion.choices.map((choice) => {
-                    const isSelected = subAnswer === choice;
-                    let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50";
-                    if (isSelected) {
-                      btnStyle = subResult === 'correct' 
-                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
-                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
-                    } else if (subResult === 'correct') {
-                      btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
-                    }
-
-                    return (
-                      <button
-                        key={choice}
-                        onClick={() => handleSelectSubAnswer(choice)}
-                        disabled={subResult === 'correct'}
-                        className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
-                      >
-                        {choice}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* フィードバック */}
-            <div className="min-h-[100px] flex flex-col items-center justify-center">
-              {subResult === 'correct' && (
-                <div className="text-center animate-bounce">
-                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">{subPraiseText}</span>
-                  <button
-                    onClick={handleNextStep}
-                    className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-10 py-2 rounded-xl"
-                  >
-                    つぎへすすむ ➔
-                  </button>
-                </div>
-              )}
-              {subResult === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {subAttempt === 1 
-                    ? "のこった くだものを ひとつずつ ていねいに かぞえてみよう！" 
-                    : `💡 ヒント：ばつじるし（❌）の ついていない くだものの かずを かぞえてみよう！`}
-                </div>
-              )}
             </div>
           </div>
         )}
 
         {/* 6. 10をつくろうプレイ画面 */}
         {screen === 'play_make10' && m10Question && selectedStage && (
-          <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
-            <StarProgress currentStep={currentStep} totalSteps={totalSteps} title={selectedStage.jpName} starResults={starResults} />
-
-            <div className="text-lg md:text-xl font-black text-slate-700 text-center px-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl py-2.5 w-full max-w-lg">
-              「10こ」にするには、あといくつ のせる？
+          <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
+            {/* 上部ナビゲーションと進捗 */}
+            <div className="w-full max-w-2xl flex items-center justify-between gap-4">
+              <button
+                onClick={handleGoMap}
+                className="hinata-btn-secondary p-2.5"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <StarProgress
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                title={selectedStage.jpName}
+                starResults={starResults}
+              />
+              <div className="w-12 h-12" />
             </div>
 
-            {/* たまごパックの描画 */}
-            <div className="w-full max-w-lg bg-white border-8 border-emerald-400 rounded-3xl p-5 shadow-lg">
-              <div className="grid grid-cols-5 gap-2.5">
-                {Array.from({ length: 10 }).map((_, idx) => {
-                  const isInitial = idx < m10Question.initial;
-                  const isAdded = idx >= m10Question.initial && idx < m10Question.initial + m10Added;
-                  return (
-                    <div
-                      key={idx}
-                      className={`h-14 md:h-16 rounded-xl border-4 flex items-center justify-center text-3xl shadow-inner transition-all ${
-                        isInitial ? 'bg-amber-100 border-amber-300' : isAdded ? 'bg-emerald-50 border-emerald-400 scale-105' : 'bg-slate-50 border-dashed border-slate-300'
-                      }`}
-                    >
-                      {isInitial && <span className="animate-pulse">{m10Question.fruit}</span>}
-                      {isAdded && <span className="animate-bounce">{m10Question.fruit}</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 右のせ皿 */}
-            <div className="w-full max-w-md flex flex-col items-center gap-3 bg-orange-50/40 p-4 border-2 border-orange-100 rounded-3xl">
-              <div className="flex items-center gap-6">
-                <button
-                  onClick={() => adjustM10Added(-1)}
-                  disabled={m10Added === 0 || m10Result === 'correct'}
-                  className="bg-rose-500 hover:bg-rose-600 disabled:opacity-40 text-white font-black p-3 rounded-xl border-b-4 border-rose-700 shadow"
-                >
-                  <Minus className="w-6 h-6" />
-                </button>
-
-                <div className="w-28 h-28 bg-white border-4 border-orange-200 rounded-full shadow-md relative flex items-center justify-center">
-                  {m10Added === 0 ? (
-                    <span className="text-slate-400 font-bold text-[10px]">のせてね</span>
-                  ) : (
-                    Array.from({ length: m10Added }).map((_, idx) => {
-                      const angle = m10Added === 1 ? 0 : (idx * 2 * Math.PI) / m10Added;
-                      const radius = m10Added === 1 ? 0 : 16;
-                      return (
-                        <div
-                          key={idx}
-                          style={{ position: 'absolute', left: `${50 + radius * Math.cos(angle)}%`, top: `${50 + radius * Math.sin(angle)}%`, transform: 'translate(-50%, -50%)' }}
-                          className="text-3xl"
-                        >
-                          {m10Question.fruit}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                <button
-                  onClick={() => adjustM10Added(1)}
-                  disabled={m10Added + m10Question.initial >= 10 || m10Result === 'correct'}
-                  className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-white font-black p-3 rounded-xl border-b-4 border-emerald-700 shadow"
-                >
-                  <Plus className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* 決定式 */}
-            <div className="w-full max-w-md bg-white border-4 border-emerald-300 rounded-2xl p-4 text-center shadow-md flex flex-col gap-3">
-              <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-1.5">
-                <span>{m10Question.initial}</span>
-                <span className="text-emerald-500 text-lg">＋</span>
-                <span className="bg-emerald-50 px-4 py-0.5 border-2 border-emerald-300 text-emerald-600 rounded-xl min-w-[60px]">
-                  {m10Added}
-                </span>
-                <span className="text-emerald-500 text-lg">＝</span>
-                <span>10</span>
-              </div>
-
-              {m10Result !== 'correct' && (
-                <button
-                  onClick={checkM10Answer}
-                  className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-xl py-2.5 rounded-xl flex items-center justify-center gap-1"
-                >
-                  <Check className="w-6 h-6" />
-                  できた！
-                </button>
-              )}
-            </div>
-
-            {/* フィードバック */}
-            <div className="min-h-[100px] flex flex-col items-center justify-center">
+            {/* メインゲームボード */}
+            <div className="hinata-activity-frame">
+              {/* 正解時キラキラエフェクト */}
               {m10Result === 'correct' && (
-                <div className="text-center animate-bounce">
-                  <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">🌟 せいかい！ 🌟</span>
+                <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
+                  <div className="flex gap-4">
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-spin" />
+                    <Sparkles className="w-16 h-16 text-yellow-400 animate-bounce" />
+                  </div>
+                </div>
+              )}
+
+              {/* 問題指示テキスト */}
+              <div className="bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 text-center">
+                <span className="bg-hinata-accent text-white font-black text-xs px-2.5 py-0.5 rounded-full inline-block mb-1">
+                  もんだい
+                </span>
+                <h2 className="text-lg md:text-xl font-black text-hinata-text leading-relaxed mt-1">
+                  「10こ」にするには、あといくつ のせる？
+                </h2>
+              </div>
+
+              {/* たまごパックの描画 */}
+              <div className="w-full bg-white border-8 border-emerald-400 rounded-3xl p-5 shadow-inner">
+                <div className="grid grid-cols-5 gap-2.5">
+                  {Array.from({ length: 10 }).map((_, idx) => {
+                    const isInitial = idx < m10Question.initial;
+                    const isAdded = idx >= m10Question.initial && idx < m10Question.initial + m10Added;
+                    return (
+                      <div
+                        key={idx}
+                        className={`h-14 md:h-16 rounded-xl border-4 flex items-center justify-center text-3xl shadow-inner transition-all ${
+                          isInitial ? 'bg-amber-100 border-amber-300' : isAdded ? 'bg-emerald-50 border-emerald-400 scale-105' : 'bg-slate-50 border-dashed border-slate-300'
+                        }`}
+                      >
+                        {isInitial && <span className="animate-pulse">{m10Question.fruit}</span>}
+                        {isAdded && <span className="animate-bounce">{m10Question.fruit}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 右のせ皿 */}
+              <div className="w-full flex flex-col items-center gap-3 bg-orange-50/40 p-4 border-2 border-orange-100 rounded-3xl">
+                <div className="flex items-center gap-6">
                   <button
-                    onClick={handleNextStep}
-                    className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-10 py-2 rounded-xl"
+                    onClick={() => adjustM10Added(-1)}
+                    disabled={m10Added === 0 || m10Result === 'correct'}
+                    className="hinata-btn-secondary w-12 h-12 flex items-center justify-center disabled:opacity-40"
                   >
-                    つぎへすすむ ➔
+                    <Minus className="w-5 h-5" />
+                  </button>
+
+                  <div className="w-28 h-28 bg-white border-4 border-orange-200 rounded-full shadow-md relative flex items-center justify-center">
+                    {m10Added === 0 ? (
+                      <span className="text-slate-400 font-bold text-[10px]">のせてね</span>
+                    ) : (
+                      Array.from({ length: m10Added }).map((_, idx) => {
+                        const angle = m10Added === 1 ? 0 : (idx * 2 * Math.PI) / m10Added;
+                        const radius = m10Added === 1 ? 0 : 16;
+                        return (
+                          <div
+                            key={idx}
+                            style={{ position: 'absolute', left: `${50 + radius * Math.cos(angle)}%`, top: `${50 + radius * Math.sin(angle)}%`, transform: 'translate(-50%, -50%)' }}
+                            className="text-3xl"
+                          >
+                            {m10Question.fruit}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => adjustM10Added(1)}
+                    disabled={m10Added + m10Question.initial >= 10 || m10Result === 'correct'}
+                    className="hinata-btn-base bg-emerald-500 border-emerald-600 border-b-emerald-700 text-white w-12 h-12 flex items-center justify-center disabled:opacity-40 hover:bg-emerald-400"
+                  >
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
-              )}
-              {m10Result === 'wrong' && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {m10Attempt === 1
-                    ? (m10Added < m10Question.needed ? "まだたりないよ、もっとのせてね！" : "のせすぎだよ、すこしへらそう！")
-                    : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
+              </div>
+
+              {/* 決定式 */}
+              <div className="w-full bg-white border-4 border-emerald-300 rounded-2xl p-4 text-center shadow-xs flex flex-col gap-3">
+                <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-1.5">
+                  <span>{m10Question.initial}</span>
+                  <span className="text-emerald-500 text-lg">＋</span>
+                  <span className="bg-emerald-50 px-4 py-0.5 border-2 border-emerald-300 text-emerald-600 rounded-xl min-w-[60px]">
+                    {m10Added}
+                  </span>
+                  <span className="text-emerald-500 text-lg">＝</span>
+                  <span>10</span>
                 </div>
-              )}
+
+                {m10Result !== 'correct' && (
+                  <button
+                    onClick={checkM10Answer}
+                    className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white py-2.5 text-xl flex items-center justify-center gap-1"
+                  >
+                    <Check className="w-6 h-6" />
+                    できた！
+                  </button>
+                )}
+              </div>
+
+              {/* フィードバック */}
+              <div className="min-h-[90px] flex flex-col items-center justify-center">
+                {m10Result === 'correct' && (
+                  <div className="text-center animate-bounce">
+                    <span className="text-xl md:text-2xl font-black text-emerald-600 block mb-2">🌟 せいかい！ 🌟</span>
+                    <button
+                      onClick={handleNextStep}
+                      className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-10 py-2"
+                    >
+                      つぎへすすむ ➔
+                    </button>
+                  </div>
+                )}
+                {m10Result === 'wrong' && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {m10Attempt === 1
+                      ? (m10Added < m10Question.needed ? "まだたりないよ、もっとのせてね！" : "のせすぎだよ、すこしへらそう！")
+                      : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -3951,240 +4051,258 @@ export default function App() {
         {/* 7. ボス戦プレイ画面 */}
         {screen === 'play_boss' && selectedStage && (
           <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
-            {/* 進捗とHPバー */}
-            <div className="w-full max-w-md bg-white border-4 border-red-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2">
-              <div className="flex justify-between items-center text-sm font-extrabold text-red-700">
-                <span>⚔️ さんすうキングの しろ ({currentStep} / {totalSteps})</span>
-                <span>キングの HP: {bossHp}%</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-4 border-2 border-slate-200 overflow-hidden">
-                <div 
-                  className="bg-red-500 h-full transition-all duration-300" 
-                  style={{ width: `${bossHp}%` }}
-                />
-              </div>
+            {/* 上部ナビゲーション */}
+            <div className="w-full max-w-2xl flex items-center justify-between gap-4">
+              <button
+                onClick={handleGoMap}
+                className="hinata-btn-secondary p-2.5"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <span className="text-lg font-black text-red-700 select-none flex items-center gap-1">
+                ⚔️ さんすうキングの しろ
+              </span>
+              <div className="w-12 h-12" />
             </div>
 
-            {/* ボスとキャラクターの対決ゾーン */}
-            <div className="w-full max-w-md flex justify-between items-center bg-orange-50/50 p-6 border-4 border-orange-100 rounded-3xl relative overflow-hidden h-40">
-              {/* プレイヤー側 (なかまたち) */}
-              <div className="flex flex-col items-center gap-1">
-                <span className={`text-5xl ${reducedMotion ? '' : 'animate-bounce'}`}>🐯</span>
-                <span className="text-[10px] font-black text-slate-500">ぼうけんしゃ</span>
-              </div>
+            {/* メインゲームボード (ボス戦用マイルドレッド枠) */}
+            <div className="hinata-activity-frame border-red-400 bg-rose-50/30">
               
-              {/* バトルエフェクト */}
-              {bossDmgAnim && (
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-5xl animate-ping font-black text-rose-500 select-none">
-                  {reducedMotion ? '✨ アタック！' : '💥 ズバッ！'}
+              {/* 進捗とHPバー */}
+              <div className="w-full bg-white border-4 border-red-200 rounded-2xl p-4 shadow-xs flex flex-col gap-2">
+                <div className="flex justify-between items-center text-sm font-extrabold text-red-700">
+                  <span>⚔️ バトル ({currentStep} / {totalSteps})</span>
+                  <span>キングの HP: {bossHp}%</span>
                 </div>
-              )}
-
-              <div className="text-3xl font-black text-orange-300">VS</div>
-
-              {/* ボス側 */}
-              <div className={`flex flex-col items-center gap-1 ${bossDmgAnim ? (reducedMotion ? '' : 'animate-bounce filter invert') : ''}`}>
-                <span className="text-6xl">😈</span>
-                <span className="text-xs font-black text-red-600">さんすうキング</span>
+                <div className="w-full bg-slate-100 rounded-full h-4 border-2 border-slate-200 overflow-hidden">
+                  <div
+                    className="bg-red-500 h-full transition-all duration-300"
+                    style={{ width: `${bossHp}%` }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* 問題表示エリア */}
-            <div className="w-full max-w-md bg-white border-4 border-red-300 rounded-3xl p-5 text-center shadow-md flex flex-col gap-3">
-              {bossQuestType === 'synthesis' && synQuestion && (
-                <div className="space-y-4">
-                  <div className="text-lg font-black text-slate-600">くだものをあわせていくつかな？</div>
-                  {/* フルーツの視覚的表示 */}
-                  <div className="bg-orange-50/40 p-3 rounded-2xl border border-orange-100 flex justify-center items-center gap-4 flex-wrap">
-                    {/* 左のくだもの */}
-                    <div className="flex gap-1 flex-wrap justify-center max-w-[120px]">
-                      {Array.from({ length: synQuestion.left }).map((_, i) => (
-                        <span key={`boss-l-${i}`} className="text-2xl">{synQuestion.fruit}</span>
-                      ))}
-                    </div>
-                    <span className="text-xl font-black text-orange-400">＋</span>
-                    {/* 右のくだもの */}
-                    <div className="flex gap-1 flex-wrap justify-center max-w-[120px]">
-                      {Array.from({ length: synQuestion.right }).map((_, i) => (
-                        <span key={`boss-r-${i}`} className="text-2xl">{synQuestion.fruit}</span>
-                      ))}
-                    </div>
-                  </div>
-                  {/* 式 */}
-                  <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
-                    <span>{synQuestion.left}</span>
-                    <span className="text-orange-400 text-lg">＋</span>
-                    <span>{synQuestion.right}</span>
-                    <span className="text-orange-400 text-lg">＝</span>
-                    <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
-                      {synResult === 'correct' ? synQuestion.answer : '？'}
-                    </span>
-                  </div>
+              {/* ボスとキャラクターの対決ゾーン */}
+              <div className="w-full flex justify-between items-center bg-orange-50/50 p-6 border-4 border-orange-100 rounded-3xl relative overflow-hidden h-40">
+                {/* プレイヤー側 (なかまたち) */}
+                <div className="flex flex-col items-center gap-1">
+                  <span className={`text-5xl ${reducedMotion ? '' : 'animate-bounce'}`}>🐯</span>
+                  <span className="text-[10px] font-black text-slate-500">ぼうけんしゃ</span>
                 </div>
-              )}
 
-              {bossQuestType === 'make10' && m10Question && (
-                <div className="space-y-4">
-                  <div className="text-lg font-black text-slate-600">10にするには、あといくつ必要？</div>
-                  {/* テンフレーム表示 */}
-                  <div className="bg-emerald-50/40 p-3 rounded-2xl border border-emerald-100 grid grid-cols-5 gap-1.5 justify-center">
-                    {Array.from({ length: 10 }).map((_, idx) => {
-                      const isFilled = idx < m10Question.initial;
-                      return (
-                        <div 
-                          key={`boss-m10-${idx}`} 
-                          className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xl ${
-                            isFilled ? 'bg-amber-100 border-amber-300' : 'bg-white border-dashed border-slate-300'
-                          }`}
-                        >
-                          {isFilled && m10Question.fruit}
-                        </div>
-                      );
-                    })}
+                {/* バトルエフェクト */}
+                {bossDmgAnim && (
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-5xl animate-ping font-black text-rose-500 select-none">
+                    {reducedMotion ? '✨ アタック！' : '💥 ズバッ！'}
                   </div>
-                  {/* 式 */}
-                  <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
-                    <span>{m10Question.initial}</span>
-                    <span className="text-emerald-500 text-lg">＋</span>
-                    <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
-                      {m10Result === 'correct' ? m10Question.needed : '？'}
-                    </span>
-                    <span className="text-emerald-500 text-lg">＝</span>
-                    <span>10</span>
-                  </div>
+                )}
+
+                <div className="text-3xl font-black text-orange-300">VS</div>
+
+                {/* ボス側 */}
+                <div className={`flex flex-col items-center gap-1 ${bossDmgAnim ? (reducedMotion ? '' : 'animate-bounce filter invert') : ''}`}>
+                  <span className="text-6xl">😈</span>
+                  <span className="text-xs font-black text-red-600">さんすうキング</span>
                 </div>
-              )}
-              {bossQuestType === 'subtraction' && subQuestion && (
-                <div className="space-y-4">
-                  <div className="text-lg font-black text-slate-600">くだものをひくと、のこりはいくつ？</div>
-                  {/* フルーツの視覚的表示 */}
-                  <div className="bg-orange-50/40 p-3 rounded-2xl border border-orange-100 flex justify-center items-center gap-4 flex-wrap">
-                    {/* のこるくだもの ＆ ひかれるくだもの */}
-                    <div className="flex gap-1.5 flex-wrap justify-center max-w-[220px]">
-                      {Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, i) => (
-                        <span key={`boss-sub-l-${i}`} className="text-2xl animate-pulse">{subQuestion.fruit}</span>
-                      ))}
-                      {Array.from({ length: subQuestion.minus }).map((_, i) => (
-                        <span key={`boss-sub-ghost-${i}`} className="text-2xl relative select-none opacity-20 filter grayscale">
-                          <span>{subQuestion.fruit}</span>
-                          <span className="absolute inset-0 flex items-center justify-center text-red-500 font-extrabold text-[10px]">❌</span>
-                        </span>
-                      ))}
+              </div>
+
+              {/* 問題表示エリア */}
+              <div className="w-full bg-white border-4 border-red-200 rounded-3xl p-5 text-center shadow-xs flex flex-col gap-3">
+                {bossQuestType === 'synthesis' && synQuestion && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-black text-slate-600">くだものをあわせていくつかな？</div>
+                    {/* フルーツの視覚的表示 */}
+                    <div className="bg-orange-50/40 p-3 rounded-2xl border border-orange-100 flex justify-center items-center gap-4 flex-wrap">
+                      {/* 左のくだもの */}
+                      <div className="flex gap-1 flex-wrap justify-center max-w-[120px]">
+                        {Array.from({ length: synQuestion.left }).map((_, i) => (
+                          <span key={`boss-l-${i}`} className="text-2xl">{synQuestion.fruit}</span>
+                        ))}
+                      </div>
+                      <span className="text-xl font-black text-orange-400">＋</span>
+                      {/* 右のくだもの */}
+                      <div className="flex gap-1 flex-wrap justify-center max-w-[120px]">
+                        {Array.from({ length: synQuestion.right }).map((_, i) => (
+                          <span key={`boss-r-${i}`} className="text-2xl">{synQuestion.fruit}</span>
+                        ))}
+                      </div>
+                    </div>
+                    {/* 式 */}
+                    <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
+                      <span>{synQuestion.left}</span>
+                      <span className="text-orange-400 text-lg">＋</span>
+                      <span>{synQuestion.right}</span>
+                      <span className="text-orange-400 text-lg">＝</span>
+                      <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
+                        {synResult === 'correct' ? synQuestion.answer : '？'}
+                      </span>
                     </div>
                   </div>
-                  {/* 式 */}
-                  <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
-                    <span>{subQuestion.left}</span>
-                    <span className="text-sky-400 text-lg">－</span>
-                    <span>{subQuestion.minus}</span>
-                    <span className="text-sky-400 text-lg">＝</span>
-                    <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
-                      {subResult === 'correct' ? subQuestion.answer : '？'}
-                    </span>
+                )}
+
+                {bossQuestType === 'make10' && m10Question && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-black text-slate-600">10にするには、あといくつ必要？</div>
+                    {/* テンフレーム表示 */}
+                    <div className="bg-emerald-50/40 p-3 rounded-2xl border border-emerald-100 grid grid-cols-5 gap-1.5 justify-center">
+                      {Array.from({ length: 10 }).map((_, idx) => {
+                        const isFilled = idx < m10Question.initial;
+                        return (
+                          <div
+                            key={`boss-m10-${idx}`}
+                            className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xl ${
+                              isFilled ? 'bg-amber-100 border-amber-300' : 'bg-white border-dashed border-slate-300'
+                            }`}
+                          >
+                            {isFilled && m10Question.fruit}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* 式 */}
+                    <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
+                      <span>{m10Question.initial}</span>
+                      <span className="text-emerald-500 text-lg">＋</span>
+                      <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
+                        {m10Result === 'correct' ? m10Question.needed : '？'}
+                      </span>
+                      <span className="text-emerald-500 text-lg">＝</span>
+                      <span>10</span>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+                {bossQuestType === 'subtraction' && subQuestion && (
+                  <div className="space-y-4">
+                    <div className="text-lg font-black text-slate-600">くだものをひくと、のこりはいくつ？</div>
+                    {/* フルーツの視覚的表示 */}
+                    <div className="bg-orange-50/40 p-3 rounded-2xl border border-orange-100 flex justify-center items-center gap-4 flex-wrap">
+                      {/* のこるくだもの ＆ ひかれるくだもの */}
+                      <div className="flex gap-1.5 flex-wrap justify-center max-w-[220px]">
+                        {Array.from({ length: subQuestion.left - subQuestion.minus }).map((_, i) => (
+                          <span key={`boss-sub-l-${i}`} className="text-2xl animate-pulse">{subQuestion.fruit}</span>
+                        ))}
+                        {Array.from({ length: subQuestion.minus }).map((_, i) => (
+                          <span key={`boss-sub-ghost-${i}`} className="text-2xl relative select-none opacity-20 filter grayscale">
+                            <span>{subQuestion.fruit}</span>
+                            <span className="absolute inset-0 flex items-center justify-center text-red-500 font-extrabold text-[10px]">❌</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    {/* 式 */}
+                    <div className="text-3xl font-black text-slate-700 flex justify-center items-center gap-2">
+                      <span>{subQuestion.left}</span>
+                      <span className="text-sky-400 text-lg">－</span>
+                      <span>{subQuestion.minus}</span>
+                      <span className="text-sky-400 text-lg">＝</span>
+                      <span className="bg-red-50 px-5 py-0.5 border-4 border-dashed border-red-300 text-red-600 rounded-xl min-w-[70px]">
+                        {subResult === 'correct' ? subQuestion.answer : '？'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* 選択肢 (3択) */}
-            <div className="w-full max-w-md px-2">
-              <div className="grid grid-cols-3 gap-3">
-                {bossQuestType === 'synthesis' && synQuestion && synQuestion.choices.map((choice) => {
-                  const isSelected = synAnswer === choice;
-                  let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50";
-                  if (isSelected) {
-                    btnStyle = synResult === 'correct' 
-                      ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
-                      : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
-                  } else if (synResult === 'correct') {
-                    btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
-                  }
-
-                  return (
-                    <button
-                      key={`boss-choice-${choice}`}
-                      onClick={() => handleBossAnswer(choice)}
-                      disabled={synResult === 'correct'}
-                      className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
-                    >
-                      {choice}
-                    </button>
-                  );
-                })}
-
-                {bossQuestType === 'make10' && m10Question && m10Question.choices.map((choice) => {
-                  const isAnswered = m10Result !== null;
-                  let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-emerald-50";
-                  if (isAnswered) {
-                    if (choice === m10Question.needed) {
-                      btnStyle = "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]";
-                    } else if (m10Result === 'wrong') {
+              {/* 選択肢 (3択) */}
+              <div className="w-full px-2">
+                <div className="grid grid-cols-3 gap-3">
+                  {bossQuestType === 'synthesis' && synQuestion && synQuestion.choices.map((choice) => {
+                    const isSelected = synAnswer === choice;
+                    let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-orange-50 active:translate-y-[2px] active:border-b-2";
+                    if (isSelected) {
+                      btnStyle = synResult === 'correct'
+                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px] pointer-events-none"
+                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
+                    } else if (synResult === 'correct') {
                       btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
                     }
-                  }
 
-                  return (
-                    <button
-                      key={`boss-choice-${choice}`}
-                      onClick={() => {
-                        setM10Added(choice);
-                        handleBossAnswer(choice);
-                      }}
-                      disabled={m10Result === 'correct'}
-                      className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
-                    >
-                      {choice}
-                    </button>
-                  );
-                })}
-                {bossQuestType === 'subtraction' && subQuestion && subQuestion.choices.map((choice) => {
-                  const isSelected = subAnswer === choice;
-                  let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50";
-                  if (isSelected) {
-                    btnStyle = subResult === 'correct' 
-                      ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px]" 
-                      : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
-                  } else if (subResult === 'correct') {
-                    btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
-                  }
+                    return (
+                      <button
+                        key={`boss-choice-${choice}`}
+                        onClick={() => handleBossAnswer(choice)}
+                        disabled={synResult === 'correct'}
+                        className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
+                      >
+                        {choice}
+                      </button>
+                    );
+                  })}
 
-                  return (
-                    <button
-                      key={`boss-choice-sub-${choice}`}
-                      onClick={() => handleBossAnswer(choice)}
-                      disabled={subResult === 'correct'}
-                      className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
-                    >
-                      {choice}
-                    </button>
-                  );
-                })}
+                  {bossQuestType === 'make10' && m10Question && m10Question.choices.map((choice) => {
+                    const isAnswered = m10Result !== null;
+                    let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-emerald-50 active:translate-y-[2px] active:border-b-2";
+                    if (isAnswered) {
+                      if (choice === m10Question.needed) {
+                        btnStyle = "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px] pointer-events-none";
+                      } else if (m10Result === 'wrong') {
+                        btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={`boss-choice-${choice}`}
+                        onClick={() => {
+                          setM10Added(choice);
+                          handleBossAnswer(choice);
+                        }}
+                        disabled={m10Result === 'correct'}
+                        className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
+                      >
+                        {choice}
+                      </button>
+                    );
+                  })}
+                  {bossQuestType === 'subtraction' && subQuestion && subQuestion.choices.map((choice) => {
+                    const isSelected = subAnswer === choice;
+                    let btnStyle = "bg-white text-slate-700 border-slate-300 border-b-4 hover:bg-sky-50 active:translate-y-[2px] active:border-b-2";
+                    if (isSelected) {
+                      btnStyle = subResult === 'correct'
+                        ? "bg-emerald-600 text-white border-emerald-800 border-b-4 translate-y-[4px] pointer-events-none"
+                        : "bg-rose-600 text-white border-rose-800 border-b-4 translate-y-[4px]";
+                      } else if (subResult === 'correct') {
+                        btnStyle = "bg-white text-slate-300 border-slate-200 opacity-50 cursor-not-allowed";
+                      }
+
+                    return (
+                      <button
+                        key={`boss-choice-sub-${choice}`}
+                        onClick={() => handleBossAnswer(choice)}
+                        disabled={subResult === 'correct'}
+                        className={`text-3xl font-black rounded-2xl py-3.5 shadow-md transition-all ${btnStyle}`}
+                      >
+                        {choice}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* フィードバックメッセージ */}
-            <div className="min-h-[60px] flex items-center justify-center">
-              {synResult === 'wrong' && synQuestion && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {synAttempt === 1 
-                    ? "もういちど、よくかぞえてみよう！" 
-                    : `💡 ヒント：ひだり（${synQuestion.left}）と みぎ（${synQuestion.right}）を あわせると いくつかな？`}
-                </div>
-              )}
-              {m10Result === 'wrong' && m10Question && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {m10Attempt === 1 
-                    ? "10になるか、もう一度たし算してみてね！" 
-                    : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
-                </div>
-              )}
-              {subResult === 'wrong' && subQuestion && (
-                <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
-                  {subAttempt === 1 
-                    ? "のこったくだものを、よくかぞえてみよう！" 
-                    : `💡 ヒント：${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`}
-                </div>
-              )}
+              {/* フィードバックメッセージ */}
+              <div className="min-h-[50px] flex items-center justify-center">
+                {synResult === 'wrong' && synQuestion && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {synAttempt === 1
+                      ? "もういちど、よくかぞえてみよう！"
+                      : `💡 ヒント：ひだり（${synQuestion.left}）と みぎ（${synQuestion.right}）を あわせると いくつかな？`}
+                  </div>
+                )}
+                {m10Result === 'wrong' && m10Question && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {m10Attempt === 1
+                      ? "10になるか、もう一度たし算してみてね！"
+                      : `💡 ヒント：いま ${m10Question.initial}こ あるよ。10こ にするには あと ${m10Question.needed}こ だよ！`}
+                  </div>
+                )}
+                {subResult === 'wrong' && subQuestion && (
+                  <div className="bg-rose-100 border-2 border-rose-200 text-rose-600 font-black text-xs md:text-sm px-6 py-2 rounded-full animate-pulse text-center">
+                    {subAttempt === 1
+                      ? "のこったくだものを、よくかぞえてみよう！"
+                      : `💡 ヒント：${subQuestion.left}こ から ${subQuestion.minus}こ ひくと、のこりは いくつかな？`}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -4261,7 +4379,7 @@ export default function App() {
                 <p>
                   『さんすうクエスト』および『森の広場』は、お子様が安心して自分のペースで学べる環境を最優先に設計されています。
                 </p>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
                     <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
@@ -4317,8 +4435,8 @@ export default function App() {
               <div className="bg-amber-50/50 border-2 border-amber-100 rounded-2xl p-4 text-center flex flex-col justify-between">
                 <span className="text-xs font-black text-amber-700 block mb-1">できた！の割合</span>
                 <span className="text-lg md:text-xl font-black text-amber-950">
-                  {history.length > 0 
-                    ? Math.round((history.filter(h => h.isCorrect).length / history.length) * 100) 
+                  {history.length > 0
+                    ? Math.round((history.filter(h => h.isCorrect).length / history.length) * 100)
                     : 0}%
                 </span>
               </div>
@@ -4326,9 +4444,9 @@ export default function App() {
                 <span className="text-xs font-black text-sky-700 block mb-1">冒険の進捗</span>
                 <span className="text-md md:text-lg font-black text-sky-950 mt-1 block">
                   {unlockedRewards.includes('くだものドラゴン')
-                    ? '🏆 ドラゴンげっと！' 
-                    : unlockedStageId === STAGES.length 
-                      ? '👑 ラストステージ' 
+                    ? '🏆 ドラゴンげっと！'
+                    : unlockedStageId === STAGES.length
+                      ? '👑 ラストステージ'
                       : `🐾 ステージ ${unlockedStageId} まで`}
                 </span>
               </div>
@@ -4362,7 +4480,7 @@ export default function App() {
               <p className="text-xs text-slate-600 font-bold leading-relaxed mb-1">
                 点数や正解率だけでなく、お子様が試行錯誤した「プロセス（がんばり）」を褒めてあげるためのデータです。
               </p>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="bg-white p-3 rounded-xl border border-emerald-100 flex flex-col justify-between gap-1 shadow-sm">
                   <span className="text-[10px] font-black text-slate-400">⏱️ がんばった時間</span>
@@ -4520,7 +4638,7 @@ export default function App() {
                     {completedHiragana.length} / 8 文字 クリア
                   </span>
                 </div>
-                
+
                 <div className="flex gap-2 flex-wrap justify-center">
                   {['し', 'く', 'つ', 'へ', 'い', 'こ', 'り', 'て'].map(char => {
                     const isDone = completedHiragana.includes(char);
@@ -4685,7 +4803,7 @@ export default function App() {
                     else if (log.message.includes('開始！')) icon = '🗺️';
                     else if (log.message.includes('リセット')) icon = '🔄';
                     else if (log.message.includes('かざり')) icon = '🪑';
-                    
+
                     const timeStr = new Date(log.timestamp).toLocaleDateString('ja-JP', {
                       month: '2-digit',
                       day: '2-digit',
@@ -4805,7 +4923,7 @@ export default function App() {
               >
                 すべての記録と進捗をリセットする
               </button>
-              
+
               <button
                 onClick={handleGoMap}
                 className="bg-violet-500 hover:bg-violet-600 text-white font-black text-base px-10 py-2.5 rounded-2xl border-b-4 border-violet-700 transition-all active:translate-y-[2px] active:border-b-2 flex items-center gap-1.5"

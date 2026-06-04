@@ -158,14 +158,14 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-5 animate-fadeIn">
+    <div className="w-full flex flex-col items-center gap-4 animate-fadeIn">
       {/* 上部ナビゲーションと進捗 */}
       <div className="w-full max-w-2xl flex items-center justify-between gap-4">
         <button
           onClick={onGoBack}
-          className="bg-white hover:bg-slate-50 border-4 border-slate-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all"
+          className="hinata-btn-secondary p-2.5"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <StarProgress
           currentStep={currentStep}
@@ -176,7 +176,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
         <button
           onClick={triggerHint}
           disabled={result === 'correct'}
-          className="bg-white hover:bg-slate-50 border-4 border-violet-200 p-2.5 rounded-2xl shadow-sm cursor-pointer active:translate-y-[1px] flex items-center justify-center transition-all disabled:opacity-40"
+          className="hinata-btn-secondary p-2.5 disabled:opacity-40"
           title="ヒントをきく"
         >
           <HelpCircle className="w-5 h-5 text-violet-600" />
@@ -184,7 +184,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
       </div>
 
       {/* メインボード */}
-      <div className="w-full max-w-2xl bg-white border-8 border-amber-300 rounded-3xl p-5 shadow-2xl flex flex-col gap-6 relative overflow-hidden">
+      <div className="hinata-activity-frame">
         {/* 正解時キラキラエフェクト */}
         {showSuccessAnim && (
           <div className="absolute inset-0 bg-emerald-500/10 pointer-events-none flex items-center justify-center z-20 animate-fadeIn">
@@ -196,17 +196,17 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
         )}
 
         {/* 問題指示テキスト */}
-        <div className="bg-amber-50/50 border-4 border-amber-100 rounded-2xl p-4 text-center">
-          <span className="bg-amber-400 text-amber-950 font-black text-xs px-2.5 py-0.5 rounded-full inline-block mb-1">
+        <div className="bg-hinata-active-bg border-4 border-hinata-border rounded-2xl p-4 text-center">
+          <span className="bg-hinata-accent text-white font-black text-xs px-2.5 py-0.5 rounded-full inline-block mb-1">
             ミッション
           </span>
-          <h2 className="text-xl md:text-2xl font-black text-amber-800 leading-relaxed mt-1">
-            うえの はこを <span className="text-rose-500 text-3xl font-black">10こ</span> に しよう！
+          <h2 className="text-xl md:text-2xl font-black text-hinata-text leading-relaxed mt-1">
+            うえの はこを <span className="text-hinata-accent text-3xl font-black">10こ</span> に しよう！
           </h2>
         </div>
 
         {/* 🍒 さくらんぼ計算 視覚化エリア */}
-        <div className="flex flex-col items-center justify-center font-black text-3xl md:text-4xl text-amber-900 select-none py-2 relative h-36">
+        <div className="flex flex-col items-center justify-center font-black text-3xl md:text-4xl text-hinata-text select-none py-2 relative h-36">
           <div className="flex items-center gap-6 z-10">
             <span>{question.left}</span>
             <span>+</span>
@@ -242,7 +242,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
               <svg className="absolute top-1/2 left-[-80px] w-64 h-20 overflow-visible pointer-events-none z-0">
                 {/* 左の元の数(left)の位置と、もらった数(needed)を結ぶ青い点線 */}
                 <path d="M -8 -60 Q 20 20 54 20" stroke="#0284c7" strokeWidth="4" strokeDasharray="6,6" fill="none" strokeLinecap="round" />
-                
+
                 {/* 10 の合体バッジ */}
                 <foreignObject x="6" y="24" width="40" height="32">
                   <div className={`bg-sky-600 text-white font-black text-[10px] px-1.5 py-0.5 rounded-lg border-2 border-sky-800 text-center ${reducedMotion ? '' : 'animate-bounce'}`}>
@@ -353,7 +353,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
               <button
                 onClick={handleMoveDown}
                 disabled={movedCount <= 0 || isProcessing}
-                className="flex items-center gap-1 bg-white border-2 border-rose-300 hover:bg-rose-50 text-rose-700 font-black px-4 py-2 rounded-xl shadow-sm text-xs cursor-pointer active:translate-y-[1px] disabled:opacity-40"
+                className="hinata-btn-secondary px-4 py-2 text-xs text-rose-700 border-rose-300 disabled:opacity-40"
               >
                 <Minus className="w-4 h-4" />
                 <span>1こしたにもどす</span>
@@ -361,7 +361,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
               <button
                 onClick={handleMoveUp}
                 disabled={currentLeftTotal >= 10 || isProcessing}
-                className="flex items-center gap-1 bg-sky-600 hover:bg-sky-700 text-white font-black px-4 py-2 rounded-xl shadow-sm border-b-4 border-sky-800 text-xs cursor-pointer active:translate-y-[1px] disabled:opacity-40"
+                className="hinata-btn-base bg-sky-600 border-sky-700 border-b-sky-800 text-white px-4 py-2 text-xs disabled:opacity-40 hover:bg-sky-500"
               >
                 <Plus className="w-4 h-4" />
                 <span>1こうえにおくる</span>
@@ -442,10 +442,10 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
               <button
                 onClick={handleCheckAnswer}
                 disabled={isProcessing}
-                className={`font-black text-md px-14 py-3 rounded-2xl transition-all shadow-md active:translate-y-[2px] active:border-b-2 border-b-4 ${
+                className={`px-14 py-3 min-h-[48px] ${
                   currentLeftTotal === 10
-                    ? 'bg-amber-400 hover:bg-amber-500 border-amber-600 text-amber-950 scale-105 animate-pulse cursor-pointer'
-                    : 'bg-slate-200 border-slate-400 text-slate-400 cursor-not-allowed'
+                    ? 'hinata-btn-primary scale-105 animate-pulse'
+                    : 'hinata-btn-secondary opacity-50 cursor-not-allowed'
                 }`}
               >
                 できた！
@@ -465,7 +465,7 @@ export const CherryCombineScreen: React.FC<CherryCombineScreenProps> = ({
               </span>
               <button
                 onClick={onNextStep}
-                className="bg-emerald-500 hover:bg-emerald-600 border-b-4 border-emerald-700 text-white font-black text-md px-14 py-2.5 rounded-xl shadow-md cursor-pointer"
+                className="hinata-btn-primary bg-emerald-500 border-emerald-600 border-b-emerald-700 hover:bg-emerald-400 text-white px-14 py-3 min-h-[48px]"
               >
                 つぎへすすむ ➔
               </button>
