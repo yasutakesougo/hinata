@@ -173,6 +173,11 @@ export const CatRoomSplitScreen: React.FC<CatRoomSplitScreenProps> = ({
         );
       }, 400);
 
+      // 音声再生タイミングに合わせ、1.2秒後に processing フラグを解除しボタンを有効化する
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1200);
+
       onStepComplete(
         true,
         currentLeft,
