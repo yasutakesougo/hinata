@@ -715,7 +715,7 @@ interface HomeScreenProps {
   onChangeSeason: (mode: 'auto' | Season) => void;
   currentSeason: Season;
   todayChoiceMade: boolean;
-  onChooseActivity: (activity: 'walk' | 'math' | 'tracing') => void;
+  onChooseActivity: (activity: 'walk' | 'math' | 'tracing' | 'later') => void;
 }
 
 const THEMES = [
@@ -899,6 +899,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               >
                 <span className="text-4xl">✍️</span>
                 <span className="text-xs font-black text-sky-800">もじをなぞる</span>
+              </button>
+            </div>
+
+            {/* 退避オプション */}
+            <div className="pt-2 flex justify-center">
+              <button
+                type="button"
+                onClick={() => onChooseActivity('later')}
+                aria-label="あとで えらぶ"
+                className="text-sm font-bold text-slate-400 hover:text-slate-600 underline cursor-pointer transition-colors active:scale-95 py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300"
+              >
+                あとで えらぶ (もりにはいる)
               </button>
             </div>
           </div>
@@ -2154,7 +2166,7 @@ export default function App() {
     speakText("さんすうアドベンチャー！くだものキングダムへようこそ！", soundEnabled);
   };
 
-  const handleChooseActivity = (activity: 'walk' | 'math' | 'tracing') => {
+  const handleChooseActivity = (activity: 'walk' | 'math' | 'tracing' | 'later') => {
     playSoundEffect('tap');
     
     // 選択状態を永続化
@@ -2179,6 +2191,9 @@ export default function App() {
       // こくごなぞり書きへ遷移
       setIsTransitioning(false);
       setScreen('play_tracing');
+    } else if (activity === 'later') {
+      speakText("もりのひろばへ いこう！", soundEnabled);
+      // ホーム（広場）に留まる
     }
   };
 
