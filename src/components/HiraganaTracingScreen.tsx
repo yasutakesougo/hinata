@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Sparkles, Trash2, CheckCircle, Star } from 'lucide-react';
 import { StarProgress } from '../App';
 import { TRACING_GUIDES } from '../constants/tracingGuides';
@@ -53,6 +53,14 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
   const [isDemoPlaying, setIsDemoPlaying] = useState<boolean>(false);
   const [demoCursor, setDemoCursor] = useState<{ x: number; y: number } | null>(null);
 
+  // なぞり書き状態管理
+  const [currentStrokeIndex, setCurrentStrokeIndex] = useState<number>(0);
+  const [currentKeypointIndex, setCurrentKeypointIndex] = useState<number>(0);
+
+  // 描画座標管理（Refに保持して再描画パフォーマンスを維持）
+  const activePointsRef = useRef<{ x: number; y: number }[]>([]);
+  const completedStrokesRef = useRef<{ points: { x: number; y: number }[]; color: string }[]>([]);
+
   // 音声アナウンス
   useEffect(() => {
     if (selectedLetter === null) {
@@ -70,6 +78,41 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
       }
     };
   }, []);
+
+  // 再描画処理
+  const redrawCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    const context = contextRef.current;
+    if (!canvas || !context) return;
+
+    // 画面消去
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 確定済みの画を描画
+    completedStrokesRef.current.forEach(stroke => {
+      if (stroke.points.length === 0) return;
+      context.beginPath();
+      context.strokeStyle = stroke.color;
+      context.lineWidth = 12;
+      context.moveTo(stroke.points[0].x, stroke.points[0].y);
+      for (let i = 1; i < stroke.points.length; i++) {
+        context.lineTo(stroke.points[i].x, stroke.points[i].y);
+      }
+      context.stroke();
+    });
+
+    // 描きかけ of 画を描画
+    if (activePointsRef.current.length > 0) {
+      context.beginPath();
+      context.strokeStyle = brushColor;
+      context.lineWidth = 12;
+      context.moveTo(activePointsRef.current[0].x, activePointsRef.current[0].y);
+      for (let i = 1; i < activePointsRef.current.length; i++) {
+        context.lineTo(activePointsRef.current[i].x, activePointsRef.current[i].y);
+      }
+      context.stroke();
+    }
+  }, [brushColor]);
 
   // キャンバスの初期設定 (文字選択されたとき)
   useEffect(() => {
@@ -99,6 +142,10 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
       setShowSuccessAnim(false);
       setDemoCursor(null);
       setIsDemoPlaying(false);
+      setCurrentStrokeIndex(0);
+      setCurrentKeypointIndex(0);
+      completedStrokesRef.current = [];
+      activePointsRef.current = [];
     }, 50);
 
     return () => clearTimeout(timer);
@@ -110,7 +157,8 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     if (contextRef.current) {
       contextRef.current.strokeStyle = brushColor;
     }
-  }, [brushColor]);
+    redrawCanvas();
+  }, [brushColor, redrawCanvas]);
 
   // 座標算出ヘルパー
   const getCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -134,34 +182,106 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     }
   };
 
+  // 距離計算ヘルパー
+  const getDistance = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
+    const dx = p1.x - p2.x;
+    const dy = p1.y - p2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
   // 描画開始
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (isDemoPlaying || isCompleted) return;
+    if (isDemoPlaying || isCompleted || !selectedLetter) return;
     const coords = getCoords(e);
     if (!coords || !contextRef.current) return;
 
-    contextRef.current.beginPath();
-    contextRef.current.moveTo(coords.x, coords.y);
+    activePointsRef.current = [coords];
     setIsDrawing(true);
     setHasDrawn(true);
+
+    const strokeKeypoints = TRACING_GUIDES[selectedLetter]?.keypoints[currentStrokeIndex];
+    if (strokeKeypoints && strokeKeypoints.length > 0) {
+      const distToStart = getDistance(coords, strokeKeypoints[0]);
+      if (distToStart <= 45) { // 始点の近くから描き始めた
+        setCurrentKeypointIndex(1);
+        onPlaySound('tap'); // 開始合図音
+      } else {
+        setCurrentKeypointIndex(0);
+      }
+    }
+
+    redrawCanvas();
   };
 
   // 描画中
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !contextRef.current || isDemoPlaying || isCompleted) return;
+    if (!isDrawing || !contextRef.current || isDemoPlaying || isCompleted || !selectedLetter) return;
     
     const coords = getCoords(e);
     if (!coords) return;
 
-    contextRef.current.lineTo(coords.x, coords.y);
-    contextRef.current.stroke();
+    activePointsRef.current.push(coords);
+    redrawCanvas();
+
+    const strokeKeypoints = TRACING_GUIDES[selectedLetter]?.keypoints[currentStrokeIndex];
+    if (!strokeKeypoints || strokeKeypoints.length === 0) return;
+
+    if (currentKeypointIndex === 0) {
+      const distToStart = getDistance(coords, strokeKeypoints[0]);
+      if (distToStart <= 45) {
+        setCurrentKeypointIndex(1);
+        onPlaySound('tap'); // 始点通過
+      }
+    } else {
+      const targetPt = strokeKeypoints[currentKeypointIndex];
+      const distToTarget = getDistance(coords, targetPt);
+      
+      if (distToTarget <= 40) { // キーポイント通過
+        const nextIndex = currentKeypointIndex + 1;
+        if (nextIndex < strokeKeypoints.length) {
+          setCurrentKeypointIndex(nextIndex);
+          onPlaySound('tap'); // 途中通過音
+        } else {
+          // 画の完成！
+          const updatedStrokes = [
+            ...completedStrokesRef.current,
+            { points: [...activePointsRef.current], color: brushColor }
+          ];
+          completedStrokesRef.current = updatedStrokes;
+          activePointsRef.current = [];
+          
+          setIsDrawing(false);
+          onPlaySound('correct'); // 画完了の効果音
+
+          const nextStrokeIndex = currentStrokeIndex + 1;
+          const totalStrokes = TRACING_GUIDES[selectedLetter].keypoints.length;
+
+          if (nextStrokeIndex < totalStrokes) {
+            setCurrentStrokeIndex(nextStrokeIndex);
+            setCurrentKeypointIndex(0);
+          } else {
+            // 文字全体の完成！
+            setCurrentStrokeIndex(nextStrokeIndex);
+            setCurrentKeypointIndex(0);
+            
+            // 0.5秒後に自動的にできた判定に進む
+            setTimeout(() => {
+              handleDone(updatedStrokes);
+            }, 500);
+          }
+        }
+      }
+    }
   };
 
   // 描画終了
   const stopDrawing = () => {
     if (!isDrawing) return;
-    contextRef.current?.closePath();
     setIsDrawing(false);
+
+    // 途中で指を離した場合は書きかけの線をクリアして、最初から引き直させる
+    activePointsRef.current = [];
+    redrawCanvas();
   };
 
   // もういちど（キャンバスクリア）
@@ -170,8 +290,12 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     const canvas = canvasRef.current;
     if (!canvas || !contextRef.current) return;
 
-    contextRef.current.clearRect(0, 0, canvas.width, canvas.height);
+    completedStrokesRef.current = [];
+    activePointsRef.current = [];
+    setCurrentStrokeIndex(0);
+    setCurrentKeypointIndex(0);
     setHasDrawn(false);
+    redrawCanvas();
   };
 
   // お手本補間ヘルパー
@@ -206,6 +330,12 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     onPlaySound('tap');
     setIsDemoPlaying(true);
     context.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // お手本再生時は進行度と描画をリセット
+    completedStrokesRef.current = [];
+    activePointsRef.current = [];
+    setCurrentStrokeIndex(0);
+    setCurrentKeypointIndex(0);
     setHasDrawn(false);
 
     // デモ描画のスタイル保存と書き換え (オレンジ半透明ペン)
@@ -234,8 +364,8 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
 
           // 1.2秒待ってから、なぞり直せるようにクリアして解放
           setTimeout(() => {
-            context.clearRect(0, 0, canvas.width, canvas.height);
             setIsDemoPlaying(false);
+            redrawCanvas();
           }, 1200);
           return;
         } else {
@@ -261,8 +391,13 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
   };
 
   // できた！ボタン
-  const handleDone = () => {
-    if (!hasDrawn || isCompleted || !selectedLetter) return;
+  const handleDone = (customStrokes?: typeof completedStrokesRef.current) => {
+    const strokes = customStrokes || completedStrokesRef.current;
+    if (!selectedLetter || isCompleted) return;
+
+    // すべての画が完了しているか検証
+    const totalStrokes = TRACING_GUIDES[selectedLetter]?.keypoints.length || 0;
+    if (strokes.length < totalStrokes) return;
 
     onPlaySound('victory');
     setShowSuccessAnim(true);
@@ -288,6 +423,9 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
     setDemoCursor(null);
     setIsDemoPlaying(false);
   };
+
+  // 全画を完了しているかのフラグ（「できた！」ボタンの制御用）
+  const isAllStrokesCompleted = selectedLetter ? currentStrokeIndex === TRACING_GUIDES[selectedLetter].keypoints.length : false;
 
   // ==========================================
   // 1. 文字選択画面
@@ -424,24 +562,26 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
             </div>
 
             {/* 始点・矢印ガイドオーバーレイ */}
-            {!isCompleted && !isDemoPlaying && TRACING_GUIDES[selectedLetter]?.guides.map(g => (
-              <React.Fragment key={g.id}>
-                {/* 始点ドット */}
-                <div
-                  className="absolute w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-black select-none pointer-events-none z-20 animate-pulse border-2 border-white shadow-md"
-                  style={{ left: `${g.start.x}px`, top: `${g.start.y}px`, transform: 'translate(-50%, -50%)' }}
-                >
-                  {g.id}
-                </div>
-                {/* 矢印 */}
-                <div
-                  className={`absolute select-none pointer-events-none text-blue-400 font-extrabold text-xl z-20 opacity-80 ${g.arrow.rotate}`}
-                  style={{ left: `${g.arrow.x}px`, top: `${g.arrow.y}px`, transform: 'translate(-50%, -50%)' }}
-                >
-                  ➔
-                </div>
-              </React.Fragment>
-            ))}
+            {!isCompleted && !isDemoPlaying && TRACING_GUIDES[selectedLetter]?.guides
+              .filter(g => g.id === currentStrokeIndex + 1)
+              .map(g => (
+                <React.Fragment key={g.id}>
+                  {/* 始点ドット */}
+                  <div
+                    className="absolute w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-black select-none pointer-events-none z-20 animate-pulse border-2 border-white shadow-md"
+                    style={{ left: `${g.start.x}px`, top: `${g.start.y}px`, transform: 'translate(-50%, -50%)' }}
+                  >
+                    {g.id}
+                  </div>
+                  {/* 矢印 */}
+                  <div
+                    className={`absolute select-none pointer-events-none text-blue-400 font-extrabold text-xl z-20 opacity-80 ${g.arrow.rotate}`}
+                    style={{ left: `${g.arrow.x}px`, top: `${g.arrow.y}px`, transform: 'translate(-50%, -50%)' }}
+                  >
+                    ➔
+                  </div>
+                </React.Fragment>
+              ))}
 
             {/* お手本アニメーション時の筆先カーソル (✍️) */}
             {isDemoPlaying && demoCursor && (
@@ -536,10 +676,10 @@ export const HiraganaTracingScreen: React.FC<HiraganaTracingScreenProps> = ({
               </button>
 
               <button
-                onClick={handleDone}
-                disabled={!hasDrawn || isDemoPlaying}
+                onClick={() => handleDone()}
+                disabled={!isAllStrokesCompleted || isDemoPlaying}
                 className={`font-black text-md px-12 py-3 rounded-2xl transition-all shadow-md active:translate-y-[2px] active:border-b-2 border-b-4 flex items-center gap-2 cursor-pointer ${
-                  hasDrawn && !isDemoPlaying
+                  isAllStrokesCompleted && !isDemoPlaying
                     ? 'bg-sky-400 hover:bg-sky-500 border-sky-600 text-sky-950 scale-105 animate-pulse'
                     : 'bg-slate-200 border-slate-400 text-slate-400 cursor-not-allowed'
                 }`}
