@@ -9,6 +9,7 @@ import { CatRoomSplitScreen } from './components/CatRoomSplitScreen';
 import { FURNITURE_LIST } from './constants/furnitureList';
 import { HiraganaTracingScreen } from './components/HiraganaTracingScreen';
 import { SnackSplitScreen } from './components/SnackSplitScreen';
+import { FriendTaikoScreen } from './components/FriendTaikoScreen';
 
 // Purity rule workarounds (external helpers)
 function getNow(): number {
@@ -36,7 +37,7 @@ interface Stage {
   name: string;
   jpName: string;
   desc: string;
-  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'boss' | 'cat_split' | 'snack_split' | 'friend_taiko';
   maxVal: number; 
   reward: { name: string; emoji: string; desc: string };
   difficulty: string;
@@ -71,7 +72,7 @@ interface Make10Question {
 }
 
 interface AnswerRecord {
-  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split';
+  type: 'synthesis' | 'make10' | 'subtraction' | 'cat_split' | 'snack_split' | 'friend_taiko';
   questionText: string;
   userChoice: number;
   correctAnswer: number;
@@ -139,6 +140,16 @@ const STAGES: Stage[] = [
   },
   {
     id: 6,
+    name: 'friend_taiko',
+    jpName: '10の ともだちたいこ',
+    desc: 'あといくつで10かな？たりない数だけ たいこを トントン叩こう！',
+    type: 'friend_taiko',
+    maxVal: 10,
+    reward: { name: 'リズムペンギン', emoji: '🐧', desc: '太鼓のリズムに合わせて踊るのが大好きなペンギン。' },
+    difficulty: '★★★☆☆'
+  },
+  {
+    id: 7,
     name: 'pack',
     jpName: 'たまごの パック',
     desc: '10をつくる パズルゲーム！あといくつ必要かな？',
@@ -148,7 +159,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 7,
+    id: 8,
     name: 'hamster',
     jpName: 'もぐもぐ ハムスター',
     desc: '10までの ひきざん！ハムスターといっしょに かぞえよう。',
@@ -158,7 +169,7 @@ const STAGES: Stage[] = [
     difficulty: '★★★★☆'
   },
   {
-    id: 8,
+    id: 9,
     name: 'boss',
     jpName: 'さんすうキングの しろ',
     desc: 'ラスボス登場！たしざんと ひきざんの スピードMIXバトル！',
@@ -1559,7 +1570,7 @@ const isSeasonMode = (value: unknown): value is 'auto' | Season =>
   value === 'winter';
 
 export default function App() {
-  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
+  const [screen, setScreen] = useState<'title' | 'home' | 'map' | 'play_synthesis' | 'play_make10' | 'play_subtraction' | 'play_boss' | 'play_cat_split' | 'play_snack_split' | 'play_friend_taiko' | 'play_tracing' | 'stage_clear' | 'all_clear' | 'zukan' | 'report'>('title');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [audioUnlocked, setAudioUnlocked] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -2394,6 +2405,10 @@ export default function App() {
       setTotalSteps(5);
       setupNextSnackSplit(1);
       setScreen('play_snack_split');
+    } else if (stage.type === 'friend_taiko') {
+      setTotalSteps(5);
+      setupNextFriendTaiko(1);
+      setScreen('play_friend_taiko');
     } else if (stage.type === 'boss') {
       setTotalSteps(10);
       setBossHp(100);
@@ -2417,6 +2432,12 @@ export default function App() {
 
   // 0.6. どうぶつおやつ分け問題セット
   const setupNextSnackSplit = (step: number) => {
+    setCurrentStep(step);
+    setIsTransitioning(false);
+  };
+
+  // 0.7. ともだちたいこ問題セット
+  const setupNextFriendTaiko = (step: number) => {
     setCurrentStep(step);
     setIsTransitioning(false);
   };
@@ -2592,6 +2613,23 @@ export default function App() {
       userChoice: leftVal,
       correctAnswer: leftVal,
       isCorrect: true,
+      timestamp: getNow(),
+    };
+    setHistory(prev => [record, ...prev].slice(0, 100));
+    setStarResults(prev => [...prev, true]);
+  };
+
+  // --- ともだちたいこの回答記録 ---
+  const handleFriendTaikoStepComplete = (
+    initial: number,
+    tapped: number
+  ) => {
+    const record: AnswerRecord = {
+      type: 'friend_taiko',
+      questionText: `${initial} と [ ? ] で 10`,
+      userChoice: tapped,
+      correctAnswer: 10 - initial,
+      isCorrect: tapped === (10 - initial),
       timestamp: getNow(),
     };
     setHistory(prev => [record, ...prev].slice(0, 100));
@@ -2928,6 +2966,8 @@ export default function App() {
         setupNextCatSplit(nextStep);
       } else if (selectedStage?.type === 'snack_split') {
         setupNextSnackSplit(nextStep);
+      } else if (selectedStage?.type === 'friend_taiko') {
+        setupNextFriendTaiko(nextStep);
       }
     }
   };
@@ -3632,6 +3672,23 @@ export default function App() {
             onStepComplete={handleSnackSplitStepComplete}
             onNextStep={handleNextStep}
             maxVal={selectedStage.maxVal}
+          />
+        )}
+
+        {/* 6.7. 10のともだちたいこプレイ画面 */}
+        {screen === 'play_friend_taiko' && selectedStage && (
+          <FriendTaikoScreen
+            key={currentStep}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+            starResults={starResults}
+            soundEnabled={soundEnabled}
+            onPlaySound={playSoundEffect}
+            speakText={speakText}
+            onGoBack={handleGoMap}
+            onStepComplete={handleFriendTaikoStepComplete}
+            onNextStep={handleNextStep}
+            reducedMotion={reducedMotion}
           />
         )}
 
