@@ -778,6 +778,7 @@ interface HomeScreenProps {
   onGoPlayMap: () => void;
   onSelectStageById: (id: number) => void;
   reducedMotion: boolean;
+  baseReducedMotion: boolean;
   onChangeReducedMotion: (val: boolean) => void;
   placedFurniture: Record<string, string | null>;
   setPlacedFurniture: React.Dispatch<React.SetStateAction<Record<string, string | null>>>;
@@ -864,6 +865,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onGoPlayMap,
   onSelectStageById,
   reducedMotion,
+  baseReducedMotion,
   onChangeReducedMotion,
   placedFurniture,
   setPlacedFurniture,
@@ -1242,18 +1244,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             type="button"
             onClick={() => {
               playSoundEffect('tap');
-              onChangeReducedMotion(!reducedMotion);
+              onChangeReducedMotion(!baseReducedMotion);
             }}
             className={`flex items-center gap-1.5 p-2 rounded-2xl border transition-colors shadow-xs select-none text-[10px] font-black cursor-pointer ${
-              reducedMotion
+              baseReducedMotion
                 ? 'bg-emerald-100 border-emerald-300 text-emerald-950 shadow-inner'
                 : 'bg-emerald-50/50 hover:bg-emerald-100 border-emerald-100 text-emerald-700'
             }`}
             style={{ minHeight: 44, touchAction: 'manipulation' }}
-            aria-pressed={reducedMotion}
+            aria-pressed={baseReducedMotion}
             aria-label="うごきを とめる"
           >
-            <span className="pointer-events-none text-xs">{reducedMotion ? '✅' : '⬜️'}</span>
+            <span className="pointer-events-none text-xs">{baseReducedMotion ? '✅' : '⬜️'}</span>
             <span className="pointer-events-none">うごきを とめる</span>
           </button>
 
@@ -3462,6 +3464,7 @@ export default function App() {
             onGoPlayMap={handleGoPlayMap}
             onSelectStageById={handleSelectStageById}
             reducedMotion={effectiveReducedMotion}
+            baseReducedMotion={reducedMotion}
             onChangeReducedMotion={setReducedMotion}
             placedFurniture={placedFurniture}
             setPlacedFurniture={setPlacedFurniture}
