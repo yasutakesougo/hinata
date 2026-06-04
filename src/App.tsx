@@ -3172,6 +3172,59 @@ export default function App() {
               </p>
             </div>
 
+            {/* 💚 おうちの方へ：安心・安全へのこだわり */}
+            <div className="w-full bg-emerald-50/50 border-4 border-emerald-200 rounded-2xl p-5 flex flex-col gap-4 text-left">
+              <div className="flex justify-between items-center border-b border-emerald-200 pb-2 flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-emerald-800">
+                  <span className="text-xl">💚</span>
+                  <h3 className="text-sm font-black">このアプリの安心・安全へのこだわり</h3>
+                </div>
+              </div>
+              <div className="text-xs text-slate-600 font-bold leading-relaxed space-y-3">
+                <p>
+                  『さんすうクエスト』および『森の広場』は、お子様が安心して自分のペースで学べる環境を最優先に設計されています。
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
+                    <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
+                      <span>🚫</span> 広告・ガチャ・課金なし
+                    </h4>
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      誤操作を誘発するバナー広告や、射幸心を煽るガチャ、追加の課金誘導は一切ありません。
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
+                    <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
+                      <span>⏳</span> 時間制限・焦りの排除
+                    </h4>
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      「早く答えなければゲームオーバー」といった時間制限はなく、じっくり考える時間を大切にしています。
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
+                    <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
+                      <span>🧸</span> 失敗を責めないフィードバック
+                    </h4>
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      間違えた時も不快な警告音は鳴らさず、「すこしへらそう」「もう一度かぞえよう」など次につながるヒントを伝えます。
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 space-y-1">
+                    <h4 className="font-black text-emerald-900 flex items-center gap-1 text-[11px]">
+                      <span>🎨</span> 低刺激でやさしい画面設計
+                    </h4>
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      感覚にやさしいパステル調の色彩と、過度に興奮させない落ち着いたアニメーションを採用しています。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* サマリーカード */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
               <div className="bg-violet-50/50 border-2 border-violet-100 rounded-2xl p-4 text-center">
